@@ -39,10 +39,11 @@ app.UseHangfireDashboard("/dash");
 
 if (app.Environment.EnvironmentName != "Local")
 {
+    var trustServerCertificate = app.Configuration.GetValue<bool>("TrustServerCertificate");
     BackgroundJob.Schedule<WebParsingUtils>(
-    wp => wp.ParseZipFileFromWebAsync(), TimeSpan.FromMinutes(1));
+    wp => wp.ParseZipFileFromWebAsync(trustServerCertificate), TimeSpan.FromMinutes(1));
     RecurringJob.AddOrUpdate<WebParsingUtils>(
-        wp => wp.ParseZipFileFromWebAsync(), Cron.Monthly);
+        wp => wp.ParseZipFileFromWebAsync(trustServerCertificate), Cron.Monthly);
     RecurringJob.AddOrUpdate<BlobService>(
         b => b.CleanBlobStorage(), Cron.Monthly);
 }

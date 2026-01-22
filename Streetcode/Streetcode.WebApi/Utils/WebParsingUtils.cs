@@ -38,6 +38,7 @@ public class WebParsingUtils
         string fileUrl,
         string zipPath,
         string extractTo,
+        bool trustServerCertificate,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(fileUrl) || !Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
@@ -57,7 +58,10 @@ public class WebParsingUtils
 
         var clientHandler = new HttpClientHandler();
         clientHandler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-        clientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+        if (trustServerCertificate)
+        {
+            clientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+        }
 
         var retryPolicy = Policy.Handle<Exception>().WaitAndRetryAsync(
             3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
@@ -100,9 +104,8 @@ public class WebParsingUtils
         }
     }
 
-    public async Task ParseZipFileFromWebAsync()
+    public async Task ParseZipFileFromWebAsync(bool trustServerCertificate = false)
     {
-        var projRootDirectory = Directory.GetParent(Environment.CurrentDirectory)?.FullName!;
         var zipPath = $"houses.zip";
         var extractTo = $"/root/build/StreetCode/Streetcode/Streetcode.DAL";
 
@@ -110,7 +113,12 @@ public class WebParsingUtils
 
         try
         {
-            await DownloadAndExtractAsync(_fileToParseUrl, zipPath, extractTo, cancellationToken);
+            await DownloadAndExtractAsync(
+                _fileToParseUrl,
+                zipPath,
+                extractTo,
+                trustServerCertificate,
+                cancellationToken);
             Console.WriteLine("Download and extraction completed successfully.");
 
             if (File.Exists(zipPath))
