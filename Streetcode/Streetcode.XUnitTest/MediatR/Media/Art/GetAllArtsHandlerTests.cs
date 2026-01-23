@@ -20,11 +20,11 @@
 
         public GetAllArtsHandlerTests()
         {
-            repositoryWrapperMock = new Mock<IRepositoryWrapper>();
-            mapperMock = new Mock<IMapper>();
-            loggerMock = new Mock<ILoggerService>();
+            this.repositoryWrapperMock = new Mock<IRepositoryWrapper>();
+            this.mapperMock = new Mock<IMapper>();
+            this.loggerMock = new Mock<ILoggerService>();
 
-            handler = new GetAllArtsHandler(repositoryWrapperMock.Object,
+            this.handler = new GetAllArtsHandler(repositoryWrapperMock.Object,
                     mapperMock.Object, loggerMock.Object);
         }
 
@@ -35,7 +35,7 @@
             List<Art> arts = this.GetArtsList();
             List<ArtDTO> artDTOs = this.GetArtDTOsList();
 
-            this.SetupMappers(arts, artDTOs);
+            this.SetupMocks(arts, artDTOs);
 
             // Act
             var result = await this.handler
@@ -52,7 +52,7 @@
             List<Art> arts = this.GetArtsList();
             List<ArtDTO> artDTOs = this.GetArtDTOsList();
 
-            this.SetupMappers(arts, artDTOs);
+            this.SetupMocks(arts, artDTOs);
 
             // Act
             var result = await this.handler
@@ -69,7 +69,7 @@
             List<Art> arts = this.GetArtsList();
             List<ArtDTO> artDTOs = this.GetArtDTOsList();
 
-            this.SetupMappers(arts, artDTOs);
+            this.SetupMocks(arts, artDTOs);
 
             // Act
             var result = await this.handler
@@ -83,7 +83,7 @@
         public async Task Handle_ReturnsSuccess_WhenArtsAreEmpty()
         {
             // Arrange
-            this.SetupMappers(new List<Art>(), new List<ArtDTO>());
+            this.SetupMocks(new List<Art>(), new List<ArtDTO>());
 
             // Act
             var result = await this.handler
@@ -97,7 +97,7 @@
         public async Task Handle_ReturnsEmpty_WhenArtsAreEmpty()
         {
             // Arrange
-            this.SetupMappers(new List<Art>(), new List<ArtDTO>());
+            this.SetupMocks(new List<Art>(), new List<ArtDTO>());
 
             // Act
             var result = await this.handler
@@ -114,7 +114,7 @@
             List<Art>? arts = null;
             List<ArtDTO> artDTOs = this.GetArtDTOsList();
 
-            this.SetupMappers(arts, artDTOs);
+            this.SetupMocks(arts, artDTOs);
 
             // Act
             var result = await this.handler
@@ -131,7 +131,7 @@
             List<Art>? arts = null;
             List<ArtDTO> artDTOs = this.GetArtDTOsList();
 
-            this.SetupMappers(arts, artDTOs);
+            this.SetupMocks(arts, artDTOs);
 
             // Act
             var result = await this.handler
@@ -141,7 +141,7 @@
             Assert.Equal("Cannot find any arts", result.Errors[0].Message);
         }
 
-        private void SetupMappers(List<Art>? arts, List<ArtDTO> artDTOs)
+        private void SetupMocks(List<Art>? arts, List<ArtDTO> artDTOs)
         {
             this.repositoryWrapperMock.Setup(r => r.ArtRepository.GetAllAsync(
                 It.IsAny<Expression<Func<Art, bool>>>(),
