@@ -5,12 +5,15 @@
 using AutoMapper;
 using FluentAssertions;
 using Moq;
+using Streetcode.BLL.Util;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.MediatR.Streetcode.Text.GetAll;
 using Streetcode.DAL.Entities.Streetcode.TextContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Xunit;
+using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Streetcode.XUnitTest.MediatR.Text.GetAll
 {
@@ -80,6 +83,23 @@ public class GetAllTextsHandlerTests
         result.Value.Should().BeEmpty();
 
         mockRepoWrapper.Verify(r => r.TextRepository.GetAllAsync(null, null), Times.Once);
+    }
 
+    [Fact]
+    public async Task Handle_ReturnFail_WhenRepositoryReturnsNull()
+    {
+        // Arrange
+        string ErrorMsg = "Cannot find any text";
+
+        mockRepoWrapper
+            .Setup(r => r.TextRepository.GetAllAsync(null, null))
+            .ReturnsAsync((IEnumerable<Text>?)null);
+
+        // Act
+        var result = await handler.Handle(new GetAllTextsQuery(), CancellationToken.None);
+
+        // Assert
+        result.IsFailed.Should().BeTrue();
+        result.Errors.First().Message.Should().Be(ErrorMsg);
     }
 }
