@@ -57,4 +57,29 @@ public class GetAllTextsHandlerTests
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(2);
     }
+
+    [Fact]
+    public async Task Handle_ReturnOk_WhenRepositoryReturnsEmptyList()
+    {
+        // Arrange
+        var emptyTextsList = new List<Text>();
+        var emptyTextsListDTOs = new List<TextDTO>();
+
+        mockRepoWrapper
+            .Setup(r => r.TextRepository.GetAllAsync(null, null))
+            .ReturnsAsync(emptyTextsList);
+        mockMapper
+            .Setup(m => m.Map<IEnumerable<TextDTO>>(emptyTextsList))
+            .Returns(emptyTextsListDTOs);
+
+        // Act
+        var result = await handler.Handle(new GetAllTextsQuery(), CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeEmpty();
+
+        mockRepoWrapper.Verify(r => r.TextRepository.GetAllAsync(null, null), Times.Once);
+
+    }
 }
