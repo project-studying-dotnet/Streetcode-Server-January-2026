@@ -20,23 +20,23 @@
 
         public GetArtByIdHandlerTests()
         {
-            repositoryWrapperMock = new Mock<IRepositoryWrapper>();
-            mapperMock = new Mock<IMapper>();
-            loggerMock = new Mock<ILoggerService>();
+            this.repositoryWrapperMock = new Mock<IRepositoryWrapper>();
+            this.mapperMock = new Mock<IMapper>();
+            this.loggerMock = new Mock<ILoggerService>();
 
-            handler = new GetArtByIdHandler(repositoryWrapperMock.Object,
+            this.handler = new GetArtByIdHandler(repositoryWrapperMock.Object,
                     mapperMock.Object, loggerMock.Object);
         }
 
         [Theory]
         [InlineData(1)]
-        public async Task Handle_ReturnsSuccess_WhenArtExists(int artId)
+        public async Task Handle_ReturnsSuccess_WhenArtExist(int artId)
         {
             // Arrange
             Art art = this.GetArt();
             ArtDTO artDTO = this.GetArtDTO();
 
-            this.SetupMappers(art, artDTO);
+            this.SetupMocks(art, artDTO);
 
             // Act
             var result = await this.handler
@@ -48,13 +48,13 @@
 
         [Theory]
         [InlineData(1)]
-        public async Task Handle_ReturnsCorrectArt_WhenArtExists(int artId)
+        public async Task Handle_ReturnsCorrectArt_WhenArtExist(int artId)
         {
             // Arrange
             Art art = this.GetArt();
             ArtDTO artDTO = this.GetArtDTO();
 
-            this.SetupMappers(art, artDTO);
+            this.SetupMocks(art, artDTO);
 
             // Act
             var result = await this.handler
@@ -74,7 +74,7 @@
             Art? art = null;
             ArtDTO artDTO = this.GetArtDTO();
 
-            this.SetupMappers(art, artDTO);
+            this.SetupMocks(art, artDTO);
 
             // Act
             var result = await this.handler
@@ -94,7 +94,7 @@
             Art? art = null;
             ArtDTO artDTO = this.GetArtDTO();
 
-            this.SetupMappers(art, artDTO);
+            this.SetupMocks(art, artDTO);
 
             // Act
             var result = await this.handler
@@ -106,7 +106,7 @@
                 result.Errors[0].Message);
         }
 
-        private void SetupMappers(Art? art, ArtDTO artDTO)
+        private void SetupMocks(Art? art, ArtDTO artDTO)
         {
             this.repositoryWrapperMock.Setup(r => r.ArtRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<Art, bool>>>(),
