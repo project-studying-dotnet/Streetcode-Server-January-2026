@@ -1,19 +1,47 @@
-﻿
+﻿// <copyright file="GetParsedTextAdminPreviewHandlerTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace Streetcode.XUnitTest.MediatR.Text.GetParsed
 {
-    using Moq;
-    using Streetcode.BLL.Interfaces.Text;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
+    using FluentAssertions;
+    using Moq;
+    using Streetcode.BLL;
+    using Streetcode.BLL.Interfaces.Text;
+    using Streetcode.BLL.MediatR.Streetcode.Text.GetParsed;
+    using Xunit;
+
     public class GetParsedTextAdminPreviewHandlerTests
     {
         private readonly Mock<ITextService> mockTextService;
-        private readonly GetParsedTextAdminPreviewHandlerTests handler;
+        private readonly GetParsedTextAdminPreviewHandler handler;
 
+        public GetParsedTextAdminPreviewHandlerTests()
+        {
+            mockTextService = new Mock<ITextService>();
+            handler = new GetParsedTextAdminPreviewHandler(mockTextService.Object);
+        }
 
+        [Fact]
+        public async Task Handler_ShouldReturnTrue_IfTextIsParsed()
+        {
+            // Arrange
+            const string textToParse = "Sample text to parse";
+            const string parsedText = "<p>Sample text to parse</p>";
+            var query = new GetParsedTextForAdminPreviewCommand(textToParse);
+
+            mockTextService
+                .Setup(s => s.AddTermsTag(textToParse))
+                .ReturnsAsync(parsedText);
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().Be(parsedText);
+        }
     }
 }
