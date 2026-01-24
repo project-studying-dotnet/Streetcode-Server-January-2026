@@ -57,7 +57,6 @@ public class GetTextByIdHandlerTests
             .Setup(m => m.Map<TextDTO>(text))
             .Returns(textDTO);
 
-
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
 
