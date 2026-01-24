@@ -69,6 +69,34 @@ public class GetTextByStreetcodeIdHandlerTests
         result.Value!.TextContent.Should().BeEquivalentTo("parsed");
     }
 
+    [Fact]
+    public async Task Handle_ShouldReturnOk_WhenTextExists_ButStreedCodeNoMatter()
+    {
+        // Arrange
+        int streetcodeId = 123;
+        var text = new Text { Id = 1, StreetcodeId = streetcodeId };
+        var textDTO = new TextDTO { Id = 1 };
+
+        mockRepoWrapper
+            .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
+                It.IsAny<Expression<Func<Text, bool>>>(), null))
+            .ReturnsAsync(text);
+
+        mockTextService
+            .Setup(t => t.AddTermsTag(It.IsAny<string>()))
+            .ReturnsAsync("");
+
+        mockMapper
+            .Setup(m => m.Map<TextDTO?>(text))
+            .Returns(textDTO);
+
+        // Act
+        var result = await handler.Handle(new GetTextByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+    }
+
     [Theory]
     [InlineData(-1)]
     [InlineData(1)]
