@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using FluentAssertions;
 using Moq;
+using Org.BouncyCastle.Asn1.Ocsp;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.Interfaces.Text;
 using Streetcode.BLL.MediatR.Streetcode.Text.GetByStreetcodeId;
+using Streetcode.DAL.Entities.Streetcode;
 using Streetcode.DAL.Entities.Streetcode.TextContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using System.Linq.Expressions;
@@ -65,5 +67,32 @@ public class GetTextByStreetcodeIdHandlerTests
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
         result.Value!.TextContent.Should().BeEquivalentTo("parsed");
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(1)]
+    public async Task Handler_ShouldReturnFail_IfTextNotExists(int streetcodeId)
+    {
+        // Arrange
+        var query = new GetTextByStreetcodeIdQuery(streetcodeId);
+        var errorMsg = $"Cannot find a transaction link by a streetcode id: {streetcodeId}, because such streetcode doesn`t exist";
+
+        mockRepoWrapper
+            .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
+                It.IsAny<Expression<Func<Text, bool>>>(), null))
+            .ReturnsAsync((Text?)null);
+
+        mockRepoWrapper
+            .Setup(r => r.StreetcodeRepository.GetFirstOrDefaultAsync(
+                It.IsAny<Expression<Func<StreetcodeContent, bool>>>(), null))
+            .ReturnsAsync((StreetcodeContent?)null);
+
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.IsFailed.Should().BeTrue();
+        result.Errors.Should().ContainSingle(e => e.Message == errorMsg);
     }
 }
