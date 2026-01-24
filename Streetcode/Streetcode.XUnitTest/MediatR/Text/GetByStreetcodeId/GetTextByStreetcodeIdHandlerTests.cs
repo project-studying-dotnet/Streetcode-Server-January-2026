@@ -1,126 +1,128 @@
-﻿using AutoMapper;
-using FluentAssertions;
-using Moq;
-using Org.BouncyCastle.Asn1.Ocsp;
-using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
-using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.BLL.Interfaces.Text;
-using Streetcode.BLL.MediatR.Streetcode.Text.GetByStreetcodeId;
-using Streetcode.DAL.Entities.Streetcode;
-using Streetcode.DAL.Entities.Streetcode.TextContent;
-using Streetcode.DAL.Repositories.Interfaces.Base;
-using System.Linq.Expressions;
-using Xunit;
+﻿// <copyright file="GetTextByStreetcodeIdHandlerTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace Streetcode.XUnitTest.MediatR.Text.GetByStreetcodeId
 {
-}
+    using System.Linq.Expressions;
+    using AutoMapper;
+    using FluentAssertions;
+    using Moq;
+    using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
+    using Streetcode.BLL.Interfaces.Logging;
+    using Streetcode.BLL.Interfaces.Text;
+    using Streetcode.BLL.MediatR.Streetcode.Text.GetByStreetcodeId;
+    using Streetcode.DAL.Entities.Streetcode;
+    using Streetcode.DAL.Entities.Streetcode.TextContent;
+    using Streetcode.DAL.Repositories.Interfaces.Base;
+    using Xunit;
 
-public class GetTextByStreetcodeIdHandlerTests
-{
-    private readonly Mock<IRepositoryWrapper> mockRepoWrapper;
-    private readonly Mock<IMapper> mockMapper;
-    private readonly Mock<ILoggerService> mockLogger;
-    private readonly Mock<ITextService> mockTextService;
-    private readonly GetTextByStreetcodeIdHandler handler;
-
-    public GetTextByStreetcodeIdHandlerTests()
+    public class GetTextByStreetcodeIdHandlerTests
     {
-        mockRepoWrapper = new Mock<IRepositoryWrapper>();
-        mockMapper = new Mock<IMapper>();
-        mockLogger = new Mock<ILoggerService>();
-        mockTextService = new Mock<ITextService>();
+        private readonly Mock<IRepositoryWrapper> mockRepoWrapper;
+        private readonly Mock<IMapper> mockMapper;
+        private readonly Mock<ILoggerService> mockLogger;
+        private readonly Mock<ITextService> mockTextService;
+        private readonly GetTextByStreetcodeIdHandler handler;
 
-        handler = new GetTextByStreetcodeIdHandler(
-            mockRepoWrapper.Object,
-            mockMapper.Object,
-            mockTextService.Object,
-            mockLogger.Object);
-    }
+        public GetTextByStreetcodeIdHandlerTests()
+        {
+            mockRepoWrapper = new Mock<IRepositoryWrapper>();
+            mockMapper = new Mock<IMapper>();
+            mockLogger = new Mock<ILoggerService>();
+            mockTextService = new Mock<ITextService>();
 
-    [Fact]
-    public async Task Handler_ShouldReturnOk_WhenTextExists()
-    {
-        // Arrange
-        int streetcodeId = 123;
-        var text = new Text { Id = 123, TextContent = "content", StreetcodeId = streetcodeId};
-        var textDTO = new TextDTO { Id = 123, TextContent = "parsed" };
-        var query = new GetTextByStreetcodeIdQuery(streetcodeId);
+            handler = new GetTextByStreetcodeIdHandler(
+                mockRepoWrapper.Object,
+                mockMapper.Object,
+                mockTextService.Object,
+                mockLogger.Object);
+        }
 
-        mockRepoWrapper
-            .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
-                It.IsAny<Expression<Func<Text, bool>>>(), null))
-            .ReturnsAsync(text);
+        [Fact]
+        public async Task Handler_ShouldReturnOk_WhenTextExists()
+        {
+            // Arrange
+            int streetcodeId = 123;
+            var text = new Text { Id = 123, TextContent = "content", StreetcodeId = streetcodeId };
+            var textDTO = new TextDTO { Id = 123, TextContent = "parsed" };
+            var query = new GetTextByStreetcodeIdQuery(streetcodeId);
 
-        mockTextService
-            .Setup(t => t.AddTermsTag(It.IsAny<string>()))
-            .ReturnsAsync("parsed");
+            mockRepoWrapper
+                .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
+                    It.IsAny<Expression<Func<Text, bool>>>(), null))
+                .ReturnsAsync(text);
 
-        mockMapper
-            .Setup(m => m.Map<TextDTO?>(text))
-            .Returns(textDTO);
+            mockTextService
+                .Setup(t => t.AddTermsTag(It.IsAny<string>()))
+                .ReturnsAsync("parsed");
 
-        // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+            mockMapper
+                .Setup(m => m.Map<TextDTO?>(text))
+                .Returns(textDTO);
 
-        // Assert
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Should().NotBeNull();
-        result.Value!.TextContent.Should().BeEquivalentTo("parsed");
-    }
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
 
-    [Fact]
-    public async Task Handle_ShouldReturnOk_WhenTextExists_ButStreedCodeNoMatter()
-    {
-        // Arrange
-        int streetcodeId = 123;
-        var text = new Text { Id = 1, StreetcodeId = streetcodeId };
-        var textDTO = new TextDTO { Id = 1 };
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().NotBeNull();
+            result.Value!.TextContent.Should().BeEquivalentTo("parsed");
+        }
 
-        mockRepoWrapper
-            .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
-                It.IsAny<Expression<Func<Text, bool>>>(), null))
-            .ReturnsAsync(text);
+        [Fact]
+        public async Task Handle_ShouldReturnOk_WhenTextExists_ButStreedCodeNoMatter()
+        {
+            // Arrange
+            int streetcodeId = 123;
+            var text = new Text { Id = 1, StreetcodeId = streetcodeId };
+            var textDTO = new TextDTO { Id = 1 };
 
-        mockTextService
-            .Setup(t => t.AddTermsTag(It.IsAny<string>()))
-            .ReturnsAsync("");
+            mockRepoWrapper
+                .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
+                    It.IsAny<Expression<Func<Text, bool>>>(), null))
+                .ReturnsAsync(text);
 
-        mockMapper
-            .Setup(m => m.Map<TextDTO?>(text))
-            .Returns(textDTO);
+            mockTextService
+                .Setup(t => t.AddTermsTag(It.IsAny<string>()))
+                .ReturnsAsync("");
 
-        // Act
-        var result = await handler.Handle(new GetTextByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
+            mockMapper
+                .Setup(m => m.Map<TextDTO?>(text))
+                .Returns(textDTO);
 
-        // Assert
-        result.IsSuccess.Should().BeTrue();
-    }
+            // Act
+            var result = await handler.Handle(new GetTextByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
 
-    [Theory]
-    [InlineData(-1)]
-    [InlineData(1)]
-    public async Task Handler_ShouldReturnFail_IfTextNotExists(int streetcodeId)
-    {
-        // Arrange
-        var query = new GetTextByStreetcodeIdQuery(streetcodeId);
-        var errorMsg = $"Cannot find a transaction link by a streetcode id: {streetcodeId}, because such streetcode doesn`t exist";
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+        }
 
-        mockRepoWrapper
-            .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
-                It.IsAny<Expression<Func<Text, bool>>>(), null))
-            .ReturnsAsync((Text?)null);
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public async Task Handler_ShouldReturnFail_IfTextNotExists(int streetcodeId)
+        {
+            // Arrange
+            var query = new GetTextByStreetcodeIdQuery(streetcodeId);
+            var errorMsg = $"Cannot find a transaction link by a streetcode id: {streetcodeId}, because such streetcode doesn`t exist";
 
-        mockRepoWrapper
-            .Setup(r => r.StreetcodeRepository.GetFirstOrDefaultAsync(
-                It.IsAny<Expression<Func<StreetcodeContent, bool>>>(), null))
-            .ReturnsAsync((StreetcodeContent?)null);
+            mockRepoWrapper
+                .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
+                    It.IsAny<Expression<Func<Text, bool>>>(), null))
+                .ReturnsAsync((Text?)null);
 
-        // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+            mockRepoWrapper
+                .Setup(r => r.StreetcodeRepository.GetFirstOrDefaultAsync(
+                    It.IsAny<Expression<Func<StreetcodeContent, bool>>>(), null))
+                .ReturnsAsync((StreetcodeContent?)null);
 
-        // Assert
-        result.IsFailed.Should().BeTrue();
-        result.Errors.Should().ContainSingle(e => e.Message == errorMsg);
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            result.IsFailed.Should().BeTrue();
+            result.Errors.Should().ContainSingle(e => e.Message == errorMsg);
+        }
     }
 }

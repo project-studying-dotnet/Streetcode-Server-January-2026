@@ -2,101 +2,99 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-using AutoMapper;
-using FluentAssertions;
-using Moq;
-using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
-using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.BLL.MediatR.Streetcode.Text.GetAll;
-using Streetcode.DAL.Entities.Streetcode.TextContent;
-using Streetcode.DAL.Repositories.Interfaces.Base;
-using Xunit;
-
 namespace Streetcode.XUnitTest.MediatR.Text.GetAll
 {
-}
-
-public class GetAllTextsHandlerTests
-{
-    private readonly Mock<IRepositoryWrapper> mockRepoWrapper;
-    private readonly Mock<IMapper> mockMapper;
-    private readonly Mock<ILoggerService> mockLogger;
-    private readonly GetAllTextsHandler handler;
-
-    public GetAllTextsHandlerTests()
+    using AutoMapper;
+    using FluentAssertions;
+    using Moq;
+    using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
+    using Streetcode.BLL.Interfaces.Logging;
+    using Streetcode.BLL.MediatR.Streetcode.Text.GetAll;
+    using Streetcode.DAL.Entities.Streetcode.TextContent;
+    using Streetcode.DAL.Repositories.Interfaces.Base;
+    using Xunit;
+    public class GetAllTextsHandlerTests
     {
-        this.mockRepoWrapper = new Mock<IRepositoryWrapper>();
-        this.mockMapper = new Mock<IMapper>();
-        this.mockLogger = new Mock<ILoggerService>();
+        private readonly Mock<IRepositoryWrapper> mockRepoWrapper;
+        private readonly Mock<IMapper> mockMapper;
+        private readonly Mock<ILoggerService> mockLogger;
+        private readonly GetAllTextsHandler handler;
 
-        this.handler = new GetAllTextsHandler(
-            this.mockRepoWrapper.Object,
-            this.mockMapper.Object,
-            this.mockLogger.Object);
-    }
+        public GetAllTextsHandlerTests()
+        {
+            this.mockRepoWrapper = new Mock<IRepositoryWrapper>();
+            this.mockMapper = new Mock<IMapper>();
+            this.mockLogger = new Mock<ILoggerService>();
 
-    [Fact]
-    public async Task Hadler_ShouldReturnOk_WhenTextsExist()
-    {
-        // Arrange
-        var textsList = new List<Text> { new Text { Id = 1 }, new Text { Id = 2 } };
-        var textsListDTOs = new List<TextDTO> { new TextDTO { Id = 1 }, new TextDTO { Id = 2 } };
+            this.handler = new GetAllTextsHandler(
+                this.mockRepoWrapper.Object,
+                this.mockMapper.Object,
+                this.mockLogger.Object);
+        }
 
-        mockRepoWrapper
-            .Setup(r => r.TextRepository.GetAllAsync(null, null))
-            .ReturnsAsync(textsList);
+        [Fact]
+        public async Task Hadler_ShouldReturnOk_WhenTextsExist()
+        {
+            // Arrange
+            var textsList = new List<Text> { new Text { Id = 1 }, new Text { Id = 2 } };
+            var textsListDTOs = new List<TextDTO> { new TextDTO { Id = 1 }, new TextDTO { Id = 2 } };
 
-        mockMapper
-            .Setup(m => m.Map<IEnumerable<TextDTO>>(textsList))
-            .Returns(textsListDTOs);
+            mockRepoWrapper
+                .Setup(r => r.TextRepository.GetAllAsync(null, null))
+                .ReturnsAsync(textsList);
 
-        // Act
-        var result = await handler.Handle(new GetAllTextsQuery(), CancellationToken.None);
+            mockMapper
+                .Setup(m => m.Map<IEnumerable<TextDTO>>(textsList))
+                .Returns(textsListDTOs);
 
-        // Assert
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Should().HaveCount(2);
-    }
+            // Act
+            var result = await handler.Handle(new GetAllTextsQuery(), CancellationToken.None);
 
-    [Fact]
-    public async Task Handle_ReturnFail_WhenRepositoryReturnsNull()
-    {
-        // Arrange
-        string ErrorMsg = "Cannot find any text";
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().HaveCount(2);
+        }
 
-        mockRepoWrapper
-            .Setup(r => r.TextRepository.GetAllAsync(null, null))
-            .ReturnsAsync((IEnumerable<Text>?)null);
+        [Fact]
+        public async Task Handle_ReturnFail_WhenRepositoryReturnsNull()
+        {
+            // Arrange
+            string ErrorMsg = "Cannot find any text";
 
-        // Act
-        var result = await handler.Handle(new GetAllTextsQuery(), CancellationToken.None);
+            mockRepoWrapper
+                .Setup(r => r.TextRepository.GetAllAsync(null, null))
+                .ReturnsAsync((IEnumerable<Text>?)null);
 
-        // Assert
-        result.IsFailed.Should().BeTrue();
-        result.Errors.First().Message.Should().Be(ErrorMsg);
-    }
+            // Act
+            var result = await handler.Handle(new GetAllTextsQuery(), CancellationToken.None);
 
-    [Fact]
-    public async Task Handle_ReturnOk_WhenRepositoryReturnsEmptyList()
-    {
-        // Arrange
-        var emptyTextsList = new List<Text>();
-        var emptyTextsListDTOs = new List<TextDTO>();
+            // Assert
+            result.IsFailed.Should().BeTrue();
+            result.Errors.First().Message.Should().Be(ErrorMsg);
+        }
 
-        mockRepoWrapper
-            .Setup(r => r.TextRepository.GetAllAsync(null, null))
-            .ReturnsAsync(emptyTextsList);
-        mockMapper
-            .Setup(m => m.Map<IEnumerable<TextDTO>>(emptyTextsList))
-            .Returns(emptyTextsListDTOs);
+        [Fact]
+        public async Task Handle_ReturnOk_WhenRepositoryReturnsEmptyList()
+        {
+            // Arrange
+            var emptyTextsList = new List<Text>();
+            var emptyTextsListDTOs = new List<TextDTO>();
 
-        // Act
-        var result = await handler.Handle(new GetAllTextsQuery(), CancellationToken.None);
+            mockRepoWrapper
+                .Setup(r => r.TextRepository.GetAllAsync(null, null))
+                .ReturnsAsync(emptyTextsList);
+            mockMapper
+                .Setup(m => m.Map<IEnumerable<TextDTO>>(emptyTextsList))
+                .Returns(emptyTextsListDTOs);
 
-        // Assert
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Should().BeEmpty();
+            // Act
+            var result = await handler.Handle(new GetAllTextsQuery(), CancellationToken.None);
 
-        mockRepoWrapper.Verify(r => r.TextRepository.GetAllAsync(null, null), Times.Once);
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().BeEmpty();
+
+            mockRepoWrapper.Verify(r => r.TextRepository.GetAllAsync(null, null), Times.Once);
+        }
     }
 }
