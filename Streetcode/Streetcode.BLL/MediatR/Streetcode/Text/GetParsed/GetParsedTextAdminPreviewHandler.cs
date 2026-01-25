@@ -3,7 +3,7 @@ using MediatR;
 using Streetcode.BLL.Interfaces.Text;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 
-namespace Streetcode.BLL.MediatR.Streetcode.Text.GetParsed
+namespace Streetcode.BLL.MediatR.Streetcode.Entity.GetParsed
 {
     public class GetParsedTextAdminPreviewHandler : IRequestHandler<GetParsedTextForAdminPreviewCommand, Result<string>>
     {
