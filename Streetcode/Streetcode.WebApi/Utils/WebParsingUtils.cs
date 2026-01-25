@@ -58,6 +58,8 @@ public class WebParsingUtils
 
         var clientHandler = new HttpClientHandler();
         clientHandler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+        /* you can bypass SSL validation if needed for Development environment
+        never use this in Production */
         if (bypassSslValidation)
         {
             clientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
