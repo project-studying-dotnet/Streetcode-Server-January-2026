@@ -50,7 +50,6 @@ namespace Streetcode.XUnitTest.MediatR.Text.Create
 
             // Assert
             result.ShouldNotHaveAnyValidationErrors();
-
         }
     }
 }
