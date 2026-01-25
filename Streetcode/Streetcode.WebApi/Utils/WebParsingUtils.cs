@@ -38,7 +38,7 @@ public class WebParsingUtils
         string fileUrl,
         string zipPath,
         string extractTo,
-        bool trustServerCertificate,
+        bool bypassSslValidation,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(fileUrl) || !Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
@@ -58,7 +58,7 @@ public class WebParsingUtils
 
         var clientHandler = new HttpClientHandler();
         clientHandler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-        if (trustServerCertificate)
+        if (bypassSslValidation)
         {
             clientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
         }
@@ -104,7 +104,7 @@ public class WebParsingUtils
         }
     }
 
-    public async Task ParseZipFileFromWebAsync(bool trustServerCertificate = false)
+    public async Task ParseZipFileFromWebAsync(bool bypassSslValidation = false)
     {
         var zipPath = $"houses.zip";
         var extractTo = $"/root/build/StreetCode/Streetcode/Streetcode.DAL";
@@ -117,7 +117,7 @@ public class WebParsingUtils
                 _fileToParseUrl,
                 zipPath,
                 extractTo,
-                trustServerCertificate,
+                bypassSslValidation,
                 cancellationToken);
             Console.WriteLine("Download and extraction completed successfully.");
 
