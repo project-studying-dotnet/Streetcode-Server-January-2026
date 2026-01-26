@@ -9,9 +9,9 @@ using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Entity.Create
 {
-    public class TextUpdateDTOValidator : AbstractValidator<TextCreateDTO>
+    public class TextCreateDTOValidator : AbstractValidator<TextCreateDTO>
     {
-        public TextUpdateDTOValidator()
+        public TextCreateDTOValidator()
         {
             RuleFor(x => x.StreetcodeId)
                 .GreaterThan(0)
