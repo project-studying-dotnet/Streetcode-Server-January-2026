@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Streetcode.BLL.MediatR.Streetcode.Entity.Update
+namespace Streetcode.BLL.MediatR.Streetcode.Text.Update
 {
-    public class TextUpdateDTOValidator
+    internal class UpdateTextHandler
     {
     }
 }

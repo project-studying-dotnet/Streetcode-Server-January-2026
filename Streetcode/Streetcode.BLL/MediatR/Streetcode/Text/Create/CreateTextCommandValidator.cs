@@ -14,7 +14,7 @@ namespace Streetcode.BLL.MediatR.Streetcode.Entity.Create
             RuleFor(x => x.Text)
                 .NotNull()
                 .WithMessage("TextDataRequired")
-                .SetValidator(new TextCreateDTOValidator());
+                .SetValidator(new TextUpdateDTOValidator());
         }
     }
 }
