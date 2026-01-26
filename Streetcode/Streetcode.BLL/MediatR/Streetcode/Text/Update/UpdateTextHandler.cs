@@ -28,19 +28,17 @@ namespace Streetcode.BLL.MediatR.Streetcode.Text.Update
 
         public async Task<Result<TextDTO>> Handle(UpdateTextCommand request, CancellationToken cancellationToken)
         {
-            int textId = request.Text.StreetcodeId;
-
             var text = await _repositoryWrapper.TextRepository
-                .GetFirstOrDefaultAsync(x => x.Id == textId);
+                .GetFirstOrDefaultAsync(x => x.Id == request.Text.StreetcodeId);
 
             if (text == null)
             {
-                string errorMsg = $"No text found with Id {textId}";
+                string errorMsg = $"No text found with Id {request.Text.StreetcodeId}";
                 _logger.LogError(request, errorMsg);
                 return Result.Fail(new Error(errorMsg));
             }
 
-            _mapper.Map(request.Text, text);
+            text = _mapper.Map(request.Text, text);
 
             _repositoryWrapper.TextRepository.Update(text);
             var successSave = await _repositoryWrapper.SaveChangesAsync() > 0;

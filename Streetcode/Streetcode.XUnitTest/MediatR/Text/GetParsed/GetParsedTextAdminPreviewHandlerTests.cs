@@ -8,7 +8,6 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetParsed
     using System.Threading.Tasks;
     using FluentAssertions;
     using Moq;
-    using Streetcode.BLL;
     using Streetcode.BLL.Interfaces.Text;
     using Streetcode.BLL.MediatR.Streetcode.Entity.GetParsed;
     using Xunit;
@@ -20,8 +19,8 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetParsed
 
         public GetParsedTextAdminPreviewHandlerTests()
         {
-            mockTextService = new Mock<ITextService>();
-            handler = new GetParsedTextAdminPreviewHandler(mockTextService.Object);
+            this.mockTextService = new Mock<ITextService>();
+            this.handler = new GetParsedTextAdminPreviewHandler(this.mockTextService.Object);
         }
 
         [Fact]
@@ -32,12 +31,12 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetParsed
             const string parsedText = "<p>Sample text to parse</p>";
             var query = new GetParsedTextForAdminPreviewCommand(textToParse);
 
-            mockTextService
+            this.mockTextService
                 .Setup(s => s.AddTermsTag(textToParse))
                 .ReturnsAsync(parsedText);
 
             // Act
-            var result = await handler.Handle(query, CancellationToken.None);
+            var result = await this.handler.Handle(query, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeTrue();
@@ -52,12 +51,12 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetParsed
             string errorMsg = "text was not parsed successfully";
             var query = new GetParsedTextForAdminPreviewCommand(text);
 
-            mockTextService
+            this.mockTextService
                 .Setup(s => s.AddTermsTag(text))
-                .Returns(Task.FromResult<string?>(null));
+                .Returns(Task.FromResult<string>(null!));
 
             // Act
-            var result = await handler.Handle(query, CancellationToken.None);
+            var result = await this.handler.Handle(query, CancellationToken.None);
 
             // Assert
             result.IsFailed.Should().BeTrue();

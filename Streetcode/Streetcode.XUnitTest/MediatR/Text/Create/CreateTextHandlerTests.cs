@@ -14,7 +14,6 @@ namespace Streetcode.XUnitTest.MediatR.Text.Create
     using Xunit;
     using TextEntity = Streetcode.DAL.Entities.Streetcode.TextContent.Text;
 
-
     public class CreateTextHandlerTests
     {
         private readonly Mock<IRepositoryWrapper> repositoryWrapperMock;

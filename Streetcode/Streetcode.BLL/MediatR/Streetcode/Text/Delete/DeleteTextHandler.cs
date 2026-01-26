@@ -25,14 +25,12 @@ namespace Streetcode.BLL.MediatR.Streetcode.Text.Delete
 
         public async Task<Result<Unit>> Handle(DeleteTextCommand request, CancellationToken cancellationToken)
         {
-            var textId = request.Id;
-
             var text = await _repositoryWrapper.TextRepository
-                .GetFirstOrDefaultAsync(t => t.Id == textId);
+                .GetFirstOrDefaultAsync(t => t.Id == request.Id);
 
             if (text is null)
             {
-                string errorMsg = $"No text found with Id {textId}";
+                string errorMsg = $"No text found with Id {request.Id}";
                 _logger.LogError(request, errorMsg);
                 return Result.Fail(new Error(errorMsg));
             }

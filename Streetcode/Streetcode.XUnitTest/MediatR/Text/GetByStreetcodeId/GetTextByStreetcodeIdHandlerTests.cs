@@ -27,16 +27,16 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetByStreetcodeId
 
         public GetTextByStreetcodeIdHandlerTests()
         {
-            mockRepoWrapper = new Mock<IRepositoryWrapper>();
-            mockMapper = new Mock<IMapper>();
-            mockLogger = new Mock<ILoggerService>();
-            mockTextService = new Mock<ITextService>();
+            this.mockRepoWrapper = new Mock<IRepositoryWrapper>();
+            this.mockMapper = new Mock<IMapper>();
+            this.mockLogger = new Mock<ILoggerService>();
+            this.mockTextService = new Mock<ITextService>();
 
-            handler = new GetTextByStreetcodeIdHandler(
-                mockRepoWrapper.Object,
-                mockMapper.Object,
-                mockTextService.Object,
-                mockLogger.Object);
+            this.handler = new GetTextByStreetcodeIdHandler(
+                this.mockRepoWrapper.Object,
+                this.mockMapper.Object,
+                this.mockTextService.Object,
+                this.mockLogger.Object);
         }
 
         [Fact]
@@ -48,21 +48,21 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetByStreetcodeId
             var textDTO = new TextDTO { Id = 123, TextContent = "parsed" };
             var query = new GetTextByStreetcodeIdQuery(streetcodeId);
 
-            mockRepoWrapper
+            this.mockRepoWrapper
                 .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<Text, bool>>>(), null))
                 .ReturnsAsync(text);
 
-            mockTextService
+            this.mockTextService
                 .Setup(t => t.AddTermsTag(It.IsAny<string>()))
                 .ReturnsAsync("parsed");
 
-            mockMapper
+            this.mockMapper
                 .Setup(m => m.Map<TextDTO?>(text))
                 .Returns(textDTO);
 
             // Act
-            var result = await handler.Handle(query, CancellationToken.None);
+            var result = await this.handler.Handle(query, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeTrue();
@@ -78,21 +78,21 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetByStreetcodeId
             var text = new Text { Id = 1, StreetcodeId = streetcodeId };
             var textDTO = new TextDTO { Id = 1 };
 
-            mockRepoWrapper
+            this.mockRepoWrapper
                 .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<Text, bool>>>(), null))
                 .ReturnsAsync(text);
 
-            mockTextService
+            this.mockTextService
                 .Setup(t => t.AddTermsTag(It.IsAny<string>()))
-                .ReturnsAsync("");
+                .ReturnsAsync(string.Empty);
 
-            mockMapper
+            this.mockMapper
                 .Setup(m => m.Map<TextDTO?>(text))
                 .Returns(textDTO);
 
             // Act
-            var result = await handler.Handle(new GetTextByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
+            var result = await this.handler.Handle(new GetTextByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeTrue();
@@ -107,18 +107,18 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetByStreetcodeId
             var query = new GetTextByStreetcodeIdQuery(streetcodeId);
             var errorMsg = $"Cannot find a transaction link by a streetcode id: {streetcodeId}, because such streetcode doesn`t exist";
 
-            mockRepoWrapper
+            this.mockRepoWrapper
                 .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<Text, bool>>>(), null))
                 .ReturnsAsync((Text?)null);
 
-            mockRepoWrapper
+            this.mockRepoWrapper
                 .Setup(r => r.StreetcodeRepository.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<StreetcodeContent, bool>>>(), null))
                 .ReturnsAsync((StreetcodeContent?)null);
 
             // Act
-            var result = await handler.Handle(query, CancellationToken.None);
+            var result = await this.handler.Handle(query, CancellationToken.None);
 
             // Assert
             result.IsFailed.Should().BeTrue();

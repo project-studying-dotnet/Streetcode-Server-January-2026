@@ -13,6 +13,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetAll
     using Streetcode.DAL.Entities.Streetcode.TextContent;
     using Streetcode.DAL.Repositories.Interfaces.Base;
     using Xunit;
+
     public class GetAllTextsHandlerTests
     {
         private readonly Mock<IRepositoryWrapper> mockRepoWrapper;
@@ -39,16 +40,16 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetAll
             var textsList = new List<Text> { new Text { Id = 1 }, new Text { Id = 2 } };
             var textsListDTOs = new List<TextDTO> { new TextDTO { Id = 1 }, new TextDTO { Id = 2 } };
 
-            mockRepoWrapper
+            this.mockRepoWrapper
                 .Setup(r => r.TextRepository.GetAllAsync(null, null))
                 .ReturnsAsync(textsList);
 
-            mockMapper
+            this.mockMapper
                 .Setup(m => m.Map<IEnumerable<TextDTO>>(textsList))
                 .Returns(textsListDTOs);
 
             // Act
-            var result = await handler.Handle(new GetAllTextsQuery(), CancellationToken.None);
+            var result = await this.handler.Handle(new GetAllTextsQuery(), CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeTrue();
@@ -59,18 +60,18 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetAll
         public async Task Handle_ReturnFail_WhenRepositoryReturnsNull()
         {
             // Arrange
-            string ErrorMsg = "Cannot find any text";
+            string errorMsg = "Cannot find any text";
 
-            mockRepoWrapper
+            this.mockRepoWrapper
                 .Setup(r => r.TextRepository.GetAllAsync(null, null))
-                .ReturnsAsync((IEnumerable<Text>?)null);
+                .ReturnsAsync((IEnumerable<Text>?)null!);
 
             // Act
-            var result = await handler.Handle(new GetAllTextsQuery(), CancellationToken.None);
+            var result = await this.handler.Handle(new GetAllTextsQuery(), CancellationToken.None);
 
             // Assert
             result.IsFailed.Should().BeTrue();
-            result.Errors.First().Message.Should().Be(ErrorMsg);
+            result.Errors.First().Message.Should().Be(errorMsg);
         }
 
         [Fact]
@@ -80,21 +81,21 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetAll
             var emptyTextsList = new List<Text>();
             var emptyTextsListDTOs = new List<TextDTO>();
 
-            mockRepoWrapper
+            this.mockRepoWrapper
                 .Setup(r => r.TextRepository.GetAllAsync(null, null))
                 .ReturnsAsync(emptyTextsList);
-            mockMapper
+            this.mockMapper
                 .Setup(m => m.Map<IEnumerable<TextDTO>>(emptyTextsList))
                 .Returns(emptyTextsListDTOs);
 
             // Act
-            var result = await handler.Handle(new GetAllTextsQuery(), CancellationToken.None);
+            var result = await this.handler.Handle(new GetAllTextsQuery(), CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Value.Should().BeEmpty();
 
-            mockRepoWrapper.Verify(r => r.TextRepository.GetAllAsync(null, null), Times.Once);
+            this.mockRepoWrapper.Verify(r => r.TextRepository.GetAllAsync(null, null), Times.Once);
         }
     }
 }

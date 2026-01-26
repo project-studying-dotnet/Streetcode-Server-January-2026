@@ -2,20 +2,20 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-using FluentValidation.TestHelper;
-using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
-using Streetcode.BLL.MediatR.Streetcode.Entity.Update;
-using Xunit;
-
 namespace Streetcode.XUnitTest.MediatR.Text.Update
 {
+    using FluentValidation.TestHelper;
+    using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
+    using Streetcode.BLL.MediatR.Streetcode.Entity.Update;
+    using Xunit;
+
     public class UpdateTextCommandValidatorTests
     {
-        private readonly UpdateTextCommandValidator _validator;
+        private readonly UpdateTextCommandValidator validator;
 
         public UpdateTextCommandValidatorTests()
         {
-            _validator = new UpdateTextCommandValidator();
+            this.validator = new UpdateTextCommandValidator();
         }
 
         [Theory]
@@ -28,7 +28,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
             var command = new UpdateTextCommand(model);
 
             // Act
-            var result = _validator.TestValidate(command);
+            var result = this.validator.TestValidate(command);
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.Text.StreetcodeId)
@@ -43,7 +43,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
             var command = new UpdateTextCommand(model);
 
             // Act
-            var result = _validator.TestValidate(command);
+            var result = this.validator.TestValidate(command);
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.Text.TextContent)
@@ -58,13 +58,13 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
             {
                 StreetcodeId = 1,
                 Title = "123",
-                TextContent = "",
+                TextContent = string.Empty,
             };
 
             var command = new UpdateTextCommand(invalidDTO);
 
             // Act
-            var result = _validator.TestValidate(command);
+            var result = this.validator.TestValidate(command);
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.Text.TextContent);
@@ -84,7 +84,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
             var command = new UpdateTextCommand(validDto);
 
             // Act
-            var result = _validator.TestValidate(command);
+            var result = this.validator.TestValidate(command);
 
             // Assert
             result.ShouldNotHaveAnyValidationErrors();

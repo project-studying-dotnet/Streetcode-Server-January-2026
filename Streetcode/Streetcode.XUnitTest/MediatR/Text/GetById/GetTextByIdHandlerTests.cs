@@ -2,15 +2,12 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-
-
 namespace Streetcode.XUnitTest.MediatR.Text.GetById
 {
     using System.Linq.Expressions;
     using AutoMapper;
     using FluentAssertions;
     using Moq;
-    using Streetcode.BLL;
     using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
     using Streetcode.BLL.Interfaces.Logging;
     using Streetcode.BLL.MediatR.Streetcode.Entity.GetById;
@@ -27,14 +24,14 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetById
 
         public GetTextByIdHandlerTests()
         {
-            mockRepoWrapper = new Mock<IRepositoryWrapper>();
-            mockMapper = new Mock<IMapper>();
-            mockLogger = new Mock<ILoggerService>();
+            this.mockRepoWrapper = new Mock<IRepositoryWrapper>();
+            this.mockMapper = new Mock<IMapper>();
+            this.mockLogger = new Mock<ILoggerService>();
 
-            handler = new GetTextByIdHandler(
-                mockRepoWrapper.Object,
-                mockMapper.Object,
-                mockLogger.Object);
+            this.handler = new GetTextByIdHandler(
+                this.mockRepoWrapper.Object,
+                this.mockMapper.Object,
+                this.mockLogger.Object);
         }
 
         [Fact]
@@ -46,17 +43,17 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetById
             var textDTO = new TextDTO { Id = id, Title = "content" };
             var query = new GetTextByIdQuery(id);
 
-            mockRepoWrapper
+            this.mockRepoWrapper
                 .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<Text, bool>>>(), null))
                 .ReturnsAsync(text);
 
-            mockMapper
+            this.mockMapper
                 .Setup(m => m.Map<TextDTO>(text))
                 .Returns(textDTO);
 
             // Act
-            var result = await handler.Handle(query, CancellationToken.None);
+            var result = await this.handler.Handle(query, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeTrue();
@@ -68,23 +65,23 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetById
         [InlineData(1)]
         public async Task Handle_ShouldReturnFail_IfContentNotExists(int id)
         {
-            // Arrage
+            // Arrange
             var query = new GetTextByIdQuery(id);
             string errorMsg = $"Cannot find any text with corresponding id: {id}";
 
-            mockRepoWrapper
+            this.mockRepoWrapper
                 .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<Text, bool>>>(), null))
                 .ReturnsAsync((Text?)null);
 
             // Act
-            var result = await handler.Handle(query, CancellationToken.None);
+            var result = await this.handler.Handle(query, CancellationToken.None);
 
             // Assert
             result.IsFailed.Should().BeTrue();
             result.Errors.First().Message.Should().Contain(errorMsg);
 
-            mockLogger.Verify(l => l.LogError(It.IsAny<object>(), errorMsg), Times.Once);
+            this.mockLogger.Verify(l => l.LogError(It.IsAny<object>(), errorMsg), Times.Once);
         }
     }
 }

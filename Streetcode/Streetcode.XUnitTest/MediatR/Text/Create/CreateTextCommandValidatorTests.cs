@@ -8,23 +8,24 @@ namespace Streetcode.XUnitTest.MediatR.Text.Create
     using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
     using Streetcode.BLL.MediatR.Streetcode.Entity.Create;
     using Xunit;
+
     public class CreateTextCommandValidatorTests
     {
-        private readonly CreateTextCommandValidator _validator;
+        private readonly CreateTextCommandValidator validator;
 
         public CreateTextCommandValidatorTests()
         {
-            _validator = new CreateTextCommandValidator();
+            this.validator = new CreateTextCommandValidator();
         }
 
         [Fact]
         public void ShouldHaveError_WhenTextIsNull()
         {
             // Arrange
-            var command = new CreateTextCommand(null);
+            var command = new CreateTextCommand(null!);
 
             // Act
-            var result = _validator.TestValidate(command);
+            var result = this.validator.TestValidate(command);
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.Text)
@@ -46,7 +47,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Create
             var command = new CreateTextCommand(dto);
 
             // Act
-            var result = _validator.TestValidate(command);
+            var result = this.validator.TestValidate(command);
 
             // Assert
             result.ShouldNotHaveAnyValidationErrors();
