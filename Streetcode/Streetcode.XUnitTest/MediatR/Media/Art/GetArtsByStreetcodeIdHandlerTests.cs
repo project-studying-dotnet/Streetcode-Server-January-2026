@@ -1,0 +1,231 @@
+﻿namespace Streetcode.XUnitTest.MediatR.Media.Art
+{
+    using System.Linq.Expressions;
+    using AutoMapper;
+    using Microsoft.EntityFrameworkCore.Query;
+    using Moq;
+    using Streetcode.BLL.DTO.Media.Art;
+    using Streetcode.BLL.DTO.Media.Images;
+    using Streetcode.BLL.Interfaces.BlobStorage;
+    using Streetcode.BLL.Interfaces.Logging;
+    using Streetcode.BLL.MediatR.Media.Art.GetByStreetcodeId;
+    using Streetcode.DAL.Entities.Media.Images;
+    using Streetcode.DAL.Entities.Streetcode;
+    using Streetcode.DAL.Repositories.Interfaces.Base;
+    using Xunit;
+
+    public class GetArtsByStreetcodeIdHandlerTests
+    {
+        private readonly Mock<IRepositoryWrapper> repositoryWrapperMock;
+        private readonly Mock<IMapper> mapperMock;
+        private readonly Mock<ILoggerService> loggerMock;
+        private readonly Mock<IBlobService> blobServiceMock;
+        private readonly GetArtsByStreetcodeIdHandler handler;
+
+        public GetArtsByStreetcodeIdHandlerTests()
+        {
+            this.repositoryWrapperMock = new Mock<IRepositoryWrapper>();
+            this.mapperMock = new Mock<IMapper>();
+            this.loggerMock = new Mock<ILoggerService>();
+            this.blobServiceMock = new Mock<IBlobService>();
+
+            this.handler = new GetArtsByStreetcodeIdHandler(repositoryWrapperMock.Object,
+                    mapperMock.Object, blobServiceMock.Object, loggerMock.Object);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        public async Task Handle_ReturnsSuccess_WhenArtsExist(int streetcodeId)
+        {
+            // Arrange
+            List<Art> arts = this.GetArtsList();
+            List<ArtDTO> artDTOs = this.GetArtDTOsList();
+
+            this.SetupMocks(arts, artDTOs);
+            this.SetupBlobService("test_base64_string");
+
+            // Act
+            var result = await this.handler
+                .Handle(new GetArtsByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        public async Task Handle_ReturnsCorrectType_WhenArtsExist(int streetcodeId)
+        {
+            // Arrange
+            List<Art> arts = this.GetArtsList();
+            List<ArtDTO> artDTOs = this.GetArtDTOsList();
+
+            this.SetupMocks(arts, artDTOs);
+            this.SetupBlobService("test_base64_string");
+
+            // Act
+            var result = await this.handler
+                .Handle(new GetArtsByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
+
+            // Assert
+            Assert.IsAssignableFrom<IEnumerable<ArtDTO>>(result.Value);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        public async Task Handle_ReturnsCorrectAmount_WhenArtsExist(int streetcodeId)
+        {
+            // Arrange
+            List<Art> arts = this.GetArtsList();
+            List<ArtDTO> artDTOs = this.GetArtDTOsList();
+
+            this.SetupMocks(arts, artDTOs);
+            this.SetupBlobService("test_base64_string");
+
+            // Act
+            var result = await this.handler
+                .Handle(new GetArtsByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
+
+            // Assert
+            Assert.Equal(artDTOs.Count, result.Value.Count());
+        }
+
+        [Theory]
+        [InlineData(1, "test_base64_string")]
+        public async Task Handle_ReturnsCorrectData_WhenArtsExist(int streetcodeId, string base64)
+        {
+            // Arrange
+            List<Art> arts = this.GetArtsList();
+            List<ArtDTO> artDTOs = this.GetArtDTOsList();
+
+            this.SetupMocks(arts, artDTOs);
+            this.SetupBlobService(base64);
+
+            // Act
+            var result = await this.handler
+                .Handle(new GetArtsByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
+
+            // Assert
+            Assert.Equal(base64, result.Value?.FirstOrDefault()?.Image?.Base64);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public async Task Handle_ReturnsFailStatus_WhenArtsAreNull(int streetcodeId)
+        {
+            // Arrange
+            List<Art> arts = null;
+            List<ArtDTO> artDTOs = this.GetArtDTOsList();
+            this.SetupMocks(arts, artDTOs);
+
+            // Act
+            var result = await this.handler
+                .Handle(new GetArtsByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
+
+            // Assert
+            Assert.True(result.IsFailed);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public async Task Handle_ReturnsEmpty_WhenArtsAreEmpty(int streetcodeId)
+        {
+            // Arrange
+            List<Art> arts = new List<Art>();
+            List<ArtDTO> artDTOs = new List<ArtDTO>();
+            this.SetupMocks(arts, artDTOs);
+
+            // Act
+            var result = await this.handler
+                .Handle(new GetArtsByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
+
+            // Assert
+            Assert.Empty(result.Value);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public async Task Handle_ReturnsErrorMessage_WhenArtsAreNull(int streetcodeId)
+        {
+            // Arrange
+            List<Art> arts = null;
+            List<ArtDTO> artDTOs = this.GetArtDTOsList();
+            this.SetupMocks(arts, artDTOs);
+
+            // Act
+            var result = await this.handler
+                .Handle(new GetArtsByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
+
+            // Assert
+            Assert.Equal(
+                $"Cannot find any art with corresponding streetcode id: {streetcodeId}",
+                result.Errors[0].Message);
+        }
+
+        private void SetupMocks(List<Art>? arts, List<ArtDTO>? artDTOs)
+        {
+            this.repositoryWrapperMock.Setup(r => r.ArtRepository.GetAllAsync(
+                It.IsAny<Expression<Func<Art, bool>>>(),
+                It.IsAny<Func<IQueryable<Art>, IIncludableQueryable<Art, object>>>()))
+                .ReturnsAsync(arts);
+
+            this.mapperMock.Setup(map => map
+                .Map<IEnumerable<ArtDTO>>(It.IsAny<IEnumerable<Art>>()))
+                .Returns(artDTOs);
+        }
+
+        private void SetupBlobService(string base64String)
+        {
+            this.blobServiceMock.Setup(b => b.FindFileInStorageAsBase64(It.IsAny<string>()))
+                .Returns(base64String);
+        }
+
+        private List<Art> GetArtsList()
+        {
+            return new List<Art>
+            {
+                new Art
+                {
+                    Id = 1,
+                    Image = new Image { Id = 1, BlobName = "test1.png" },
+                    StreetcodeArts = new List<StreetcodeArt>
+                    {
+                        new StreetcodeArt { StreetcodeId = 1 },
+                    },
+                },
+                new Art
+                {
+                    Id = 2,
+                    Image = new Image { Id = 2, BlobName = "test2.png" },
+                    StreetcodeArts = new List<StreetcodeArt>
+                    {
+                        new StreetcodeArt { StreetcodeId = 1 },
+                    },
+                },
+            };
+        }
+
+        private List<ArtDTO> GetArtDTOsList()
+        {
+            return new List<ArtDTO>
+            {
+                new ArtDTO
+                {
+                    Id = 1,
+                    ImageId = 1,
+                    Image = new ImageDTO { Id = 1, BlobName = "test1.png" },
+                },
+                new ArtDTO
+                {
+                    Id = 2,
+                },
+            };
+        }
+    }
+}
