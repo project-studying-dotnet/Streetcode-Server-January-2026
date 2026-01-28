@@ -47,6 +47,7 @@ public class GetTimelineItemByIdHandlerTests
     [Fact]
     public async Task Handle_ReturnsOk_WhenTimelineItemExists()
     {
+        // Arrange
         var entity = new TimelineItem
         {
             Id = 1
@@ -62,19 +63,22 @@ public class GetTimelineItemByIdHandlerTests
 
         var query = new GetTimelineItemByIdQuery(1);
 
+        // Act
         var result = await CreateHandler().Handle(
             query,
             CancellationToken.None
         );
 
+        // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
         Assert.Equal(1, result.Value.Id);
     }
 
     [Fact]
-    public async Task Handle_ReturnsFail_WhenTimelineItemDoesNotExist()
+    public async Task Handle_ReturnsFail_WhenTimelineItemNotExists()
     {
+        // Arrange
         timelineRepoMock
             .Setup(r => r.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<TimelineItem, bool>>>(),
@@ -85,11 +89,13 @@ public class GetTimelineItemByIdHandlerTests
 
         var query = new GetTimelineItemByIdQuery(99);
 
+        // Act
         var result = await CreateHandler().Handle(
             query,
             CancellationToken.None
         );
 
+        // Assert
         Assert.True(result.IsFailed);
         Assert.Equal(
             $"Cannot find a timeline item with corresponding id: {query.Id}",

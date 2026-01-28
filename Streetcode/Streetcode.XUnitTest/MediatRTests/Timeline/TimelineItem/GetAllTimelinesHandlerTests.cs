@@ -47,6 +47,7 @@ public class GetAllTimelineItemsHandlerTests
     [Fact]
     public async Task Handle_ReturnsOk_WhenTimelineItemsExist()
     {
+        //Arrange
         var entities = new List<TimelineItem>
         {
             new() { Id = 1 },
@@ -61,11 +62,13 @@ public class GetAllTimelineItemsHandlerTests
             ))
             .ReturnsAsync(entities);
 
+        // Act
         var result = await CreateHandler().Handle(
             new GetAllTimelineItemsQuery(),
             CancellationToken.None
         );
 
+        // Assert
         Assert.True(result.IsSuccess);
         Assert.Equal(2, result.Value.Count());
     }
@@ -73,6 +76,7 @@ public class GetAllTimelineItemsHandlerTests
     [Fact]
     public async Task Handle_ReturnsFail_WhenTimelineItemsAreNull()
     {
+        //Arrange
         timelineRepoMock
             .Setup(r => r.GetAllAsync(
                 It.IsAny<Expression<Func<TimelineItem, bool>>>(),
@@ -81,11 +85,13 @@ public class GetAllTimelineItemsHandlerTests
             ))
             .ReturnsAsync((IEnumerable<TimelineItem>)null!);
 
+        // Act
         var result = await CreateHandler().Handle(
             new GetAllTimelineItemsQuery(),
             CancellationToken.None
         );
 
+        // Assert
         Assert.True(result.IsFailed);
         Assert.Equal("Cannot find any timelineItem", result.Errors[0].Message);
 
@@ -101,6 +107,7 @@ public class GetAllTimelineItemsHandlerTests
     [Fact]
     public async Task Handle_ReturnsOk_WhenTimelineItemsListIsEmpty()
     {
+        //Arrange
         timelineRepoMock
             .Setup(r => r.GetAllAsync(
                 It.IsAny<Expression<Func<TimelineItem, bool>>>(),
@@ -109,10 +116,12 @@ public class GetAllTimelineItemsHandlerTests
                     ))
             .ReturnsAsync(new List<TimelineItem>());
 
+        // Act
         var result = await CreateHandler().Handle(
             new GetAllTimelineItemsQuery(),
             CancellationToken.None);
 
+        // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
         Assert.Empty(result.Value);
