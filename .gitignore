@@ -345,3 +345,7 @@ healthchecksdb
 # BlobStorage
 BlobStorageFolder/
 BlobStorageTestFolder/
+
+# Configuration files
+appsettings.json
+appsettings.*.json
