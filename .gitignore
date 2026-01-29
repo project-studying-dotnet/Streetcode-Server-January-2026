@@ -347,5 +347,8 @@ BlobStorageFolder/
 BlobStorageTestFolder/
 
 # Configuration files
-appsettings.json
 appsettings.*.json
+.env
+
+# ReSharper/Rider files
+*.csproj.DotSettings

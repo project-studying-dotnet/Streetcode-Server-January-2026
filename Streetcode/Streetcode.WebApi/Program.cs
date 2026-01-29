@@ -3,19 +3,7 @@ using Streetcode.BLL.Services.BlobStorageService;
 using Streetcode.WebApi.Extensions;
 using Streetcode.WebApi.Utils;
 
-using DotNetEnv;
-
-// Load environment variables from .env file
-Env.Load();
-
 var builder = WebApplication.CreateBuilder(args);
-
-// Read connection string from environment
-var connectionString = $"Server={Environment.GetEnvironmentVariable("DB_SERVER")};" +
-$"Database={Environment.GetEnvironmentVariable("DB_NAME")};" +
-$"User Id={Environment.GetEnvironmentVariable("DB_USER")};" +
-$"Password={Environment.GetEnvironmentVariable("DB_PASSWORD")};" +
-"TrustServerCertificate=True;";
 
 builder.Host.ConfigureApplication();
 
