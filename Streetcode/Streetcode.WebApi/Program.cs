@@ -4,7 +4,6 @@ using Streetcode.WebApi.Extensions;
 using Streetcode.WebApi.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
-
 builder.Host.ConfigureApplication();
 
 builder.Services.AddApplicationServices(builder.Configuration);
