@@ -6,7 +6,6 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
 {
     using FluentValidation.TestHelper;
     using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
-    using Streetcode.BLL.MediatR.Streetcode.Entity.Update;
     using Streetcode.BLL.MediatR.Streetcode.Text.Update;
     using Xunit;
 

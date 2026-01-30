@@ -6,7 +6,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Create
 {
     using FluentValidation.TestHelper;
     using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
-    using Streetcode.BLL.MediatR.Streetcode.Entity.Create;
+    using Streetcode.BLL.MediatR.Streetcode.Text.Create;
     using Xunit;
 
     public class CreateTextCommandValidatorTests

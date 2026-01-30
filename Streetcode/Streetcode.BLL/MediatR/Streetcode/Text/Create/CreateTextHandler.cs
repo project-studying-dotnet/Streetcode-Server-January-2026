@@ -6,7 +6,7 @@ using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using EntityText = Streetcode.DAL.Entities.Streetcode.TextContent.Text;
 
-namespace Streetcode.BLL.MediatR.Streetcode.Entity.Create
+namespace Streetcode.BLL.MediatR.Streetcode.Text.Create
 {
     public class CreateTextHandler : IRequestHandler<CreateTextCommand, Result<TextDTO>>
     {

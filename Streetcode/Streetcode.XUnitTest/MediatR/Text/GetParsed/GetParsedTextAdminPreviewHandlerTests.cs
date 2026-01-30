@@ -9,7 +9,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetParsed
     using FluentAssertions;
     using Moq;
     using Streetcode.BLL.Interfaces.Text;
-    using Streetcode.BLL.MediatR.Streetcode.Entity.GetParsed;
+    using Streetcode.BLL.MediatR.Streetcode.Text.GetParsed;
     using Xunit;
 
     public class GetParsedTextAdminPreviewHandlerTests

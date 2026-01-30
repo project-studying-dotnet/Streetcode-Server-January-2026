@@ -9,7 +9,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetAll
     using Moq;
     using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
     using Streetcode.BLL.Interfaces.Logging;
-    using Streetcode.BLL.MediatR.Streetcode.Entity.GetAll;
+    using Streetcode.BLL.MediatR.Streetcode.Text.GetAll;
     using Streetcode.DAL.Entities.Streetcode.TextContent;
     using Streetcode.DAL.Repositories.Interfaces.Base;
     using Xunit;

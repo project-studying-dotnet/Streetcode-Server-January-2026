@@ -19,9 +19,8 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
     using Streetcode.BLL.DTO.Streetcode.TextContent;
     using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
     using Streetcode.BLL.Interfaces.Logging;
-    using Streetcode.BLL.MediatR.Streetcode.Entity.Update;
-    using Streetcode.BLL.MediatR.Streetcode.Text.Delete;
     using Streetcode.BLL.MediatR.Streetcode.Text.Update;
+    using Streetcode.BLL.MediatR.Streetcode.Text.Delete;
     using Streetcode.DAL.Entities.Streetcode.TextContent;
     using Streetcode.DAL.Repositories.Interfaces.Base;
     using Streetcode.DAL.Repositories.Interfaces.Streetcode.TextContent;

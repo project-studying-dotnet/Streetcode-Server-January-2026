@@ -2,7 +2,7 @@
 using Streetcode.BLL.MediatR.Streetcode.Text;
 using Streetcode.BLL.MediatR.Streetcode.Text.Validator;
 
-namespace Streetcode.BLL.MediatR.Streetcode.Entity.Create
+namespace Streetcode.BLL.MediatR.Streetcode.Text.Create
 {
     public class CreateTextCommandValidator : AbstractValidator<CreateTextCommand>
     {
