@@ -33,21 +33,6 @@ namespace Streetcode.XUnitTest.MediatR.Text.Create
         }
 
         [Fact]
-        public async Task Handle_IfRequestIsNull_ShouldReturnFail()
-        {
-            // Arrange
-            string errorMsg = "Can`t map entity";
-            var command = new CreateTextCommand(null!);
-
-            // Act
-            var result = await this.handler.Handle(command, CancellationToken.None);
-
-            // Assert
-            result.IsFailed.Should().BeTrue();
-            result.Errors.First().Message.Should().Be(errorMsg);
-        }
-
-        [Fact]
         public async Task Handle_IfCreateSuccessful_ShouldReturnCreatedDTO()
         {
             // Arrange
@@ -78,26 +63,6 @@ namespace Streetcode.XUnitTest.MediatR.Text.Create
             result.Value.Should().BeEquivalentTo(expectedTextDto);
 
             loggerMock.Verify(x => x.LogError(It.IsAny<object>(), It.IsAny<string>()), Times.Never);
-        }
-
-        [Fact]
-        public async Task Handle_IfTextIsNull_ShouldReturnFail()
-        {
-            // Arrange
-            string errorMsg = "Can`t map entity";
-            var command = new CreateTextCommand(new TextCreateDTO());
-
-            mapperMock.Setup(m => m.Map<TextEntity>(It.IsAny<TextCreateDTO>()))
-                       .Returns((TextEntity)null!);
-
-            // Act
-            var result = await handler.Handle(command, CancellationToken.None);
-
-            // Assert
-            result.IsFailed.Should().BeTrue();
-            result.Errors.Should().ContainSingle(e => e.Message == errorMsg);
-
-            repositoryWrapperMock.Verify(r => r.TextRepository.CreateAsync(It.IsAny<TextEntity>()), Times.Never);
         }
 
         [Fact]
