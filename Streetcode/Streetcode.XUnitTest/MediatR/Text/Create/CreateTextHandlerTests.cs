@@ -92,7 +92,6 @@ namespace Streetcode.XUnitTest.MediatR.Text.Create
             result.Errors.Should().ContainSingle(e => e.Message == errorMsg);
 
             mapperMock.Verify(m => m.Map<TextDTO>(It.IsAny<TextEntity>()), Times.Never);
-
         }
     }
 }

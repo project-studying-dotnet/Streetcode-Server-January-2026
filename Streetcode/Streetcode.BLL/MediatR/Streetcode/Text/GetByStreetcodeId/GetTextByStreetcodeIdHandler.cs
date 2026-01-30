@@ -7,7 +7,7 @@ using Streetcode.BLL.Interfaces.Text;
 using Streetcode.BLL.MediatR.ResultVariations;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 
-namespace Streetcode.BLL.MediatR.Streetcode.Entity.GetByStreetcodeId;
+namespace Streetcode.BLL.MediatR.Streetcode.Text.GetByStreetcodeId;
 
 public class GetTextByStreetcodeIdHandler : IRequestHandler<GetTextByStreetcodeIdQuery, Result<TextDTO?>>
 {
