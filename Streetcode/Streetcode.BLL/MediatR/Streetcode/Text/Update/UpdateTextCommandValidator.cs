@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
+using Streetcode.BLL.MediatR.Streetcode.Entity.Update;
+using Streetcode.BLL.MediatR.Streetcode.Text.Validator;
 
-namespace Streetcode.BLL.MediatR.Streetcode.Entity.Update
+namespace Streetcode.BLL.MediatR.Streetcode.Text.Update
 {
     public class UpdateTextCommandValidator : AbstractValidator<UpdateTextCommand>
     {
@@ -9,7 +11,7 @@ namespace Streetcode.BLL.MediatR.Streetcode.Entity.Update
             RuleFor(x => x.Text)
                 .NotNull()
                 .WithMessage("TextDataRequired")
-                .SetValidator(new TextUpdateDTOValidator());
+                .SetValidator(new TextBaseDTOValidator());
         }
     }
 }

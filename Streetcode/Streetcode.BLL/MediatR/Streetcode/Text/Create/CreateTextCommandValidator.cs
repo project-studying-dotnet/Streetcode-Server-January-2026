@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentValidation;
+﻿using FluentValidation;
+using Streetcode.BLL.MediatR.Streetcode.Text;
+using Streetcode.BLL.MediatR.Streetcode.Text.Validator;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Entity.Create
 {
@@ -14,7 +11,7 @@ namespace Streetcode.BLL.MediatR.Streetcode.Entity.Create
             RuleFor(x => x.Text)
                 .NotNull()
                 .WithMessage("TextDataRequired")
-                .SetValidator(new TextCreateDTOValidator());
+                .SetValidator(new TextBaseDTOValidator());
         }
     }
 }
