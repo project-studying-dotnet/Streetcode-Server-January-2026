@@ -24,7 +24,7 @@ namespace Streetcode.BLL.MediatR.Streetcode.RelatedTerm.Create
 
         public async Task<Result<RelatedTermDTO>> Handle(CreateRelatedTermCommand request, CancellationToken cancellationToken)
         {
-            var relatedTerm = _mapper.Map<Entity>(request.RelatedTerm);
+            var relatedTerm = _mapper.Map<DAL.Entities.Streetcode.TextContent.RelatedTerm>(request.RelatedTerm);
 
             if (relatedTerm is null)
             {
