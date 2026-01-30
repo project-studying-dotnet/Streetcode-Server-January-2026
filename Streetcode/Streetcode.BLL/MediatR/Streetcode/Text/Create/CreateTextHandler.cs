@@ -30,13 +30,6 @@ namespace Streetcode.BLL.MediatR.Streetcode.Entity.Create
         {
             var text = _mapper.Map<EntityText>(command.Text);
 
-            if(text == null)
-            {
-                string errorMsg = "Can`t map entity";
-                _logger.LogError(command, errorMsg);
-                return Result.Fail(new Error(errorMsg));
-            }
-
             var createdText = await _repositoryWrapper.TextRepository.CreateAsync(text);
             var successSave = await _repositoryWrapper.SaveChangesAsync() > 0;
 
