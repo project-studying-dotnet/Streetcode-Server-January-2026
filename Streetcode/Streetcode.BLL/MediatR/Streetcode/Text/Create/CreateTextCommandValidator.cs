@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FluentValidation;
-using Streetcode.BLL.MediatR.Streetcode.Entity.Update;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Entity.Create
 {

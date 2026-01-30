@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentValidation;
+﻿using FluentValidation;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Entity.Create
 {
-    public class TextCreateDTOValidator : AbstractValidator<TextCreateDTO>
+    public class TextCreateDTOValidator : AbstractValidator<TextBaseDTO>
     {
         public TextCreateDTOValidator()
         {

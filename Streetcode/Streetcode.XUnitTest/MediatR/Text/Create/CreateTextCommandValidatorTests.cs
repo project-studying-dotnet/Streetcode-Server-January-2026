@@ -36,7 +36,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Create
         public void ShouldPass_WhenTextIsValid()
         {
             // Arrange
-            var dto = new TextCreateDTO
+            var dto = new TextBaseDTO
             {
                 Title = "Test title",
                 TextContent = "Some content",

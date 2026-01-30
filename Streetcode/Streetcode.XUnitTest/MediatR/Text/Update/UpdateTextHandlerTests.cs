@@ -52,7 +52,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
         {
             // Arrange
             var streetcodeId = 1;
-            var command = new UpdateTextCommand(new TextUpdateDTO { StreetcodeId = streetcodeId });
+            var command = new UpdateTextCommand(new TextBaseDTO { StreetcodeId = streetcodeId });
             string expectedErrorMsg = $"No text found with Id {streetcodeId}";
 
             _mockRepoWrapper
@@ -78,7 +78,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
         {
             // Arrange
             var streetcodeId = 1;
-            var updateDto = new TextUpdateDTO { StreetcodeId = streetcodeId };
+            var updateDto = new TextBaseDTO { StreetcodeId = streetcodeId };
             var existingText = new Text { Id = streetcodeId };
             var command = new UpdateTextCommand(updateDto);
 
@@ -105,7 +105,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
             // Arrange
             var textRepoMock = new Mock<ITextRepository>(MockBehavior.Strict);
             var existing = new TextEntity { Id = 10, AdditionalText = "Old" };
-            var update = new TextUpdateDTO { AdditionalText = "New!" };
+            var update = new TextBaseDTO { AdditionalText = "New!" };
             var mapped = new TextEntity { Id = 10, AdditionalText = "New!" };
             var mappedDto = new TextDTO { Id = 10, AdditionalText = "New!" };
 

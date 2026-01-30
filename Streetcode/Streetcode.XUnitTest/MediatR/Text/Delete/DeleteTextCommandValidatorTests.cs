@@ -38,7 +38,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Delete
         {
             // Arrange
             int id = 1;
-            var validDto = new TextUpdateDTO
+            var validDto = new TextBaseDTO
             {
                 StreetcodeId = 1,
                 Title = "Valid Title",
