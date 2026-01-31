@@ -345,3 +345,10 @@ healthchecksdb
 # BlobStorage
 BlobStorageFolder/
 BlobStorageTestFolder/
+
+# Configuration files
+appsettings.*.json
+.env
+
+# ReSharper/Rider files
+*.csproj.DotSettings
