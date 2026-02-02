@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Streetcode.BLL.DTO.Streetcode.TextContent.Fact;
 
-namespace Streetcode.BLL.DTO.Streetcode.TextContent.Fact
+public class UpdateFactDTO
 {
-    internal class UpdateFactDTO
-    {
-    }
+    public int Id { get; set; }
+    public string Title { get; set; }
+    public string FactContent { get; set; }
+    public int ImageId { get; set; }
+    public string? ImageDescription { get; set; }
 }

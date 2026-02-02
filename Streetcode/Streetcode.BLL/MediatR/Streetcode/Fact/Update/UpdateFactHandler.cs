@@ -6,35 +6,32 @@ using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Entities.Media.Images;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 
-namespace Streetcode.BLL.MediatR.Streetcode.Fact.Create
+namespace Streetcode.BLL.MediatR.Streetcode.Fact.Update
 {
-    public class CreateFactHandler : IRequestHandler<CreateFactCommand, Result<FactDTO>>
+    public class UpdateFactHandler : IRequestHandler<UpdateFactCommand, Result<FactDTO>>
     {
-        private readonly IMapper _mapper;
         private readonly IRepositoryWrapper _repositoryWrapper;
+        private readonly IMapper _mapper;
         private readonly ILoggerService _logger;
         private static readonly string[] AllowedImageTypes = { "image/jpeg", "image/png", "image/jpg", "image/webp" };
 
-        public CreateFactHandler(
-            IMapper mapper,
-            IRepositoryWrapper repositoryWrapper,
-            ILoggerService logger)
+        public UpdateFactHandler(IRepositoryWrapper repositoryWrapper, IMapper mapper, ILoggerService logger)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
             _logger = logger;
         }
 
-        public async Task<Result<FactDTO>> Handle(CreateFactCommand request, CancellationToken cancellationToken)
+        public async Task<Result<FactDTO>> Handle(UpdateFactCommand request, CancellationToken cancellationToken)
         {
-            var streetcodeResult = await _repositoryWrapper.StreetcodeRepository
-                .GetFirstOrDefaultAsync(s => s.Id == request.Fact.StreetcodeId);
+            var fact = await _repositoryWrapper.FactRepository
+                .GetFirstOrDefaultAsync(x => x.Id == request.Fact.Id);
 
-            if (streetcodeResult is null)
+            if (fact == null)
             {
-                const string errorMsg = "Streetcode with the specified id was not found";
+                string errorMsg = $"Cannot find a fact with Id: {request.Fact.Id}";
                 _logger.LogError(request, errorMsg);
-                return Result.Fail(errorMsg);
+                return Result.Fail(new Error(errorMsg));
             }
 
             var imageResult = await _repositoryWrapper.ImageRepository
@@ -54,16 +51,9 @@ namespace Streetcode.BLL.MediatR.Streetcode.Fact.Create
                 return Result.Fail(errorMsg);
             }
 
-            var newFact = _mapper.Map<DAL.Entities.Streetcode.TextContent.Fact>(request.Fact);
+            fact = _mapper.Map(request.Fact, fact);
 
-            if (newFact is null)
-            {
-                const string errorMsg = "Failed to map CreateFactDTO to Fact entity";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(errorMsg);
-            }
-
-            if (!string.IsNullOrEmpty(request.Fact.ImageDescription))
+            if (request.Fact.ImageDescription != null)
             {
                 var existingDetails = await _repositoryWrapper.ImageDetailsRepository
                     .GetFirstOrDefaultAsync(x => x.ImageId == request.Fact.ImageId);
@@ -84,13 +74,21 @@ namespace Streetcode.BLL.MediatR.Streetcode.Fact.Create
                 }
             }
 
-            newFact = await _repositoryWrapper.FactRepository.CreateAsync(newFact);
-            await _repositoryWrapper.SaveChangesAsync();
+            _repositoryWrapper.FactRepository.Update(fact);
 
-            var createdDto = _mapper.Map<FactDTO>(newFact);
-            createdDto.ImageDescription = request.Fact.ImageDescription;
+            var successSave = await _repositoryWrapper.SaveChangesAsync() > 0;
 
-            return Result.Ok(createdDto);
+            if (!successSave)
+            {
+                string errorMsg = "Error while saving changes to database";
+                _logger.LogError(request, errorMsg);
+                return Result.Fail(new Error(errorMsg));
+            }
+
+            var updatedFactDTO = _mapper.Map<FactDTO>(fact);
+            updatedFactDTO.ImageDescription = request.Fact.ImageDescription;
+
+            return Result.Ok(updatedFactDTO);
         }
     }
 }

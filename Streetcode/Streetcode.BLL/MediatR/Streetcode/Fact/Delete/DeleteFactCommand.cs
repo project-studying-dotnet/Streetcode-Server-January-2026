@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FluentResults;
+using MediatR;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Fact.Delete
 {
-    internal class DeleteFactCommand
-    {
-    }
+    public record DeleteFactCommand(int Id) : IRequest<Result<Unit>>;
 }

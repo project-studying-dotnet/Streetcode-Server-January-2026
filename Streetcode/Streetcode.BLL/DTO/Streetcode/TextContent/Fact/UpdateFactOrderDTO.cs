@@ -2,6 +2,6 @@
 
 public class UpdateFactOrderDTO
 {
-    public int FactId { get; set; }
+    public int Id { get; set; }
     public int Order { get; set; }
 }

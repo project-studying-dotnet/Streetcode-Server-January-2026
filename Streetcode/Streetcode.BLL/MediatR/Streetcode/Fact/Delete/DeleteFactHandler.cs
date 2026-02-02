@@ -34,7 +34,7 @@ namespace Streetcode.BLL.MediatR.Streetcode.Fact.Delete
 
             if (!successSave)
             {
-                string errorMsg = "Failed to delete a fact";
+                string errorMsg = "Error while saving changes to database";
                 _logger.LogError(request, errorMsg);
                 return Result.Fail(new Error(errorMsg));
             }
