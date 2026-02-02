@@ -6,10 +6,10 @@ namespace Streetcode.BLL.DTO.Media.Images
     {
         public int Id { get; set; }
 
-        [MaxLength(100)]
+        [MaxLength(200)]
         public string? Title { get; set; }
 
-        [MaxLength(200)]
+        [MaxLength(300)]
         public string? Alt { get; set; }
 
         public int ImageId { get; set; }
