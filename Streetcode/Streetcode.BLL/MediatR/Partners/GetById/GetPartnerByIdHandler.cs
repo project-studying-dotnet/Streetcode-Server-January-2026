@@ -28,15 +28,15 @@ public class GetPartnerByIdHandler : IRequestHandler<GetPartnerByIdQuery, Result
             .GetSingleOrDefaultAsync(
                 predicate: p => p.Id == request.Id,
                 include: p => p
-                    .Include(pl => pl.PartnerSourceLinks));
+                    .Include(pl => pl.PartnerSourceLinks)); /* todo check if streetcodes needed as well */
 
-        if (partner is null)
+        if (partner is not null)
         {
-            string errorMsg = $"Cannot find any partner with corresponding id: {request.Id}";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            return Result.Ok(_mapper.Map<PartnerDTO>(partner));
         }
 
-        return Result.Ok(_mapper.Map<PartnerDTO>(partner));
+        var errorMsg = $"Cannot find any partner with corresponding id: {request.Id}";
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

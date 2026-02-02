@@ -110,7 +110,8 @@
         {
             this.repositoryWrapperMock.Setup(r => r.ArtRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<Art, bool>>>(),
-                It.IsAny<Func<IQueryable<Art>, IIncludableQueryable<Art, object>>>()))
+                It.IsAny<Func<IQueryable<Art>, IIncludableQueryable<Art, object>>>(),
+                It.IsAny<bool>()))
                 .ReturnsAsync(art);
 
             this.mapperMock.Setup(map => map

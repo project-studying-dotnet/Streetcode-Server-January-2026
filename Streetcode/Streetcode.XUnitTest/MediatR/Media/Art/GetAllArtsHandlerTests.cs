@@ -24,8 +24,10 @@
             this.mapperMock = new Mock<IMapper>();
             this.loggerMock = new Mock<ILoggerService>();
 
-            this.handler = new GetAllArtsHandler(repositoryWrapperMock.Object,
-                    mapperMock.Object, loggerMock.Object);
+            this.handler = new GetAllArtsHandler(
+                repositoryWrapperMock.Object,
+                mapperMock.Object,
+                loggerMock.Object);
         }
 
         [Fact]
@@ -145,7 +147,8 @@
         {
             this.repositoryWrapperMock.Setup(r => r.ArtRepository.GetAllAsync(
                 It.IsAny<Expression<Func<Art, bool>>>(),
-                It.IsAny<Func<IQueryable<Art>, IIncludableQueryable<Art, object>>>()))
+                It.IsAny<Func<IQueryable<Art>, IIncludableQueryable<Art, object>>>(),
+                    It.IsAny<bool>()))
                 .ReturnsAsync(arts);
 
             this.mapperMock.Setup(map => map

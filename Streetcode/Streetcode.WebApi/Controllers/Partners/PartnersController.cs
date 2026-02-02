@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Streetcode.BLL.DTO.Partners;
 using Streetcode.BLL.MediatR.Partners.Create;
+using Streetcode.BLL.MediatR.Partners.Delete;
 using Streetcode.BLL.MediatR.Partners.GetAll;
-using Streetcode.BLL.MediatR.Partners.GetAllPartnerShort;
+using Streetcode.BLL.MediatR.Partners.GetAllPartnersShort;
 using Streetcode.BLL.MediatR.Partners.GetById;
 using Streetcode.BLL.MediatR.Partners.GetByStreetcodeId;
+using Streetcode.BLL.MediatR.Partners.Update;
 
 namespace Streetcode.WebApi.Controllers.Partners;
 
@@ -37,18 +39,18 @@ public class PartnersController : BaseApiController
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreatePartnerDTO partner)
     {
-        return HandleResult(await Mediator.Send(new CreatePartnerQuery(partner)));
+        return HandleResult(await Mediator.Send(new CreatePartnerCommand(partner)));
     }
 
     [HttpPut]
-    public async Task<IActionResult> Update([FromBody] CreatePartnerDTO partner)
+    public async Task<IActionResult> Update([FromBody] UpdatePartnerDTO partner)
     {
-        return HandleResult(await Mediator.Send(new BLL.MediatR.Partners.Update.UpdatePartnerQuery(partner)));
+        return HandleResult(await Mediator.Send(new UpdatePartnerCommand(partner)));
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete([FromRoute] int id)
     {
-        return HandleResult(await Mediator.Send(new BLL.MediatR.Partners.Delete.DeletePartnerQuery(id)));
+        return HandleResult(await Mediator.Send(new DeletePartnerCommand(id)));
     }
 }

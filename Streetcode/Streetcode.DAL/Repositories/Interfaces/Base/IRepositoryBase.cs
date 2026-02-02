@@ -1,15 +1,13 @@
 using System.Linq.Expressions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Query;
-using Streetcode.DAL.Persistence;
 
 namespace Streetcode.DAL.Repositories.Interfaces.Base;
 
 public interface IRepositoryBase<T>
     where T : class
 {
-    IQueryable<T> FindAll(Expression<Func<T, bool>>? predicate = default);
+    IQueryable<T> FindAll(Expression<Func<T, bool>>? predicate = default, bool trackEntities = false);
 
     T Create(T entity);
 
@@ -37,23 +35,28 @@ public interface IRepositoryBase<T>
 
     Task<IEnumerable<T>> GetAllAsync(
         Expression<Func<T, bool>>? predicate = default,
-        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default);
+        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default,
+        bool trackEntities = false);
 
     Task<IEnumerable<T>?> GetAllAsync(
         Expression<Func<T, T>> selector,
         Expression<Func<T, bool>>? predicate = default,
-        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default);
+        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default,
+        bool trackEntities = false);
 
     Task<T?> GetSingleOrDefaultAsync(
         Expression<Func<T, bool>>? predicate = default,
-        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default);
+        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default,
+        bool trackEntities = false);
 
     Task<T?> GetFirstOrDefaultAsync(
         Expression<Func<T, bool>>? predicate = default,
-        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default);
+        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default,
+        bool trackEntities = false);
 
     Task<T?> GetFirstOrDefaultAsync(
         Expression<Func<T, T>> selector,
         Expression<Func<T, bool>>? predicate = default,
-        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default);
+        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default,
+        bool trackEntities = false);
 }
