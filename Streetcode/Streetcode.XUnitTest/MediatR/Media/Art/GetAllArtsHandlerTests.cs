@@ -6,6 +6,7 @@
     using Moq;
     using Streetcode.BLL.DTO.Media.Art;
     using Streetcode.BLL.Interfaces.Logging;
+    using Streetcode.BLL.Mapping.Media.Images;
     using Streetcode.BLL.MediatR.Media.Art.GetAll;
     using Streetcode.DAL.Entities.Media.Images;
     using Streetcode.DAL.Repositories.Interfaces.Base;
@@ -14,28 +15,34 @@
     public class GetAllArtsHandlerTests
     {
         private readonly Mock<IRepositoryWrapper> repositoryWrapperMock;
-        private readonly Mock<IMapper> mapperMock;
+        private readonly IMapper mapper;
         private readonly Mock<ILoggerService> loggerMock;
         private readonly GetAllArtsHandler handler;
 
         public GetAllArtsHandlerTests()
         {
             this.repositoryWrapperMock = new Mock<IRepositoryWrapper>();
-            this.mapperMock = new Mock<IMapper>();
             this.loggerMock = new Mock<ILoggerService>();
 
-            this.handler = new GetAllArtsHandler(repositoryWrapperMock.Object,
-                    mapperMock.Object, loggerMock.Object);
+            var configuration = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile(new ArtProfile());
+            });
+            this.mapper = new Mapper(configuration);
+
+            this.handler = new GetAllArtsHandler(
+                this.repositoryWrapperMock.Object,
+                this.mapper,
+                this.loggerMock.Object);
         }
 
         [Fact]
         public async Task Handle_ReturnsSuccess_WhenArtsExist()
         {
             // Arrange
-            List<Art> arts = this.GetArtsList();
-            List<ArtDTO> artDTOs = this.GetArtDTOsList();
+            List<Art> arts = GetArtsList();
 
-            this.SetupMocks(arts, artDTOs);
+            this.SetupMocks(arts);
 
             // Act
             var result = await this.handler
@@ -49,10 +56,9 @@
         public async Task Handle_ReturnsCorrectNumberOfArts_WhenArtsExist()
         {
             // Arrange
-            List<Art> arts = this.GetArtsList();
-            List<ArtDTO> artDTOs = this.GetArtDTOsList();
+            List<Art> arts = GetArtsList();
 
-            this.SetupMocks(arts, artDTOs);
+            this.SetupMocks(arts);
 
             // Act
             var result = await this.handler
@@ -66,10 +72,9 @@
         public async Task Handle_ReturnsCorrectType_WhenArtsExist()
         {
             // Arrange
-            List<Art> arts = this.GetArtsList();
-            List<ArtDTO> artDTOs = this.GetArtDTOsList();
+            List<Art> arts = GetArtsList();
 
-            this.SetupMocks(arts, artDTOs);
+            this.SetupMocks(arts);
 
             // Act
             var result = await this.handler
@@ -83,7 +88,7 @@
         public async Task Handle_ReturnsSuccess_WhenArtsAreEmpty()
         {
             // Arrange
-            this.SetupMocks(new List<Art>(), new List<ArtDTO>());
+            this.SetupMocks([]);
 
             // Act
             var result = await this.handler
@@ -97,7 +102,7 @@
         public async Task Handle_ReturnsEmpty_WhenArtsAreEmpty()
         {
             // Arrange
-            this.SetupMocks(new List<Art>(), new List<ArtDTO>());
+            this.SetupMocks([]);
 
             // Act
             var result = await this.handler
@@ -112,9 +117,8 @@
         {
             // Arrange
             List<Art>? arts = null;
-            List<ArtDTO> artDTOs = this.GetArtDTOsList();
 
-            this.SetupMocks(arts, artDTOs);
+            this.SetupMocks(arts);
 
             // Act
             var result = await this.handler
@@ -129,9 +133,8 @@
         {
             // Arrange
             List<Art>? arts = null;
-            List<ArtDTO> artDTOs = this.GetArtDTOsList();
 
-            this.SetupMocks(arts, artDTOs);
+            this.SetupMocks(arts);
 
             // Act
             var result = await this.handler
@@ -141,34 +144,21 @@
             Assert.Equal("Cannot find any arts", result.Errors[0].Message);
         }
 
-        private void SetupMocks(List<Art>? arts, List<ArtDTO> artDTOs)
+        private void SetupMocks(List<Art>? arts)
         {
             this.repositoryWrapperMock.Setup(r => r.ArtRepository.GetAllAsync(
                 It.IsAny<Expression<Func<Art, bool>>>(),
                 It.IsAny<Func<IQueryable<Art>, IIncludableQueryable<Art, object>>>()))
                 .ReturnsAsync(arts);
-
-            this.mapperMock.Setup(map => map
-                .Map<IEnumerable<ArtDTO>>(It.IsAny<IEnumerable<Art>>()))
-                .Returns(artDTOs);
         }
 
-        private List<Art> GetArtsList()
+        private static List<Art> GetArtsList()
         {
-            return new List<Art>
-            {
+            return
+            [
                 new Art { Id = 1, },
                 new Art { Id = 2, },
-            };
-        }
-
-        private List<ArtDTO> GetArtDTOsList()
-        {
-            return new List<ArtDTO>
-            {
-                new ArtDTO { Id = 1 },
-                new ArtDTO { Id = 2 },
-            };
+            ];
         }
     }
 }

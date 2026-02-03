@@ -6,6 +6,7 @@
     using Moq;
     using Streetcode.BLL.DTO.Media.Art;
     using Streetcode.BLL.Interfaces.Logging;
+    using Streetcode.BLL.Mapping.Media.Images;
     using Streetcode.BLL.MediatR.Media.Art.GetById;
     using Streetcode.DAL.Entities.Media.Images;
     using Streetcode.DAL.Repositories.Interfaces.Base;
@@ -14,18 +15,25 @@
     public class GetArtByIdHandlerTests
     {
         private readonly Mock<IRepositoryWrapper> repositoryWrapperMock;
-        private readonly Mock<IMapper> mapperMock;
+        private readonly IMapper mapper;
         private readonly Mock<ILoggerService> loggerMock;
         private readonly GetArtByIdHandler handler;
 
         public GetArtByIdHandlerTests()
         {
             this.repositoryWrapperMock = new Mock<IRepositoryWrapper>();
-            this.mapperMock = new Mock<IMapper>();
             this.loggerMock = new Mock<ILoggerService>();
 
-            this.handler = new GetArtByIdHandler(repositoryWrapperMock.Object,
-                    mapperMock.Object, loggerMock.Object);
+            var configuration = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile(new ArtProfile());
+            });
+            this.mapper = new Mapper(configuration);
+
+            this.handler = new GetArtByIdHandler(
+                this.repositoryWrapperMock.Object,
+                this.mapper,
+                this.loggerMock.Object);
         }
 
         [Theory]
@@ -33,10 +41,9 @@
         public async Task Handle_ReturnsSuccess_WhenArtExist(int artId)
         {
             // Arrange
-            Art art = this.GetArt();
-            ArtDTO artDTO = this.GetArtDTO();
+            Art art = GetArt();
 
-            this.SetupMocks(art, artDTO);
+            this.SetupMocks(art);
 
             // Act
             var result = await this.handler
@@ -51,10 +58,9 @@
         public async Task Handle_ReturnsCorrectArt_WhenArtExist(int artId)
         {
             // Arrange
-            Art art = this.GetArt();
-            ArtDTO artDTO = this.GetArtDTO();
+            Art art = GetArt();
 
-            this.SetupMocks(art, artDTO);
+            this.SetupMocks(art);
 
             // Act
             var result = await this.handler
@@ -72,9 +78,8 @@
         {
             // Arrange
             Art? art = null;
-            ArtDTO artDTO = this.GetArtDTO();
 
-            this.SetupMocks(art, artDTO);
+            this.SetupMocks(art);
 
             // Act
             var result = await this.handler
@@ -92,9 +97,8 @@
         {
             // Arrange
             Art? art = null;
-            ArtDTO artDTO = this.GetArtDTO();
 
-            this.SetupMocks(art, artDTO);
+            this.SetupMocks(art);
 
             // Act
             var result = await this.handler
@@ -106,26 +110,17 @@
                 result.Errors[0].Message);
         }
 
-        private void SetupMocks(Art? art, ArtDTO artDTO)
+        private void SetupMocks(Art? art)
         {
             this.repositoryWrapperMock.Setup(r => r.ArtRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<Art, bool>>>(),
                 It.IsAny<Func<IQueryable<Art>, IIncludableQueryable<Art, object>>>()))
                 .ReturnsAsync(art);
-
-            this.mapperMock.Setup(map => map
-                .Map<ArtDTO>(It.IsAny<Art>()))
-                .Returns(artDTO);
         }
 
-        private Art GetArt()
+        private static Art GetArt()
         {
             return new Art { Id = 1 };
-        }
-
-        private ArtDTO GetArtDTO()
-        {
-            return new ArtDTO { Id = 1 };
         }
     }
 }
