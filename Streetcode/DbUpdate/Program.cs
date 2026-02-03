@@ -7,10 +7,12 @@
     {
         static int Main(string[] args)
         {
-            var streetcodeBasePath = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.Parent.FullName;
-            var migrationPath = Path.Combine(streetcodeBasePath, "Streetcode.DAL", "Persistence", "ScriptsMigration");
-
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Local";
+            var streetcodeBasePath = environment == "Local"
+                ? Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\"))
+                : AppContext.BaseDirectory;
+ 
+            var migrationPath = Path.Combine(streetcodeBasePath, "Streetcode.DAL", "Persistence", "ScriptsMigration");
 
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Path.Combine(streetcodeBasePath, "Streetcode.WebApi"))
