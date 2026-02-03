@@ -56,13 +56,6 @@ namespace Streetcode.BLL.MediatR.Streetcode.Fact.Create
 
             var newFact = _mapper.Map<DAL.Entities.Streetcode.TextContent.Fact>(request.Fact);
 
-            if (newFact is null)
-            {
-                const string errorMsg = "Failed to map CreateFactDTO to Fact entity";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(errorMsg);
-            }
-
             if (!string.IsNullOrEmpty(request.Fact.ImageDescription))
             {
                 var existingDetails = await _repositoryWrapper.ImageDetailsRepository
