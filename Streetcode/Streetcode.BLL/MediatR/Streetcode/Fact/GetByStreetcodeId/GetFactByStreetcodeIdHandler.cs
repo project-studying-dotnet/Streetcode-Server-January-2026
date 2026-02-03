@@ -27,13 +27,6 @@ public class GetFactByStreetcodeIdHandler : IRequestHandler<GetFactByStreetcodeI
             predicate: f => f.StreetcodeId == request.StreetcodeId,
             include: q => q.Include(f => f.Image).ThenInclude(i => i.ImageDetails));
 
-        if (facts is null)
-        {
-            string errorMsg = $"Cannot find any fact by the streetcode id: {request.StreetcodeId}";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
-        }
-
         var sortedFacts = facts.OrderByDescending(f => f.Order);
 
         return Result.Ok(_mapper.Map<IEnumerable<FactDTO>>(sortedFacts));

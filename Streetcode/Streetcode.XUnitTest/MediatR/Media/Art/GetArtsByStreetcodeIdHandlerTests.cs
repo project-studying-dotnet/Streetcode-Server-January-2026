@@ -4,6 +4,7 @@
     using AutoMapper;
     using Microsoft.EntityFrameworkCore.Query;
     using Moq;
+    using Repositories.Interfaces;
     using Streetcode.BLL.DTO.Media.Art;
     using Streetcode.BLL.DTO.Media.Images;
     using Streetcode.BLL.Interfaces.BlobStorage;
@@ -29,6 +30,9 @@
             this.loggerMock = new Mock<ILoggerService>();
             this.blobServiceMock = new Mock<IBlobService>();
 
+            this.repositoryWrapperMock.Setup(r => r.ArtRepository)
+                .Returns(new Mock<IArtRepository>().Object);
+
             var configuration = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new ArtProfile());
@@ -50,7 +54,7 @@
             // Arrange
             List<Art> arts = GetArtsList();
 
-            this.SetupMocks(arts);
+            this.SetupArts(arts);
             this.SetupBlobService("test_base64_string");
 
             // Act
@@ -68,7 +72,7 @@
             // Arrange
             List<Art> arts = GetArtsList();
 
-            this.SetupMocks(arts);
+            this.SetupArts(arts);
             this.SetupBlobService("test_base64_string");
 
             // Act
@@ -87,7 +91,7 @@
             List<Art> arts = GetArtsList();
             List<ArtDTO> artDTOs = GetArtDTOsList();
 
-            this.SetupMocks(arts);
+            this.SetupArts(arts);
             this.SetupBlobService("test_base64_string");
 
             // Act
@@ -105,7 +109,7 @@
             // Arrange
             List<Art> arts = GetArtsList();
 
-            this.SetupMocks(arts);
+            this.SetupArts(arts);
             this.SetupBlobService(base64);
 
             // Act
@@ -120,64 +124,30 @@
         [InlineData(1)]
         [InlineData(0)]
         [InlineData(-1)]
-        public async Task Handle_ReturnsFailStatus_WhenArtsAreNull(int streetcodeId)
+        public async Task Handle_ReturnsSuccessAndEmpty_WhenArtsAreNullOrEmpty(int streetcodeId)
         {
             // Arrange
-            List<Art>? arts = null;
-            this.SetupMocks(arts);
+            this.SetupArts(new List<Art>());
 
             // Act
             var result = await this.handler
                 .Handle(new GetArtsByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
 
             // Assert
-            Assert.True(result.IsFailed);
-        }
-
-        [Theory]
-        [InlineData(1)]
-        [InlineData(0)]
-        [InlineData(-1)]
-        public async Task Handle_ReturnsEmpty_WhenArtsAreEmpty(int streetcodeId)
-        {
-            // Arrange
-            List<Art> arts = [];
-            this.SetupMocks(arts);
-
-            // Act
-            var result = await this.handler
-                .Handle(new GetArtsByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
-
-            // Assert
+            Assert.True(result.IsSuccess);
             Assert.Empty(result.Value);
         }
 
-        [Theory]
-        [InlineData(1)]
-        [InlineData(0)]
-        [InlineData(-1)]
-        public async Task Handle_ReturnsErrorMessage_WhenArtsAreNull(int streetcodeId)
+        private void SetupArts(List<Art>? arts)
         {
-            // Arrange
-            List<Art>? arts = null;
-            this.SetupMocks(arts);
+            var artRepository = new Mock<IArtRepository>();
 
-            // Act
-            var result = await this.handler
-                .Handle(new GetArtsByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
-
-            // Assert
-            Assert.Equal(
-                $"Cannot find any art with corresponding streetcode id: {streetcodeId}",
-                result.Errors[0].Message);
-        }
-
-        private void SetupMocks(List<Art>? arts)
-        {
-            this.repositoryWrapperMock.Setup(r => r.ArtRepository.GetAllAsync(
+            artRepository.Setup(r => r.GetAllAsync(
                 It.IsAny<Expression<Func<Art, bool>>>(),
                 It.IsAny<Func<IQueryable<Art>, IIncludableQueryable<Art, object>>>()))
                 .ReturnsAsync(arts);
+
+            this.repositoryWrapperMock.Setup(r => r.ArtRepository).Returns(artRepository.Object);
         }
 
         private void SetupBlobService(string base64String)

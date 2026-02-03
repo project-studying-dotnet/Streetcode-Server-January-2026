@@ -150,25 +150,22 @@
         }
 
         [Fact]
-        public async Task Handle_ReturnsFailedResult_WhenFactsDoNotExist()
+        public async Task Handle_ReturnsEmpty_WhenFactsDoNotExist()
         {
             // Arrange
             int streetcodeId = 1;
-            string expectedErrorMsg = $"Cannot find any fact by the streetcode id: {streetcodeId}";
-
-            this.SetupGetByStreetcodeId(null);
+            this.SetupGetByStreetcodeId(new List<FactEntity>());
 
             // Act
             var result = await this.handler.Handle(new GetFactByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
 
             // Assert
-            Assert.True(result.IsFailed);
-            Assert.Single(result.Errors);
-            Assert.Equal(expectedErrorMsg, result.Errors.First().Message);
+            Assert.True(result.IsSuccess);
+            Assert.Empty(result.Value);
 
             this.loggerMock.Verify(
-                x => x.LogError(It.IsAny<object>(), expectedErrorMsg),
-                Times.Once);
+                x => x.LogError(It.IsAny<object>(), It.IsAny<string>()),
+                Times.Never);
         }
     }
 }
