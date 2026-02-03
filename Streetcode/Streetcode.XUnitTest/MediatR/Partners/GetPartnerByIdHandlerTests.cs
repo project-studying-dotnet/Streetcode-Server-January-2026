@@ -49,7 +49,7 @@ public class GetPartnerByIdHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnPartner_WhenPartnerExists()
+    public async Task Handle_ReturnsPartner_WhenPartnerExists()
     {
         // Arrange
         const int partnerId = 1;

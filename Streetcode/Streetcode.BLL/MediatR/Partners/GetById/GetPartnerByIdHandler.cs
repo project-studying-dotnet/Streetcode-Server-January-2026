@@ -28,7 +28,7 @@ public class GetPartnerByIdHandler : IRequestHandler<GetPartnerByIdQuery, Result
             .GetSingleOrDefaultAsync(
                 predicate: p => p.Id == request.Id,
                 include: p => p
-                    .Include(pl => pl.PartnerSourceLinks)); /* todo check if streetcodes needed as well */
+                    .Include(pl => pl.PartnerSourceLinks));
 
         if (partner is not null)
         {
