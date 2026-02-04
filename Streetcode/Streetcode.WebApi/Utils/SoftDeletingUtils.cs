@@ -20,7 +20,7 @@ public class SoftDeletingUtils
             include: s => s.Include(x => x.Observers)
                            .Include(x => x.Targets));
 
-        if (streetcodes is null || streetcodes.Count() == 0)
+        if (streetcodes.Count() == 0)
         {
             return;
         }

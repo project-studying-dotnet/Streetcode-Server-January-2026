@@ -2,10 +2,8 @@
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.DTO.Partners;
 using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.DAL.Entities.AdditionalContent.Coordinates;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 
 namespace Streetcode.BLL.MediatR.Partners.GetAll;
@@ -32,13 +30,13 @@ public class GetAllPartnersHandler : IRequestHandler<GetAllPartnersQuery, Result
                     .Include(pl => pl.PartnerSourceLinks)
                     .Include(p => p.Streetcodes));
 
-        if (partners is null)
+        if (partners.Any())
         {
-            const string errorMsg = $"Cannot find any partners";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            return Result.Ok(_mapper.Map<IEnumerable<PartnerDTO>>(partners));
         }
 
-        return Result.Ok(_mapper.Map<IEnumerable<PartnerDTO>>(partners));
+        const string errorMsg = $"Cannot find any partners";
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

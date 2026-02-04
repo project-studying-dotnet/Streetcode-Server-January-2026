@@ -2,7 +2,6 @@
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.DTO.Media.Art;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
@@ -39,7 +38,7 @@ namespace Streetcode.BLL.MediatR.Media.StreetcodeArt.GetByStreetcodeId
             }
             */
 
-            var art = await _repositoryWrapper
+            var arts = await _repositoryWrapper
             .StreetcodeArtRepository
             .GetAllAsync(
                 predicate: s => s.StreetcodeId == request.StreetcodeId,
@@ -47,14 +46,14 @@ namespace Streetcode.BLL.MediatR.Media.StreetcodeArt.GetByStreetcodeId
                     .Include(a => a.Art)
                     .Include(i => i.Art.Image) !);
 
-            if (art is null)
+            if (!arts.Any())
             {
-                string errorMsg = $"Cannot find an art with corresponding streetcode id: {request.StreetcodeId}";
+                var errorMsg = $"Cannot find an art with corresponding streetcode id: {request.StreetcodeId}";
                 _logger.LogError(request, errorMsg);
                 return Result.Fail(new Error(errorMsg));
             }
 
-            var artsDto = _mapper.Map<IEnumerable<StreetcodeArtDTO>>(art);
+            var artsDto = _mapper.Map<IEnumerable<StreetcodeArtDTO>>(arts);
 
             foreach (var artDto in artsDto)
             {

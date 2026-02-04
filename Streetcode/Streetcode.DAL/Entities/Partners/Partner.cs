@@ -30,6 +30,7 @@ public class Partner
 
     [MaxLength(255)]
     public string? UrlTitle { get; set; }
+
     [MaxLength(600)]
     public string? Description { get; set; }
 

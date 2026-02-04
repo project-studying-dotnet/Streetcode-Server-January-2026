@@ -41,8 +41,7 @@ public class GetAllTimelineItemsHandlerTests
         => new(
             repoWrapperMock.Object,
             mapper,
-            loggerMock.Object
-        );
+            loggerMock.Object);
 
     [Fact]
     public async Task Handle_ReturnsOk_WhenTimelineItemsExist()
@@ -50,23 +49,22 @@ public class GetAllTimelineItemsHandlerTests
         //Arrange
         var entities = new List<TimelineItem>
         {
-            new() { Id = 1 },
-            new() { Id = 2 }
+            new () { Id = 1 },
+            new () { Id = 2 }
         };
 
         timelineRepoMock
             .Setup(r => r.GetAllAsync(
                 It.IsAny<Expression<Func<TimelineItem, bool>>>(),
                 It.IsAny<Func<IQueryable<TimelineItem>,
-                    IIncludableQueryable<TimelineItem, object>>>()
-            ))
+                    IIncludableQueryable<TimelineItem, object>>>(),
+                It.IsAny<bool>()))
             .ReturnsAsync(entities);
 
         // Act
         var result = await CreateHandler().Handle(
             new GetAllTimelineItemsQuery(),
-            CancellationToken.None
-        );
+            CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -81,15 +79,14 @@ public class GetAllTimelineItemsHandlerTests
             .Setup(r => r.GetAllAsync(
                 It.IsAny<Expression<Func<TimelineItem, bool>>>(),
                 It.IsAny<Func<IQueryable<TimelineItem>,
-                    IIncludableQueryable<TimelineItem, object>>>()
-            ))
+                    IIncludableQueryable<TimelineItem, object>>>(),
+                It.IsAny<bool>()))
             .ReturnsAsync((IEnumerable<TimelineItem>)null!);
 
         // Act
         var result = await CreateHandler().Handle(
             new GetAllTimelineItemsQuery(),
-            CancellationToken.None
-        );
+            CancellationToken.None);
 
         // Assert
         Assert.True(result.IsFailed);
@@ -98,10 +95,8 @@ public class GetAllTimelineItemsHandlerTests
         loggerMock.Verify(
             l => l.LogError(
                 It.IsAny<GetAllTimelineItemsQuery>(),
-                It.IsAny<string>()
-            ),
-            Times.Once
-        );
+                It.IsAny<string>()),
+            Times.Once);
     }
 
     [Fact]
@@ -112,8 +107,8 @@ public class GetAllTimelineItemsHandlerTests
             .Setup(r => r.GetAllAsync(
                 It.IsAny<Expression<Func<TimelineItem, bool>>>(),
                 It.IsAny<Func<IQueryable<TimelineItem>,
-                    IIncludableQueryable<TimelineItem, object>>>()
-                    ))
+                    IIncludableQueryable<TimelineItem, object>>>(),
+                It.IsAny<bool>()))
             .ReturnsAsync(new List<TimelineItem>());
 
         // Act

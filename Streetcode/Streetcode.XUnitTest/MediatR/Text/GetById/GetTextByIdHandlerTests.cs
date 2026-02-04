@@ -2,6 +2,8 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
+using Microsoft.EntityFrameworkCore.Query;
+
 namespace Streetcode.XUnitTest.MediatR.Text.GetById
 {
     using System.Linq.Expressions;
@@ -45,7 +47,9 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetById
 
             this.mockRepoWrapper
                 .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
-                    It.IsAny<Expression<Func<Text, bool>>>(), null))
+                    It.IsAny<Expression<Func<Text, bool>>>(),
+                    It.IsAny<Func<IQueryable<Text>, IIncludableQueryable<Text, object>>>(),
+                    It.IsAny<bool>()))
                 .ReturnsAsync(text);
 
             this.mockMapper
@@ -71,7 +75,9 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetById
 
             this.mockRepoWrapper
                 .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
-                    It.IsAny<Expression<Func<Text, bool>>>(), null))
+                    It.IsAny<Expression<Func<Text, bool>>>(),
+                    It.IsAny<Func<IQueryable<Text>, IIncludableQueryable<Text, object>>>(),
+                    It.IsAny<bool>()))
                 .ReturnsAsync((Text?)null);
 
             // Act

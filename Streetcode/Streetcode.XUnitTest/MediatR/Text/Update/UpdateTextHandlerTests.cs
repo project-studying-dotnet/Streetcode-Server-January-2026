@@ -58,8 +58,8 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
                 .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<Text, Text>>>(),
                     It.IsAny<Expression<Func<Text, bool>>>(),
-                    It.IsAny<Func<IQueryable<Text>, IIncludableQueryable<Text, object>>>()
-                ))
+                    It.IsAny<Func<IQueryable<Text>, IIncludableQueryable<Text, object>>>(),
+                    It.IsAny<bool>()))
                 .ReturnsAsync((Text?)null);
 
             // Act
@@ -85,8 +85,8 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
                 .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<Text, Text>>>(),
                     It.IsAny<Expression<Func<Text, bool>>>(),
-                    It.IsAny<Func<IQueryable<Text>, IIncludableQueryable<Text, object>>>()
-                ))
+                    It.IsAny<Func<IQueryable<Text>, IIncludableQueryable<Text, object>>>(),
+                    It.IsAny<bool>()))
                 .ReturnsAsync(existingText);
 
             _mockRepoWrapper.Setup(r => r.SaveChangesAsync()).ReturnsAsync(0);
@@ -115,7 +115,8 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
             textRepoMock
                 .Setup(r => r.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<TextEntity, bool>>>(),
-                    null))
+                    It.IsAny<Func<IQueryable<TextEntity>, IIncludableQueryable<TextEntity, object>>>(),
+                    It.IsAny<bool>()))
                 .ReturnsAsync(existing);
 
             _mockMapper.Setup(m => m.Map(update, existing))
