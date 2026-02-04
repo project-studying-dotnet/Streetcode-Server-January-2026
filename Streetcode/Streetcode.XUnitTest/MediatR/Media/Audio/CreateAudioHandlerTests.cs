@@ -56,10 +56,8 @@ public class CreateAudioHandlerTests
             _mockMapper.Object,
             _mockLogger.Object);
 
-        // Act
         var result = await handler.Handle(command, CancellationToken.None);
 
-        // Assert
         Assert.True(result.IsSuccess);
         Assert.Equal(expectedDto.Id, result.Value.Id);
         _mockRepositoryWrapper.Verify(r => r.AudioRepository.CreateAsync(It.IsAny<AudioEntity>()), Times.Once);
@@ -69,7 +67,6 @@ public class CreateAudioHandlerTests
     [Fact]
     public async Task DatabaseSaveFails_ReturnsFailAndLogsError()
     {
-        // Arrange
         var command = new CreateAudioCommand(new AudioFileBaseCreateDTO());
         var audioEntity = new AudioEntity();
 

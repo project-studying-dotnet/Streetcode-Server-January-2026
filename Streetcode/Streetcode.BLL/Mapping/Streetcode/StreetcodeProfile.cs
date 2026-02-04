@@ -19,6 +19,8 @@ public class StreetcodeProfile : Profile
                 .MapFrom(e => e.Text.Title))
             .ForPath(dto => dto.ImageId, conf => conf
                 .MapFrom(e => e.Images.Select(i => i.Id).LastOrDefault()));
+
+        CreateMap<StreetcodeContent, StreetcodeDTO>().ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags.OrderBy(t => t.Title)));
     }
 
     private StreetcodeType GetStreetcodeType(StreetcodeContent streetcode)

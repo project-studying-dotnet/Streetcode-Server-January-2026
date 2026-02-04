@@ -11,6 +11,7 @@ public class StreetcodeDTO
     public string DateString { get; set; }
     public string? Alias { get; set; }
     public string TransliterationUrl { get; set; }
+    public string? ShortDescription { get; set; }
     public StreetcodeStatus Status { get; set; }
     public DateTime EventStartOrPersonBirthDate { get; set; }
     public DateTime? EventEndOrPersonDeathDate { get; set; }
