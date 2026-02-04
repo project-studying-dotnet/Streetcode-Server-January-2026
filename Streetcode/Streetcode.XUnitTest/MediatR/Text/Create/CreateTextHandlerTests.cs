@@ -36,14 +36,14 @@ namespace Streetcode.XUnitTest.MediatR.Text.Create
         public async Task Handle_IfCreateSuccessful_ShouldReturnCreatedDTO()
         {
             // Arrange
-            var textCreateDTO = new TextBaseDTO { Title = "Test Title", TextContent = "Test Content" };
+            var textCreateDTO = new TextCreateDTO { Title = "Test Title", TextContent = "Test Content" };
             var entityText = new TextEntity { Id = 1, Title = "Test Title" };
             var expectedTextDto = new TextDTO { Id = 1, Title = "Test Title" };
 
             var command = new CreateTextCommand(textCreateDTO);
 
 
-            mapperMock.Setup(m => m.Map<TextEntity>(It.IsAny<TextBaseDTO>()))
+            mapperMock.Setup(m => m.Map<TextEntity>(It.IsAny<TextCreateDTO>()))
                        .Returns(entityText);
 
             repositoryWrapperMock.Setup(r => r.TextRepository.CreateAsync(It.IsAny<TextEntity>()))
@@ -70,12 +70,12 @@ namespace Streetcode.XUnitTest.MediatR.Text.Create
         {
             // Arrange
             string errorMsg = "Error while saving changes to database";
-            var textCreateDTO = new TextBaseDTO { Title = "Test Title" };
+            var textCreateDTO = new TextCreateDTO { Title = "Test Title" };
             var command = new CreateTextCommand(textCreateDTO);
 
             var entityText = new TextEntity { Id = 1, Title = "Test Title" };
 
-            mapperMock.Setup(m => m.Map<TextEntity>(It.IsAny<TextBaseDTO>()))
+            mapperMock.Setup(m => m.Map<TextEntity>(It.IsAny<TextCreateDTO>()))
                        .Returns(entityText);
 
             repositoryWrapperMock.Setup(r => r.TextRepository.CreateAsync(It.IsAny<TextEntity>()))
