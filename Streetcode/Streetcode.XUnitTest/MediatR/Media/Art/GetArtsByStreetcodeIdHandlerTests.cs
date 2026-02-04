@@ -144,7 +144,8 @@
 
             artRepository.Setup(r => r.GetAllAsync(
                 It.IsAny<Expression<Func<Art, bool>>>(),
-                It.IsAny<Func<IQueryable<Art>, IIncludableQueryable<Art, object>>>()))
+                It.IsAny<Func<IQueryable<Art>, IIncludableQueryable<Art, object>>>(),
+                It.IsAny<bool>()))
                 .ReturnsAsync(arts);
 
             this.repositoryWrapperMock.Setup(r => r.ArtRepository).Returns(artRepository.Object);

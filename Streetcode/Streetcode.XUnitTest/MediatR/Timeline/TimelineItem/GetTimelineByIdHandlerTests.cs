@@ -38,11 +38,10 @@ public class GetTimelineItemByIdHandlerTests
     }
 
     private GetTimelineItemByIdHandler CreateHandler()
-        => new(
+        => new (
             repoWrapperMock.Object,
             mapper,
-            loggerMock.Object
-        );
+            loggerMock.Object);
 
     [Fact]
     public async Task Handle_ReturnsOk_WhenTimelineItemExists()
@@ -57,8 +56,8 @@ public class GetTimelineItemByIdHandlerTests
             .Setup(r => r.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<TimelineItem, bool>>>(),
                 It.IsAny<Func<IQueryable<TimelineItem>,
-                    IIncludableQueryable<TimelineItem, object>>>()
-            ))
+                    IIncludableQueryable<TimelineItem, object>>>(),
+                It.IsAny<bool>()))
             .ReturnsAsync(entity);
 
         var query = new GetTimelineItemByIdQuery(1);
@@ -66,8 +65,7 @@ public class GetTimelineItemByIdHandlerTests
         // Act
         var result = await CreateHandler().Handle(
             query,
-            CancellationToken.None
-        );
+            CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -83,8 +81,8 @@ public class GetTimelineItemByIdHandlerTests
             .Setup(r => r.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<TimelineItem, bool>>>(),
                 It.IsAny<Func<IQueryable<TimelineItem>,
-                    IIncludableQueryable<TimelineItem, object>>>()
-            ))
+                    IIncludableQueryable<TimelineItem, object>>>(),
+                It.IsAny<bool>()))
             .ReturnsAsync((TimelineItem)null!);
 
         var query = new GetTimelineItemByIdQuery(99);
@@ -92,22 +90,18 @@ public class GetTimelineItemByIdHandlerTests
         // Act
         var result = await CreateHandler().Handle(
             query,
-            CancellationToken.None
-        );
+            CancellationToken.None);
 
         // Assert
         Assert.True(result.IsFailed);
         Assert.Equal(
             $"Cannot find a timeline item with corresponding id: {query.Id}",
-            result.Errors[0].Message
-        );
+            result.Errors[0].Message);
 
         loggerMock.Verify(
             l => l.LogError(
                 query,
-                It.IsAny<string>()
-            ),
-            Times.Once
-        );
+                It.IsAny<string>()),
+            Times.Once);
     }
 }

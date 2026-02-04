@@ -2,6 +2,8 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
+using Microsoft.EntityFrameworkCore.Query;
+
 namespace Streetcode.XUnitTest.MediatR.Text.Delete
 {
     using FluentAssertions;
@@ -49,7 +51,8 @@ namespace Streetcode.XUnitTest.MediatR.Text.Delete
             textRepoMock
                 .Setup(r => r.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<TextEntity, bool>>>(),
-                    null))
+                    It.IsAny<Func<IQueryable<TextEntity>, IIncludableQueryable<TextEntity, object>>>(),
+                    It.IsAny<bool>()))
                 .ReturnsAsync((TextEntity)null!);
 
             var command = new DeleteTextCommand(1);
@@ -63,7 +66,9 @@ namespace Streetcode.XUnitTest.MediatR.Text.Delete
             textRepoMock.Verify(
                 r => r.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<TextEntity, bool>>>(),
-                    null), Times.Once);
+                    It.IsAny<Func<IQueryable<TextEntity>, IIncludableQueryable<TextEntity, object>>>(),
+                    It.IsAny<bool>()),
+                Times.Once);
         }
 
         [Fact]
@@ -81,7 +86,8 @@ namespace Streetcode.XUnitTest.MediatR.Text.Delete
             textRepoMock
                 .Setup(r => r.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<TextEntity, bool>>>(),
-                    null))
+                    It.IsAny<Func<IQueryable<TextEntity>, IIncludableQueryable<TextEntity, object>>>(),
+                    It.IsAny<bool>()))
                 .ReturnsAsync(textEntity);
             textRepoMock.Setup(r => r.Delete(It.IsAny<TextEntity>()));
 
@@ -101,7 +107,9 @@ namespace Streetcode.XUnitTest.MediatR.Text.Delete
             textRepoMock.Verify(
                 r => r.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<TextEntity, bool>>>(),
-                null), Times.Once);
+                It.IsAny<Func<IQueryable<TextEntity>, IIncludableQueryable<TextEntity, object>>>(),
+                It.IsAny<bool>()),
+                Times.Once);
         }
 
         [Fact]
@@ -120,7 +128,8 @@ namespace Streetcode.XUnitTest.MediatR.Text.Delete
             textRepoMock
                 .Setup(r => r.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<TextEntity, bool>>>(),
-                    null))
+                    It.IsAny<Func<IQueryable<TextEntity>, IIncludableQueryable<TextEntity, object>>>(),
+                    It.IsAny<bool>()))
                 .ReturnsAsync(textEntity);
             textRepoMock.Setup(r => r.Delete(It.IsAny<TextEntity>()));
 

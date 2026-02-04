@@ -29,15 +29,15 @@ public class GetCoordinatesByStreetcodeIdHandler : IRequestHandler<GetCoordinate
         }
 
         var coordinates = await _repositoryWrapper.StreetcodeCoordinateRepository
-            .GetAllAsync(c => c.StreetcodeId == request.StreetcodeId);
+            .GetAllAsync(predicate: c => c.StreetcodeId == request.StreetcodeId);
 
-        if (coordinates is null)
+        if (coordinates.Any())
         {
-            string errorMsg = $"Cannot find a coordinates by a streetcode id: {request.StreetcodeId}";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            return Result.Ok(_mapper.Map<IEnumerable<StreetcodeCoordinateDTO>>(coordinates));
         }
 
-        return Result.Ok(_mapper.Map<IEnumerable<StreetcodeCoordinateDTO>>(coordinates));
+        var errorMsg = $"Cannot find a coordinates by a streetcode id: {request.StreetcodeId}";
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }
