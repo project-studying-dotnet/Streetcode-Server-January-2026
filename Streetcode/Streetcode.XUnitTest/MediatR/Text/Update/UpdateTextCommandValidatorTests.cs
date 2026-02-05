@@ -76,6 +76,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
             // Arrange
             var validDto = new TextUpdateDTO
             {
+                Id = 1,
                 StreetcodeId = 1,
                 Title = "Valid Title",
                 TextContent = "Some valid content",
