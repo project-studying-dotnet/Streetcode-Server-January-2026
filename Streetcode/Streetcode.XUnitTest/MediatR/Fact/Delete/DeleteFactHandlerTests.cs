@@ -38,7 +38,8 @@
             this.factRepositoryMock
                 .Setup(r => r.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<FactEntity, bool>>>(),
-                    It.IsAny<Func<IQueryable<FactEntity>, IIncludableQueryable<FactEntity, object>>>()))
+                    It.IsAny<Func<IQueryable<FactEntity>, IIncludableQueryable<FactEntity, object>>>(),
+                    It.IsAny<bool>()))
                 .ReturnsAsync(fact);
         }
 

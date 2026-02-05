@@ -65,7 +65,8 @@
             this.streetcodeRepositoryMock
                 .Setup(r => r.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<StreetcodeEntity, bool>>>(),
-                    null))
+                    null,
+                    It.IsAny<bool>()))
                 .ReturnsAsync(streetcode);
         }
 
@@ -74,7 +75,8 @@
             this.imageRepositoryMock
                 .Setup(r => r.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<ImageEntity, bool>>>(),
-                    null))
+                    null,
+                    It.IsAny<bool>()))
                 .ReturnsAsync(image);
         }
 
@@ -83,7 +85,8 @@
             this.imageDetailsRepositoryMock
                 .Setup(r => r.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<ImageDetails, bool>>>(),
-                    null))
+                    null,
+                    It.IsAny<bool>()))
                 .ReturnsAsync(details);
         }
 

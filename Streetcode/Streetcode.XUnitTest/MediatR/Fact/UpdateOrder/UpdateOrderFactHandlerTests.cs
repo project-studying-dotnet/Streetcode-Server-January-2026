@@ -47,10 +47,12 @@
             this.factRepositoryMock
                 .Setup(r => r.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<FactEntity, bool>>>(),
-                    null))
+                    null,
+                    It.IsAny<bool>()))
                 .ReturnsAsync((
                     Expression<Func<FactEntity, bool>> predicate,
-                    Func<IQueryable<FactEntity>, IIncludableQueryable<FactEntity, object>> include) =>
+                    Func<IQueryable<FactEntity>, IIncludableQueryable<FactEntity, object>> include,
+                    bool trackChanges) =>
                 {
                     return fakeDbData.FirstOrDefault(predicate.Compile());
                 });

@@ -59,7 +59,8 @@
             this.factRepositoryMock
                 .Setup(r => r.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<FactEntity, bool>>>(),
-                    null))
+                    null,
+                    It.IsAny<bool>()))
                 .ReturnsAsync(fact);
         }
 
@@ -68,7 +69,8 @@
             this.imageRepositoryMock
                 .Setup(r => r.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<ImageEntity, bool>>>(),
-                    null))
+                    null,
+                    It.IsAny<bool>()))
                 .ReturnsAsync(image);
         }
 
@@ -77,7 +79,8 @@
             this.imageDetailsRepositoryMock
                 .Setup(r => r.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<ImageDetails, bool>>>(),
-                    null))
+                    null,
+                    It.IsAny<bool>()))
                 .ReturnsAsync(details);
         }
 
