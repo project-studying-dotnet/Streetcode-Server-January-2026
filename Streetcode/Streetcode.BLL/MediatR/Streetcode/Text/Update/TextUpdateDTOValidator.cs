@@ -3,15 +3,11 @@ using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Text.Update
 {
-    public class TextUpdateDTOValidator : TextBaseValidator<TextUpdateDTO>
+    public class TextUpdateDTOValidator : AbstractValidator<TextUpdateDTO>
     {
         public TextUpdateDTOValidator()
         {
-            BaseTextRules(
-                x => x.Title,
-                x => x.TextContent,
-                x => x.AdditionalText,
-                x => x.StreetcodeId);
+            Include(new TextBaseValidator());
 
             RuleFor(x => x.Id)
                 .GreaterThan(0)

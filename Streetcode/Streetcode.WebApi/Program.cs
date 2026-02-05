@@ -27,7 +27,7 @@ else
 
 await app.ApplyMigrations();
 
-app.SeedDataAsync(); // uncomment for seeding data in local
+// app.SeedDataAsync(); // uncomment for seeding data in local
 app.UseCors();
 app.UseHttpsRedirection();
 app.UseRouting();

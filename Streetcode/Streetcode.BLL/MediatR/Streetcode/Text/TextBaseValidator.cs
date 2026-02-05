@@ -1,35 +1,32 @@
 ﻿using System.Linq.Expressions;
 using FluentValidation;
+using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Text
 {
-    public class TextBaseValidator<T> : AbstractValidator<T>
+    public class TextBaseValidator : AbstractValidator<ITextBase>
     {
-        protected void BaseTextRules(
-            Expression<Func<T, string>> Title,
-            Expression<Func<T, string>> TextContent,
-            Expression<Func<T, string?>> AdditionalText,
-            Expression<Func<T, int>> StreetcodeId)
+        public TextBaseValidator()
         {
-            RuleFor(StreetcodeId)
+            RuleFor(x => x.StreetcodeId)
                 .GreaterThan(0)
                 .WithMessage("StreetcodeId must be greater than zero");
 
-            RuleFor(Title)
+            RuleFor(x => x.Title)
                 .NotEmpty()
                 .WithMessage("Title is required")
                 .MaximumLength(300)
                 .WithMessage("Title must not exceed 300 characters");
 
-            RuleFor(TextContent)
+            RuleFor(x => x.TextContent)
                 .NotEmpty()
                 .WithMessage("TextContent is required")
                 .MaximumLength(1500)
                 .WithMessage("TextContent must not exceed 1500 characters");
 
-            RuleFor(AdditionalText)
+            RuleFor(x => x.AdditionalText)
                 .MaximumLength(500)
-                .When(x => !string.IsNullOrEmpty(AdditionalText.Compile()(x)))
+                .When(x => !string.IsNullOrEmpty(x.AdditionalText))
                 .WithMessage("If AdditionalText is provided, it must not exceed 500 characters");
         }
     }
