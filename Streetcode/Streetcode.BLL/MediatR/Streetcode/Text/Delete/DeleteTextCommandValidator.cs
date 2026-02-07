@@ -8,7 +8,7 @@ namespace Streetcode.BLL.MediatR.Streetcode.Text.Delete
         {
             RuleFor(x => x.Id)
                 .GreaterThan(0)
-                .WithMessage("StreetcodeId must be greater than zero");
+                .WithMessage("Text Id must be greater than zero");
         }
     }
 }

@@ -24,7 +24,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
         public void Should_HaveError_IfIdIsInvalid(int id)
         {
             // Arrange
-            var model = new TextBaseDTO { StreetcodeId = id };
+            var model = new TextUpdateDTO { StreetcodeId = id };
             var command = new UpdateTextCommand(model);
 
             // Act
@@ -39,7 +39,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
         public void ShouldHaveError_IfTextIsNull()
         {
             // Arrange
-            var model = new TextBaseDTO { StreetcodeId = 1, TextContent = null!};
+            var model = new TextUpdateDTO { StreetcodeId = 1, TextContent = null!};
             var command = new UpdateTextCommand(model);
 
             // Act
@@ -54,7 +54,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
         public void ShouldHaveError_IfChildValidatorFails()
         {
             // Arrange
-            var invalidDTO = new TextBaseDTO
+            var invalidDTO = new TextUpdateDTO
             {
                 StreetcodeId = 1,
                 Title = "123",
@@ -74,8 +74,9 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
         public void ShouldHaveSuccess_IfCommandIsValid()
         {
             // Arrange
-            var validDto = new TextBaseDTO
+            var validDto = new TextUpdateDTO
             {
+                Id = 1,
                 StreetcodeId = 1,
                 Title = "Valid Title",
                 TextContent = "Some valid content",

@@ -29,7 +29,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Delete
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.Id)
-                  .WithErrorMessage("StreetcodeId must be greater than zero");
+                  .WithErrorMessage("Text Id must be greater than zero");
         }
 
 
@@ -38,7 +38,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Delete
         {
             // Arrange
             int id = 1;
-            var validDto = new TextBaseDTO
+            var validDto = new TextCreateDTO
             {
                 StreetcodeId = 1,
                 Title = "Valid Title",

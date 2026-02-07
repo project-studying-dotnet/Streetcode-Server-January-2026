@@ -1,11 +1,12 @@
-﻿using FluentValidation;
+﻿using System.Linq.Expressions;
+using FluentValidation;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
 
-namespace Streetcode.BLL.MediatR.Streetcode.Text.Validator
+namespace Streetcode.BLL.MediatR.Streetcode.Text
 {
-    public class TextBaseDTOValidator : AbstractValidator<TextBaseDTO>
+    public class TextBaseValidator : AbstractValidator<ITextBase>
     {
-        public TextBaseDTOValidator()
+        public TextBaseValidator()
         {
             RuleFor(x => x.StreetcodeId)
                 .GreaterThan(0)
