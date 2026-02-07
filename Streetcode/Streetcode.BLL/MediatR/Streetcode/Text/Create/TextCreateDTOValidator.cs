@@ -4,11 +4,10 @@ using Streetcode.BLL.MediatR.Streetcode.Text;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Text.Create
 {
-    public class TextCreateDTOValidator : AbstractValidator<TextCreateDTO>
+    public class TextCreateDTOValidator : TextBaseValidator
     {
         public TextCreateDTOValidator()
         {
-            Include(new TextBaseValidator());
         }
     }
 }
