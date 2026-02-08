@@ -2,8 +2,6 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore.Query;
 using Moq;
-using Streetcode.BLL.DTO.Media.Images;
-using Streetcode.BLL.DTO.News;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.Mapping.Media.Images;
@@ -49,6 +47,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnFail_WhenNoNewsInDb()
         {
+            // arrange
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetAllAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
                 It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()))
@@ -56,8 +55,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new SortedByDateTimeQuery();
 
+            // act
             var res = await _handler.Handle(request, CancellationToken.None);
 
+            // assert
             res.IsFailed.Should().BeTrue();
             res.Errors.Should().ContainSingle(e => e.Message == "There are no news in the database");
         }
@@ -65,6 +66,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnSortedNewsDtosWithImage_WhenNewsExists()
         {
+            // arrange
             var oldDate = DateTime.Now.AddYears(-2);
             var midDate = DateTime.Now.AddYears(-1);
             var newDate = DateTime.Now;
@@ -89,8 +91,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new SortedByDateTimeQuery();
 
+            // act
             var res = await _handler.Handle(request, CancellationToken.None);
 
+            // assert
             res.IsSuccess.Should().BeTrue();
             res.Value.FirstOrDefault().Image.Base64.Should().Be(expectedBase64);
             _blobServiceMock.Verify(
@@ -102,6 +106,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnSortedNewsDtosWithOutImage_WhenNewsExists()
         {
+            // arrange
             var oldDate = DateTime.Now.AddYears(-2);
             var midDate = DateTime.Now.AddYears(-1);
             var newDate = DateTime.Now;
@@ -121,8 +126,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new SortedByDateTimeQuery();
 
+            // act
             var res = await _handler.Handle(request, CancellationToken.None);
 
+            // assert
             res.IsSuccess.Should().BeTrue();
             _blobServiceMock.Verify(
                 bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()),

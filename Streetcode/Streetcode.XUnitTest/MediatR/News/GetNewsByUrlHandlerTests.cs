@@ -2,8 +2,6 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore.Query;
 using Moq;
-using Streetcode.BLL.DTO.Media.Images;
-using Streetcode.BLL.DTO.News;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.Mapping.Media.Images;
@@ -49,6 +47,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnFail_WhenNewsNotExists()
         {
+            // arrange
             var url = "test";
             var request = new GetNewsByUrlQuery(url);
 
@@ -57,8 +56,10 @@ namespace Streetcode.XUnitTest.MediatR.News
                 It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()))
                 .ReturnsAsync((NewsEntity)null);
 
+            // act
             var res = await _handler.Handle(request, CancellationToken.None);
 
+            // assert
             res.IsFailed.Should().BeTrue();
             res.Errors.Should().ContainSingle(e => e.Message == $"No news by entered Url - {url}");
         }
@@ -66,6 +67,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnNewsDtoWithImage_WhenNewsWithImageExists()
         {
+            // arrange
             var now = DateTime.Now;
 
             var news = new NewsEntity
@@ -89,8 +91,10 @@ namespace Streetcode.XUnitTest.MediatR.News
             _blobServiceMock.Setup(bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()))
                 .Returns(expectedBase64);
 
+            // act
             var res = await _handler.Handle(request, CancellationToken.None);
 
+            // assert
             res.IsSuccess.Should().BeTrue();
             res.Value.Image.Base64.Should().Be(expectedBase64);
             _blobServiceMock.Verify(
@@ -101,6 +105,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnNewsDtoWithOutImage_WhenNewsExistsButImageNot()
         {
+            // arrange
             var now = DateTime.Now;
 
             var news = new NewsEntity
@@ -119,8 +124,10 @@ namespace Streetcode.XUnitTest.MediatR.News
                 It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()))
                 .ReturnsAsync(news);
 
+            // act
             var res = await _handler.Handle(request, CancellationToken.None);
 
+            // assert
             res.IsSuccess.Should().BeTrue();
             _blobServiceMock.Verify(
                 bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()),

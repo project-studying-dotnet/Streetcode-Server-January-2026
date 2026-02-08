@@ -2,8 +2,6 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore.Query;
 using Moq;
-using Streetcode.BLL.DTO.Media.Images;
-using Streetcode.BLL.DTO.News;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.Mapping.Media.Images;
@@ -50,6 +48,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnFail_WhenNoNewsById()
         {
+            // arrange
             int id = 1;
 
             _repositoryWrapperMock.Setup(r => r.NewsRepository.GetFirstOrDefaultAsync(
@@ -60,8 +59,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new GetNewsByIdQuery(id);
 
+            // act
             var result = await _handler.Handle(request, CancellationToken.None);
 
+            // assert
             result.IsFailed.Should().BeTrue();
             result.Errors.Should().Contain(e => e.Message == $"No news by entered Id - {id}");
         }
@@ -69,6 +70,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnNewsDto_WhenNewsExistById()
         {
+            // arrange
             int id = 1;
 
             var now = DateTime.Now;
@@ -89,14 +91,17 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new GetNewsByIdQuery(id);
 
+            // act
             var result = await _handler.Handle(request, CancellationToken.None);
 
+            // assert
             result.IsSuccess.Should().BeTrue();
         }
 
         [Fact]
         public async Task Handle_ShouldReturnNewsDtoWithImage_WhenNewsExistByIdWithImage()
         {
+            // arrange
             int id = 1;
             var fakeBase = "fabe_base_64";
 
@@ -123,8 +128,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new GetNewsByIdQuery(id);
 
+            // act
             var result = await _handler.Handle(request, CancellationToken.None);
 
+            // assert
             result.IsSuccess.Should().BeTrue();
             result.Value.Image.Base64.Should().Be(fakeBase);
         }

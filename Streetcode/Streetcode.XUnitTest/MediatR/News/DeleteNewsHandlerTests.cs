@@ -1,8 +1,5 @@
-﻿using AutoMapper;
-using FluentAssertions;
-using MediatR;
+﻿using FluentAssertions;
 using Moq;
-using Streetcode.BLL.DTO.News;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.MediatR.Newss.Delete;
 using Streetcode.DAL.Entities.Media.Images;
@@ -32,6 +29,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnFail_WhenNewsNotFound()
         {
+            // arrange
             int id = 1;
             _repositoryWrapperMock.Setup(r => r.NewsRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
@@ -40,8 +38,11 @@ namespace Streetcode.XUnitTest.MediatR.News
                 .ReturnsAsync((NewsEntity)null);
             var command = new DeleteNewsCommand(id);
 
+            // act
             var result = await _handler.Handle(command, CancellationToken.None);
 
+
+            // assert
             result.IsFailed.Should().BeTrue();
             result.Errors.Should().ContainSingle(e => e.Message
                 .Contains($"No news found by entered Id - {id}"));
@@ -50,6 +51,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnFail_WhenNewsNotDeleted()
         {
+            // arrange
             int id = 1;
 
             var news = new NewsEntity
@@ -71,8 +73,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var command = new DeleteNewsCommand(id);
 
+            // act
             var result = await _handler.Handle(command, CancellationToken.None);
 
+            // assert
             result.IsFailed.Should().BeTrue();
             result.Errors.Should().ContainSingle(e => e.Message.Contains("Failed to delete news"));
         }
@@ -80,6 +84,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnUnit_WhenNewsSuccesfullyDeleted()
         {
+            // arrange
             int id = 1;
 
             var news = new NewsEntity
@@ -101,18 +106,20 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var command = new DeleteNewsCommand(id);
 
+            // act
             var result = await _handler.Handle(command, CancellationToken.None);
 
+            // assert
             _repositoryWrapperMock.Verify(
                 r => r.NewsRepository.Delete(news),
                 Times.Once);
-
             result.IsSuccess.Should().BeTrue();
         }
 
         [Fact]
         public async Task Handle_ShouldReturnUnit_WhenNewsSuccesfullyDeletedWithImage()
         {
+            // arrange
             int id = 1;
 
             var news = new NewsEntity
@@ -137,8 +144,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var command = new DeleteNewsCommand(id);
 
+            // act
             var result = await _handler.Handle(command, CancellationToken.None);
 
+            // assert
             _repositoryWrapperMock.Verify(
                 r => r.NewsRepository.Delete(news),
                 Times.Once);

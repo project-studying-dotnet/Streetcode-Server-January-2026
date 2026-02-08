@@ -47,6 +47,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnFail_WhenNoNewsInDb()
         {
+            // arrange
             _repositoryWrapperMock.Setup(r => r.NewsRepository.GetAllAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
                 It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()
@@ -55,8 +56,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new GetAllNewsQuery();
 
+            // act
             var result = await _handler.Handle(request, CancellationToken.None);
 
+            // assert
             result.IsFailed.Should().BeTrue();
             result.Errors.Should().Contain(e => e.Message == "There are no news in the database");
         }
@@ -64,6 +67,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnNewsDto_WhenNewsFound()
         {
+            // arrange
             var now = DateTime.Now;
 
             var news = new List<NewsEntity>
@@ -85,14 +89,17 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new GetAllNewsQuery();
 
+            // act
             var result = await _handler.Handle(request, CancellationToken.None);
 
+            // assert
             result.IsSuccess.Should().BeTrue();
         }
 
         [Fact]
         public async Task Handle_ShouldReturnNewsDtoWithImage_WhenNewsFoundWithImage()
         {
+            // arrange
             var now = DateTime.Now;
             var fakeBase = "fabe_base_64";
 
@@ -120,8 +127,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new GetAllNewsQuery();
 
+            // act
             var result = await _handler.Handle(request, CancellationToken.None);
 
+            // assert
             result.IsSuccess.Should().BeTrue();
             result.Value.FirstOrDefault().Image.Base64.Should().Be(fakeBase);
         }

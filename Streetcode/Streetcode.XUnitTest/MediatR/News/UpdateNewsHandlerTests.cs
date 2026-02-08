@@ -48,11 +48,13 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnFail_WhenNoNews()
         {
-
+            // arrange
             var req = new UpdateNewsCommand(null);
 
+            // act
             var res = await _handler.Handle(req, CancellationToken.None);
 
+            // assert
             res.IsFailed.Should().BeTrue();
             res.Errors.Should().ContainSingle(e => e.Message == "Cannot convert null to news");
         }
@@ -60,6 +62,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnFail_WhenCouldntUpdateNews()
         {
+            // arrange
             var newsDto = new NewsDTO
             {
                 Id = 1,
@@ -79,8 +82,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var req = new UpdateNewsCommand(newsDto);
 
+            // act
             var res = await _handler.Handle(req, CancellationToken.None);
 
+            // assert
             res.IsFailed.Should().BeTrue();
             _repositoryWrapperMock.Verify(
                 repo => repo.NewsRepository.Update(It.IsAny<NewsEntity>()),
@@ -92,6 +97,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnNewsDtoWithImage_WhenNewsAndImageExist()
         {
+            // arrange
             var fakeBase = "fake_base64";
 
             var newsDto = new NewsDTO
@@ -112,8 +118,11 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var req = new UpdateNewsCommand(newsDto);
 
+            // act
             var res = await _handler.Handle(req, CancellationToken.None);
 
+
+            // assert
             res.IsSuccess.Should().BeTrue();
             _repositoryWrapperMock.Verify(
                 repo => repo.NewsRepository.Update(It.IsAny<NewsEntity>()),
@@ -125,6 +134,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldDeleteOldImage_WhenNewImageIsNull_AndOldImageExists()
         {
+            // arrange
             var newsDto = new NewsDTO
             {
                 Id = 1,
@@ -145,8 +155,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var req = new UpdateNewsCommand(newsDto);
 
+            // act
             var res = await _handler.Handle(req, CancellationToken.None);
 
+            // assert
             res.IsSuccess.Should().BeTrue();
 
             _repositoryWrapperMock.Verify(

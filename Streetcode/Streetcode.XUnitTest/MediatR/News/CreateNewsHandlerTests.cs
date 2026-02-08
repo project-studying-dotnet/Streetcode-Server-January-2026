@@ -42,6 +42,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnCreatedNewsDTO_WhenValidRequest()
         {
+            // arrange
             var newsDto = new NewsDTO
             {
                 Title = "Test Title",
@@ -58,8 +59,10 @@ namespace Streetcode.XUnitTest.MediatR.News
             _repositoryWrapperMock.Setup(r => r.SaveChangesAsync())
                 .ReturnsAsync(1);
 
+            // act
             var res = await _handler.Handle(command, default);
 
+            // assert
             res.IsSuccess.Should().BeTrue();
             res.Value.Should().BeEquivalentTo(newsDto);
         }
@@ -67,6 +70,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnFailCreating_WhenNewsDtoIsInvalidFormat()
         {
+            // arrange
             var newsDto = new NewsDTO
             {
                 Title = "",
@@ -83,8 +87,10 @@ namespace Streetcode.XUnitTest.MediatR.News
             _repositoryWrapperMock.Setup(r => r.SaveChangesAsync())
                 .ReturnsAsync(0);
 
+            // act
             var res = await _handler.Handle(command, default);
 
+            // assert
             Assert.True(res.IsFailed);
             Assert.Equal("Failed to create a news", res.Errors.First().Message);
         }
@@ -92,11 +98,14 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnFailConverting_WhenNewsDtoIsNull()
         {
+            // arrange
             NewsDTO newsDto = null;
             var command = new CreateNewsCommand(newsDto);
 
+            // act
             var res = await _handler.Handle(command, default);
 
+            // assert
             Assert.True(res.IsFailed);
             Assert.Equal("Cannot convert null to news", res.Errors.First().Message);
         }
