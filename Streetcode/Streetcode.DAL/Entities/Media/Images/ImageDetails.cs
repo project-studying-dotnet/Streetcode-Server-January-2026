@@ -10,7 +10,7 @@ namespace Streetcode.DAL.Entities.Media.Images
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [MaxLength(100)]
+        [MaxLength(200)]
         public string? Title { get; set; }
 
         [MaxLength(300)]

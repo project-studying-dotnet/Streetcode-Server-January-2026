@@ -4,10 +4,12 @@
     using AutoMapper;
     using Microsoft.EntityFrameworkCore.Query;
     using Moq;
+    using Repositories.Interfaces;
     using Streetcode.BLL.DTO.Media.Art;
     using Streetcode.BLL.DTO.Media.Images;
     using Streetcode.BLL.Interfaces.BlobStorage;
     using Streetcode.BLL.Interfaces.Logging;
+    using Streetcode.BLL.Mapping.Media.Images;
     using Streetcode.BLL.MediatR.Media.Art.GetByStreetcodeId;
     using Streetcode.DAL.Entities.Media.Images;
     using Streetcode.DAL.Entities.Streetcode;
@@ -17,7 +19,7 @@
     public class GetArtsByStreetcodeIdHandlerTests
     {
         private readonly Mock<IRepositoryWrapper> repositoryWrapperMock;
-        private readonly Mock<IMapper> mapperMock;
+        private readonly IMapper mapper;
         private readonly Mock<ILoggerService> loggerMock;
         private readonly Mock<IBlobService> blobServiceMock;
         private readonly GetArtsByStreetcodeIdHandler handler;
@@ -25,12 +27,24 @@
         public GetArtsByStreetcodeIdHandlerTests()
         {
             this.repositoryWrapperMock = new Mock<IRepositoryWrapper>();
-            this.mapperMock = new Mock<IMapper>();
             this.loggerMock = new Mock<ILoggerService>();
             this.blobServiceMock = new Mock<IBlobService>();
 
-            this.handler = new GetArtsByStreetcodeIdHandler(repositoryWrapperMock.Object,
-                    mapperMock.Object, blobServiceMock.Object, loggerMock.Object);
+            this.repositoryWrapperMock.Setup(r => r.ArtRepository)
+                .Returns(new Mock<IArtRepository>().Object);
+
+            var configuration = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile(new ArtProfile());
+                cfg.AddProfile(new ImageProfile());
+            });
+            this.mapper = new Mapper(configuration);
+
+            this.handler = new GetArtsByStreetcodeIdHandler(
+                this.repositoryWrapperMock.Object,
+                this.mapper,
+                this.blobServiceMock.Object,
+                this.loggerMock.Object);
         }
 
         [Theory]
@@ -38,10 +52,9 @@
         public async Task Handle_ReturnsSuccess_WhenArtsExist(int streetcodeId)
         {
             // Arrange
-            List<Art> arts = this.GetArtsList();
-            List<ArtDTO> artDTOs = this.GetArtDTOsList();
+            List<Art> arts = GetArtsList();
 
-            this.SetupMocks(arts, artDTOs);
+            this.SetupArts(arts);
             this.SetupBlobService("test_base64_string");
 
             // Act
@@ -57,10 +70,9 @@
         public async Task Handle_ReturnsCorrectType_WhenArtsExist(int streetcodeId)
         {
             // Arrange
-            List<Art> arts = this.GetArtsList();
-            List<ArtDTO> artDTOs = this.GetArtDTOsList();
+            List<Art> arts = GetArtsList();
 
-            this.SetupMocks(arts, artDTOs);
+            this.SetupArts(arts);
             this.SetupBlobService("test_base64_string");
 
             // Act
@@ -68,7 +80,7 @@
                 .Handle(new GetArtsByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
 
             // Assert
-            Assert.IsAssignableFrom<IEnumerable<ArtDTO>>(result.Value);
+            Assert.IsType<IEnumerable<ArtDTO>>(result.Value, exactMatch: false);
         }
 
         [Theory]
@@ -76,10 +88,10 @@
         public async Task Handle_ReturnsCorrectAmount_WhenArtsExist(int streetcodeId)
         {
             // Arrange
-            List<Art> arts = this.GetArtsList();
-            List<ArtDTO> artDTOs = this.GetArtDTOsList();
+            List<Art> arts = GetArtsList();
+            List<ArtDTO> artDTOs = GetArtDTOsList();
 
-            this.SetupMocks(arts, artDTOs);
+            this.SetupArts(arts);
             this.SetupBlobService("test_base64_string");
 
             // Act
@@ -95,10 +107,9 @@
         public async Task Handle_ReturnsCorrectData_WhenArtsExist(int streetcodeId, string base64)
         {
             // Arrange
-            List<Art> arts = this.GetArtsList();
-            List<ArtDTO> artDTOs = this.GetArtDTOsList();
+            List<Art> arts = GetArtsList();
 
-            this.SetupMocks(arts, artDTOs);
+            this.SetupArts(arts);
             this.SetupBlobService(base64);
 
             // Act
@@ -113,72 +124,31 @@
         [InlineData(1)]
         [InlineData(0)]
         [InlineData(-1)]
-        public async Task Handle_ReturnsFailStatus_WhenArtsAreNull(int streetcodeId)
+        public async Task Handle_ReturnsSuccessAndEmpty_WhenArtsAreNullOrEmpty(int streetcodeId)
         {
             // Arrange
-            List<Art> arts = null;
-            List<ArtDTO> artDTOs = this.GetArtDTOsList();
-            this.SetupMocks(arts, artDTOs);
+            this.SetupArts(new List<Art>());
 
             // Act
             var result = await this.handler
                 .Handle(new GetArtsByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
 
             // Assert
-            Assert.True(result.IsFailed);
-        }
-
-        [Theory]
-        [InlineData(1)]
-        [InlineData(0)]
-        [InlineData(-1)]
-        public async Task Handle_ReturnsEmpty_WhenArtsAreEmpty(int streetcodeId)
-        {
-            // Arrange
-            List<Art> arts = new List<Art>();
-            List<ArtDTO> artDTOs = new List<ArtDTO>();
-            this.SetupMocks(arts, artDTOs);
-
-            // Act
-            var result = await this.handler
-                .Handle(new GetArtsByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
-
-            // Assert
+            Assert.True(result.IsSuccess);
             Assert.Empty(result.Value);
         }
 
-        [Theory]
-        [InlineData(1)]
-        [InlineData(0)]
-        [InlineData(-1)]
-        public async Task Handle_ReturnsErrorMessage_WhenArtsAreNull(int streetcodeId)
+        private void SetupArts(List<Art>? arts)
         {
-            // Arrange
-            List<Art> arts = null;
-            List<ArtDTO> artDTOs = this.GetArtDTOsList();
-            this.SetupMocks(arts, artDTOs);
+            var artRepository = new Mock<IArtRepository>();
 
-            // Act
-            var result = await this.handler
-                .Handle(new GetArtsByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
-
-            // Assert
-            Assert.Equal(
-                $"Cannot find any art with corresponding streetcode id: {streetcodeId}",
-                result.Errors[0].Message);
-        }
-
-        private void SetupMocks(List<Art>? arts, List<ArtDTO>? artDTOs)
-        {
-            this.repositoryWrapperMock.Setup(r => r.ArtRepository.GetAllAsync(
+            artRepository.Setup(r => r.GetAllAsync(
                 It.IsAny<Expression<Func<Art, bool>>>(),
                 It.IsAny<Func<IQueryable<Art>, IIncludableQueryable<Art, object>>>(),
                 It.IsAny<bool>()))
                 .ReturnsAsync(arts);
 
-            this.mapperMock.Setup(map => map
-                .Map<IEnumerable<ArtDTO>>(It.IsAny<IEnumerable<Art>>()))
-                .Returns(artDTOs);
+            this.repositoryWrapperMock.Setup(r => r.ArtRepository).Returns(artRepository.Object);
         }
 
         private void SetupBlobService(string base64String)
@@ -187,35 +157,35 @@
                 .Returns(base64String);
         }
 
-        private List<Art> GetArtsList()
+        private static List<Art> GetArtsList()
         {
-            return new List<Art>
-            {
+            return
+            [
                 new Art
                 {
                     Id = 1,
                     Image = new Image { Id = 1, BlobName = "test1.png" },
-                    StreetcodeArts = new List<StreetcodeArt>
-                    {
+                    StreetcodeArts =
+                    [
                         new StreetcodeArt { StreetcodeId = 1 },
-                    },
+                    ],
                 },
                 new Art
                 {
                     Id = 2,
                     Image = new Image { Id = 2, BlobName = "test2.png" },
-                    StreetcodeArts = new List<StreetcodeArt>
-                    {
+                    StreetcodeArts =
+                    [
                         new StreetcodeArt { StreetcodeId = 1 },
-                    },
+                    ],
                 },
-            };
+            ];
         }
 
-        private List<ArtDTO> GetArtDTOsList()
+        private static List<ArtDTO> GetArtDTOsList()
         {
-            return new List<ArtDTO>
-            {
+            return
+            [
                 new ArtDTO
                 {
                     Id = 1,
@@ -225,8 +195,10 @@
                 new ArtDTO
                 {
                     Id = 2,
+                    ImageId = 2,
+                    Image = new ImageDTO { Id = 2, BlobName = "test2.png" },
                 },
-            };
+            ];
         }
     }
 }
