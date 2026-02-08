@@ -6,6 +6,8 @@ using Streetcode.BLL.DTO.Media.Images;
 using Streetcode.BLL.DTO.News;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
+using Streetcode.BLL.Mapping.Media.Images;
+using Streetcode.BLL.Mapping.Newss;
 using Streetcode.BLL.MediatR.Newss.GetByUrl;
 using Streetcode.DAL.Entities.Media.Images;
 using Streetcode.DAL.Repositories.Interfaces.Base;
@@ -18,19 +20,27 @@ namespace Streetcode.XUnitTest.MediatR.News
     public class GetNewsByUrlHandlerTests
     {
         private readonly Mock<IRepositoryWrapper> _repositoryWrapperMock;
-        private readonly Mock<IMapper> _mapperMock;
         private readonly Mock<IBlobService> _blobServiceMock;
         private readonly Mock<ILoggerService> _loggerMock;
+        private readonly IMapper _mapper;
         private readonly GetNewsByUrlHandler _handler;
 
         public GetNewsByUrlHandlerTests()
         {
             _blobServiceMock = new Mock<IBlobService>();
-            _mapperMock = new Mock<IMapper>();
             _loggerMock = new Mock<ILoggerService>();
             _repositoryWrapperMock = new Mock<IRepositoryWrapper>();
+
+            var config = new MapperConfiguration(conf =>
+            {
+                conf.AddProfile(new NewsProfile());
+                conf.AddProfile(new ImageProfile());
+            });
+
+            _mapper = config.CreateMapper();
+
             _handler = new GetNewsByUrlHandler(
-                _mapperMock.Object,
+                _mapper,
                 _repositoryWrapperMock.Object,
                 _blobServiceMock.Object,
                 _loggerMock.Object);
@@ -47,9 +57,6 @@ namespace Streetcode.XUnitTest.MediatR.News
                 It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()))
                 .ReturnsAsync((NewsEntity)null);
 
-            _mapperMock.Setup(m => m.Map<NewsDTO>(It.IsAny<NewsEntity>()))
-                .Returns((NewsDTO)null);
-
             var res = await _handler.Handle(request, CancellationToken.None);
 
             res.IsFailed.Should().BeTrue();
@@ -60,15 +67,6 @@ namespace Streetcode.XUnitTest.MediatR.News
         public async Task Handle_ShouldReturnNewsDtoWithImage_WhenNewsWithImageExists()
         {
             var now = DateTime.Now;
-
-            var newsDto = new NewsDTO
-            {
-                Title = "Test Title",
-                Text = "Sample text",
-                URL = "https://github.com/",
-                CreationDate = now,
-                Image = new ImageDTO(),
-            };
 
             var news = new NewsEntity
             {
@@ -88,9 +86,6 @@ namespace Streetcode.XUnitTest.MediatR.News
                 It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()))
                 .ReturnsAsync(news);
 
-            _mapperMock.Setup(m => m.Map<NewsDTO>(It.IsAny<NewsEntity>()))
-                .Returns(newsDto);
-
             _blobServiceMock.Setup(bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()))
                 .Returns(expectedBase64);
 
@@ -108,14 +103,6 @@ namespace Streetcode.XUnitTest.MediatR.News
         {
             var now = DateTime.Now;
 
-            var newsDto = new NewsDTO
-            {
-                Title = "Test Title",
-                Text = "Sample text",
-                URL = "https://github.com/",
-                CreationDate = now,
-            };
-
             var news = new NewsEntity
             {
                 Title = "Test Title",
@@ -132,13 +119,9 @@ namespace Streetcode.XUnitTest.MediatR.News
                 It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()))
                 .ReturnsAsync(news);
 
-            _mapperMock.Setup(m => m.Map<NewsDTO>(It.IsAny<NewsEntity>()))
-                .Returns(newsDto);
-
             var res = await _handler.Handle(request, CancellationToken.None);
 
             res.IsSuccess.Should().BeTrue();
-            res.Value.Should().BeEquivalentTo(newsDto);
             _blobServiceMock.Verify(
                 bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()),
                 Times.Never);

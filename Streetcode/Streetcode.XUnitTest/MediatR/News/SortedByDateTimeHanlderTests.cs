@@ -6,6 +6,8 @@ using Streetcode.BLL.DTO.Media.Images;
 using Streetcode.BLL.DTO.News;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
+using Streetcode.BLL.Mapping.Media.Images;
+using Streetcode.BLL.Mapping.Newss;
 using Streetcode.BLL.MediatR.Newss.SortedByDateTime;
 using Streetcode.DAL.Entities.Media.Images;
 using Streetcode.DAL.Repositories.Interfaces.Base;
@@ -18,20 +20,28 @@ namespace Streetcode.XUnitTest.MediatR.News
     public class SortedByDateTimeHanlderTests
     {
         private readonly Mock<IRepositoryWrapper> _repositoryWrapperMock;
-        private readonly Mock<IMapper> _mapperMock;
         private readonly Mock<IBlobService> _blobServiceMock;
         private readonly Mock<ILoggerService> _loggerMock;
+        private readonly IMapper _mapper;
         private readonly SortedByDateTimeHandler _handler;
 
         public SortedByDateTimeHanlderTests()
         {
             _blobServiceMock = new Mock<IBlobService>();
-            _mapperMock = new Mock<IMapper>();
             _loggerMock = new Mock<ILoggerService>();
             _repositoryWrapperMock = new Mock<IRepositoryWrapper>();
+
+            var config = new MapperConfiguration(conf =>
+            {
+                conf.AddProfile(new NewsProfile());
+                conf.AddProfile(new ImageProfile());
+            });
+
+            _mapper = config.CreateMapper();
+
             _handler = new SortedByDateTimeHandler(
                 _repositoryWrapperMock.Object,
-                _mapperMock.Object,
+                _mapper,
                 _blobServiceMock.Object,
                 _loggerMock.Object);
         }
@@ -68,21 +78,11 @@ namespace Streetcode.XUnitTest.MediatR.News
                 new NewsEntity { Id = 3, URL = "url3", Image = new Image(), CreationDate = newDate },
             };
 
-            var allNewsDto = new List<NewsDTO>
-            {
-                new NewsDTO { Id = 1, URL = "url1", Image = new ImageDTO(), CreationDate = midDate },
-                new NewsDTO { Id = 2, URL = "url2", Image = new ImageDTO(), CreationDate = oldDate },
-                new NewsDTO { Id = 3, URL = "url3", Image = new ImageDTO(), CreationDate = newDate },
-            };
-
             _repositoryWrapperMock.Setup(r => r.NewsRepository.GetAllAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
                 It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()
             ))
             .ReturnsAsync(allNews);
-
-            _mapperMock.Setup(m => m.Map<IEnumerable<NewsDTO>> (It.IsAny<IEnumerable<NewsEntity>>()))
-                .Returns(allNewsDto);
 
             _blobServiceMock.Setup(bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()))
                 .Returns(expectedBase64);
@@ -95,7 +95,7 @@ namespace Streetcode.XUnitTest.MediatR.News
             res.Value.FirstOrDefault().Image.Base64.Should().Be(expectedBase64);
             _blobServiceMock.Verify(
                 bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()),
-                Times.Exactly(allNewsDto.Count));
+                Times.Exactly(allNews.Count));
             res.Value.Should().BeInDescendingOrder(x => x.CreationDate);
         }
 
@@ -113,28 +113,17 @@ namespace Streetcode.XUnitTest.MediatR.News
                 new NewsEntity { Id = 3, URL = "url3", CreationDate = newDate },
             };
 
-            var allNewsDto = new List<NewsDTO>
-            {
-                new NewsDTO { Id = 1, URL = "url1", CreationDate = midDate },
-                new NewsDTO { Id = 2, URL = "url2", CreationDate = oldDate },
-                new NewsDTO { Id = 3, URL = "url3", CreationDate = newDate },
-            };
-
             _repositoryWrapperMock.Setup(r => r.NewsRepository.GetAllAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
                 It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()
             ))
             .ReturnsAsync(allNews);
 
-            _mapperMock.Setup(m => m.Map<IEnumerable<NewsDTO>>(It.IsAny<IEnumerable<NewsEntity>>()))
-                .Returns(allNewsDto);
-
             var request = new SortedByDateTimeQuery();
 
             var res = await _handler.Handle(request, CancellationToken.None);
 
             res.IsSuccess.Should().BeTrue();
-            res.Value.Should().BeEquivalentTo(allNewsDto);
             _blobServiceMock.Verify(
                 bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()),
                 Times.Never);

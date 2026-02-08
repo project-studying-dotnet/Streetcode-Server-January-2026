@@ -7,6 +7,8 @@ using Streetcode.BLL.DTO.Media.Images;
 using Streetcode.BLL.DTO.News;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
+using Streetcode.BLL.Mapping.Media.Images;
+using Streetcode.BLL.Mapping.Newss;
 using Streetcode.BLL.MediatR.Newss.GetNewsAndLinksByUrl;
 using Streetcode.DAL.Entities.Media.Images;
 using Streetcode.DAL.Repositories.Interfaces.Base;
@@ -19,19 +21,27 @@ namespace Streetcode.XUnitTest.MediatR.News
     public class GetNewsAndLinksByUrlHandlerTests
     {
         private readonly Mock<IRepositoryWrapper> _repositoryWrapperMock;
-        private readonly Mock<IMapper> _mapperMock;
         private readonly Mock<IBlobService> _blobServiceMock;
         private readonly Mock<ILoggerService> _loggerMock;
+        private readonly IMapper _mapper;
         private readonly GetNewsAndLinksByUrlHandler _handler;
 
         public GetNewsAndLinksByUrlHandlerTests()
         {
             _blobServiceMock = new Mock<IBlobService>();
-            _mapperMock = new Mock<IMapper>();
             _loggerMock = new Mock<ILoggerService>();
             _repositoryWrapperMock = new Mock<IRepositoryWrapper>();
+
+            var config = new MapperConfiguration(conf =>
+            {
+                conf.AddProfile(new NewsProfile());
+                conf.AddProfile(new ImageProfile());
+            });
+
+            _mapper = config.CreateMapper();
+
             _handler = new GetNewsAndLinksByUrlHandler(
-                _mapperMock.Object,
+                _mapper,
                 _repositoryWrapperMock.Object,
                 _blobServiceMock.Object,
                 _loggerMock.Object);
@@ -47,9 +57,6 @@ namespace Streetcode.XUnitTest.MediatR.News
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
                 It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()))
                 .ReturnsAsync((NewsEntity)null);
-
-            _mapperMock.Setup(m => m.Map<NewsDTO>(It.IsAny<NewsEntity>()))
-                .Returns((NewsDTO)null);
 
             var res = await _handler.Handle(request, CancellationToken.None);
 
@@ -72,7 +79,6 @@ namespace Streetcode.XUnitTest.MediatR.News
             };
 
             var targetNewsEntity = allNews[1];
-            var targetNewsDto = new NewsDTO { Id = targetId, URL = url, Image = new ImageDTO() };
 
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
@@ -81,9 +87,6 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetAllAsync(null, null))
                 .ReturnsAsync(allNews);
-
-            _mapperMock.Setup(m => m.Map<NewsDTO>(It.IsAny<NewsEntity>()))
-                .Returns(targetNewsDto);
 
             _blobServiceMock.Setup(bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()))
                 .Returns(expectedBase64);
@@ -112,7 +115,6 @@ namespace Streetcode.XUnitTest.MediatR.News
             };
 
             var targetNewsEntity = allNews[0];
-            var targetNewsDto = new NewsDTO { Id = targetId, URL = url };
 
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
@@ -121,9 +123,6 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetAllAsync(null, null))
                 .ReturnsAsync(allNews);
-
-            _mapperMock.Setup(m => m.Map<NewsDTO>(It.IsAny<NewsEntity>()))
-                .Returns(targetNewsDto);
 
             var request = new GetNewsAndLinksByUrlQuery(url);
             var res = await _handler.Handle(request, CancellationToken.None);
@@ -149,7 +148,6 @@ namespace Streetcode.XUnitTest.MediatR.News
             };
 
             var targetNewsEntity = allNews[1];
-            var targetNewsDto = new NewsDTO { Id = targetId, Title = "test", URL = url };
 
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
@@ -159,16 +157,13 @@ namespace Streetcode.XUnitTest.MediatR.News
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetAllAsync(null, null))
                 .ReturnsAsync(allNews);
 
-            _mapperMock.Setup(m => m.Map<NewsDTO>(It.IsAny<NewsEntity>()))
-                .Returns(targetNewsDto);
-
             var request = new GetNewsAndLinksByUrlQuery(url);
             var res = await _handler.Handle(request, CancellationToken.None);
 
             res.IsSuccess.Should().BeTrue();
             res.Value.PrevNewsUrl.Should().Be("prev-url");
-            res.Value.RandomNews.RandomNewsUrl.Should().Be(targetNewsDto.URL);
-            res.Value.RandomNews.Title.Should().Be(targetNewsDto.Title);
+            res.Value.RandomNews.RandomNewsUrl.Should().Be(targetNewsEntity.URL);
+            res.Value.RandomNews.Title.Should().Be(targetNewsEntity.Title);
         }
 
         [Fact]
@@ -186,7 +181,6 @@ namespace Streetcode.XUnitTest.MediatR.News
             };
 
             var targetNewsEntity = allNews[1];
-            var targetNewsDto = new NewsDTO { Id = targetId, Title = "test", URL = url };
 
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
@@ -195,9 +189,6 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetAllAsync(null, null))
                 .ReturnsAsync(allNews);
-
-            _mapperMock.Setup(m => m.Map<NewsDTO>(It.IsAny<NewsEntity>()))
-                .Returns(targetNewsDto);
 
             var request = new GetNewsAndLinksByUrlQuery(url);
             var res = await _handler.Handle(request, CancellationToken.None);
@@ -222,7 +213,6 @@ namespace Streetcode.XUnitTest.MediatR.News
             var url = "url-4";
 
             var targetNewsEntity = allNews[3];
-            var targetNewsDto = new NewsDTO { Id = targetId, Title = "Last", URL = url };
 
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
@@ -231,9 +221,6 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetAllAsync(null, null))
                 .ReturnsAsync(allNews);
-
-            _mapperMock.Setup(m => m.Map<NewsDTO>(It.IsAny<NewsEntity>()))
-                .Returns(targetNewsDto);
 
             var request = new GetNewsAndLinksByUrlQuery(url);
 

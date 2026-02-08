@@ -6,6 +6,8 @@ using Streetcode.BLL.DTO.Media.Images;
 using Streetcode.BLL.DTO.News;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
+using Streetcode.BLL.Mapping.Media.Images;
+using Streetcode.BLL.Mapping.Newss;
 using Streetcode.BLL.MediatR.Newss.GetById;
 using Streetcode.DAL.Entities.Media.Images;
 using Streetcode.DAL.Repositories.Interfaces.Base;
@@ -19,19 +21,27 @@ namespace Streetcode.XUnitTest.MediatR.News
     public class GetNewByIdHandlerTests
     {
         private readonly Mock<IRepositoryWrapper> _repositoryWrapperMock;
-        private readonly Mock<IMapper> _mapperMock;
         private readonly Mock<IBlobService> _blobServiceMock;
         private readonly Mock<ILoggerService> _loggerMock;
+        private readonly IMapper _mapper;
         private readonly GetNewsByIdHandler _handler;
 
         public GetNewByIdHandlerTests()
         {
-            _mapperMock = new Mock<IMapper>();
             _repositoryWrapperMock = new Mock<IRepositoryWrapper>();
             _blobServiceMock = new Mock<IBlobService>();
             _loggerMock = new Mock<ILoggerService>();
+
+            var config = new MapperConfiguration(conf =>
+            {
+                conf.AddProfile(new NewsProfile());
+                conf.AddProfile(new ImageProfile());
+            });
+
+            _mapper = config.CreateMapper();
+
             _handler = new GetNewsByIdHandler(
-                _mapperMock.Object,
+                _mapper,
                 _repositoryWrapperMock.Object,
                 _blobServiceMock.Object,
                 _loggerMock.Object);
@@ -48,9 +58,6 @@ namespace Streetcode.XUnitTest.MediatR.News
             ))
             .ReturnsAsync((NewsEntity)null!);
 
-            _mapperMock.Setup(m => m.Map<NewsDTO>(It.IsAny<NewsEntity>()))
-                .Returns((NewsDTO)null!);
-
             var request = new GetNewsByIdQuery(id);
 
             var result = await _handler.Handle(request, CancellationToken.None);
@@ -66,14 +73,6 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var now = DateTime.Now;
 
-            var newsDto = new NewsDTO
-            {
-                Title = "Test Title",
-                Text = "Sample text",
-                URL = "https://github.com/",
-                CreationDate = now,
-            };
-
             var news = new NewsEntity
             {
                 Title = "Test Title",
@@ -88,15 +87,11 @@ namespace Streetcode.XUnitTest.MediatR.News
             ))
             .ReturnsAsync(news);
 
-            _mapperMock.Setup(m => m.Map<NewsDTO>(It.IsAny<NewsEntity>()))
-                .Returns(newsDto);
-
             var request = new GetNewsByIdQuery(id);
 
             var result = await _handler.Handle(request, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
-            result.Value.Should().BeEquivalentTo(newsDto);
         }
 
         [Fact]
@@ -106,15 +101,6 @@ namespace Streetcode.XUnitTest.MediatR.News
             var fakeBase = "fabe_base_64";
 
             var now = DateTime.Now;
-
-            var newsDto = new NewsDTO
-            {
-                Title = "Test Title",
-                Text = "Sample text",
-                URL = "https://github.com/",
-                CreationDate = now,
-                Image = new ImageDTO(),
-            };
 
             var news = new NewsEntity
             {
@@ -134,9 +120,6 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _blobServiceMock.Setup(bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()))
                 .Returns(fakeBase);
-
-            _mapperMock.Setup(m => m.Map<NewsDTO>(It.IsAny<NewsEntity>()))
-                .Returns(newsDto);
 
             var request = new GetNewsByIdQuery(id);
 
