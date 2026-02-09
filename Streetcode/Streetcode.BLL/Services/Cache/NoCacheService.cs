@@ -1,12 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Streetcode.BLL.Interfaces.Cache;
 
 namespace Streetcode.BLL.Services.Cache
 {
-    internal class NoCacheService
+    public class NoCacheService : ICacheService
     {
+        public Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken)
+        {
+            return Task.FromResult<T?>(default);
+        }
+
+        public Task RemoveAsync(string key, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task SetAsync<T>(string key, T value, TimeSpan? absoluteExpiration = null, CancellationToken cancellationToken = default)
+        {
+            return Task.CompletedTask;
+        }
     }
 }

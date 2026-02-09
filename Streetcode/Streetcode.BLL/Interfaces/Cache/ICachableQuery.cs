@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace Streetcode.BLL.Interfaces.Cache
 {
-    internal interface ICachableQuery
+    public interface ICachableQuery
     {
+        bool BypassCache { get; }
+        string CacheKey { get; }
+        TimeSpan? SlidingExpiration { get; }
     }
 }
