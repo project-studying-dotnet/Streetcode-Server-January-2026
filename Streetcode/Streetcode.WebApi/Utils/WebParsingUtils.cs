@@ -109,7 +109,8 @@ public class WebParsingUtils
     public async Task ParseZipFileFromWebAsync(bool bypassSslValidation = false)
     {
         var zipPath = $"houses.zip";
-        var extractTo = $"/root/build/StreetCode/Streetcode/Streetcode.DAL";
+        var baseDirectory = Directory.GetCurrentDirectory();
+        var extractTo = Path.Combine(baseDirectory, "Resources");
 
         var cancellationToken = new CancellationTokenSource().Token;
 
@@ -121,6 +122,7 @@ public class WebParsingUtils
                 extractTo,
                 bypassSslValidation,
                 cancellationToken);
+
             Console.WriteLine("Download and extraction completed successfully.");
 
             if (File.Exists(zipPath))
@@ -158,6 +160,10 @@ public class WebParsingUtils
 
         string csvPath = $"{extractTo}/data.csv";
 
+        var isFileChanged = false;
+
+        var dataToUpload = new List<string>();
+
         var allLinesFromDataCsv = new List<string>();
 
         if (File.Exists(csvPath))
@@ -183,18 +189,21 @@ public class WebParsingUtils
             .Take(20) // TODO take it of if you want to start global parse
             .ToList();
 
-        var toBeDeleted = alreadyParsedRows.Except(forParsingRows).ToList();
+        var dataToDelete = alreadyParsedRows.Except(forParsingRows).ToList();
 
         Console.WriteLine("Remains to parse: " + remainsToParse.Count);
-        Console.WriteLine("To be deleted: " + toBeDeleted.Count);
+        Console.WriteLine("To be deleted: " + dataToDelete.Count);
 
         // deletes out of date data in data.csv
-        foreach (var row in toBeDeleted)
+        if (dataToDelete.Count > 0)
         {
-            alreadyParsedRowsToWrite = alreadyParsedRowsToWrite.Where(x => !x.Contains(row)).ToList();
-        }
+            var 
+            alreadyParsedRowsToWrite.RemoveAll(r => dataToDelete.Any(d => r.Contains(d)));
 
-        await File.WriteAllLinesAsync(csvPath, alreadyParsedRowsToWrite, Encoding.GetEncoding(1251));
+            await File.WriteAllLinesAsync(csvPath, alreadyParsedRowsToWrite, Encoding.GetEncoding(1251));
+
+            isFileChanged = true;
+        }
 
         // parses coordinates and writes into data.csv
         foreach (var row in remainsToParse)
@@ -225,7 +234,13 @@ public class WebParsingUtils
             newRow += $"{latitude};{longitude}";
             Console.WriteLine(newRow);
 
-            await File.AppendAllTextAsync(csvPath, newRow + "\n", Encoding.GetEncoding(1251));
+            dataToUpload.Add(newRow);
+        }
+
+        if (remainsToParse.Count > 0)
+        {
+            isFileChanged = true;
+            await File.AppendAllLinesAsync(csvPath, dataToUpload, Encoding.GetEncoding(1251));
         }
 
         if (deleteFile)
@@ -233,11 +248,19 @@ public class WebParsingUtils
             File.Delete(excelPath);
         }
 
-        await SaveToponymsToDbAsync(csvPath);
+        if (isFileChanged)
+        {
+            await SaveToponymsToDbAsync(dataToUpload, dataToDelete);
+        }
     }
 
-    public async Task SaveToponymsToDbAsync(string csvPath)
+    public async Task SaveToponymsToDbAsync(List<string> dataToUpload, List<string> dataToDelete)
     {
+        foreach (var rowToDelete in dataToDelete)
+        {
+            var toponym = await _repository.ToponymRepository. GetFirstOrDefaultAsync(t => t.)
+        }
+
         var rows = new List<string>(
                 await File.ReadAllLinesAsync(csvPath, Encoding.GetEncoding(1251)))
             .Skip(1)

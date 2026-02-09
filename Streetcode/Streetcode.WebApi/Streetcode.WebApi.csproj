@@ -70,6 +70,7 @@
   <ItemGroup>
     <Folder Include="Controllers\Analytics\" />
     <Folder Include="Controllers\Newss\" />
+    <Folder Include="Resources\" />
   </ItemGroup>
 
 </Project>
