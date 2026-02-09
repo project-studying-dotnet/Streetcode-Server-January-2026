@@ -2,7 +2,6 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Query;
-using MimeKit;
 using Streetcode.DAL.Persistence;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 
@@ -18,9 +17,11 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T>
         _dbContext = context;
     }
 
-    public IQueryable<T> FindAll(Expression<Func<T, bool>>? predicate = default)
+    public IQueryable<T> FindAll(
+        Expression<Func<T, bool>>? predicate = default,
+        bool trackEntities = false)
     {
-        return GetQueryable(predicate).AsNoTracking();
+        return GetQueryable(predicate, trackEntities: trackEntities);
     }
 
     public T Create(T entity)
@@ -98,47 +99,53 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T>
 
     public async Task<IEnumerable<T>> GetAllAsync(
         Expression<Func<T, bool>>? predicate = default,
-        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default)
+        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default,
+        bool trackEntities = false)
     {
-        return await GetQueryable(predicate, include).ToListAsync();
+        return await GetQueryable(predicate, include, trackEntities: trackEntities).ToListAsync();
     }
 
     public async Task<IEnumerable<T>?> GetAllAsync(
         Expression<Func<T, T>> selector,
         Expression<Func<T, bool>>? predicate = default,
-        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default)
+        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default,
+        bool trackEntities = false)
     {
-        return await GetQueryable(predicate, include, selector).ToListAsync() ?? new List<T>();
+        return await GetQueryable(predicate, include, selector, trackEntities: trackEntities).ToListAsync();
     }
 
     public async Task<T?> GetSingleOrDefaultAsync(
         Expression<Func<T, bool>>? predicate = default,
-        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default)
+        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default,
+        bool trackEntities = false)
     {
-        return await GetQueryable(predicate, include).SingleOrDefaultAsync();
+        return await GetQueryable(predicate, include, trackEntities: trackEntities).SingleOrDefaultAsync();
     }
 
     public async Task<T?> GetFirstOrDefaultAsync(
         Expression<Func<T, bool>>? predicate = default,
-        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default)
+        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default,
+        bool trackEntities = false)
     {
-        return await GetQueryable(predicate, include).FirstOrDefaultAsync();
+        return await GetQueryable(predicate, include, trackEntities: trackEntities).FirstOrDefaultAsync();
     }
 
     public async Task<T?> GetFirstOrDefaultAsync(
         Expression<Func<T, T>> selector,
         Expression<Func<T, bool>>? predicate = default,
-        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default)
+        Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default,
+        bool trackEntities = false)
     {
-        return await GetQueryable(predicate, include, selector).FirstOrDefaultAsync();
+        return await GetQueryable(predicate, include, selector, trackEntities: trackEntities).FirstOrDefaultAsync();
     }
 
     private IQueryable<T> GetQueryable(
         Expression<Func<T, bool>>? predicate = default,
         Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = default,
-        Expression<Func<T, T>>? selector = default)
+        Expression<Func<T, T>>? selector = default,
+        bool trackEntities = false)
     {
-        var query = _dbContext.Set<T>().AsNoTracking();
+        var query = _dbContext.Set<T>().AsQueryable();
 
         if (include is not null)
         {
@@ -155,6 +162,6 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T>
             query = query.Select(selector);
         }
 
-        return query.AsNoTracking();
+        return trackEntities ? query : query.AsNoTracking();
     }
 }

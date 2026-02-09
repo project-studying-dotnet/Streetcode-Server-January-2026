@@ -8,7 +8,16 @@ public class FactProfile : Profile
 {
     public FactProfile()
     {
-        CreateMap<Fact, FactDto>().ReverseMap();
-        CreateMap<Fact, FactUpdateCreateDto>().ReverseMap();
+        CreateMap<Fact, FactDTO>()
+            .ForMember(
+                dest => dest.ImageDescription,
+                opt => opt.MapFrom(src => src.Image != null && src.Image.ImageDetails != null
+                    ? src.Image.ImageDetails.Title
+                    : null))
+            .ReverseMap();
+
+        CreateMap<CreateFactDTO, Fact>();
+        CreateMap<UpdateFactDTO, Fact>();
+        CreateMap<UpdateFactOrderDTO, Fact>();
     }
 }

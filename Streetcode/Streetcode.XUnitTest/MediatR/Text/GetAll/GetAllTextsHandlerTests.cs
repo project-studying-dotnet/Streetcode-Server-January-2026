@@ -2,6 +2,9 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
+using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore.Query;
+
 namespace Streetcode.XUnitTest.MediatR.Text.GetAll
 {
     using AutoMapper;
@@ -41,7 +44,10 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetAll
             var textsListDTOs = new List<TextDTO> { new TextDTO { Id = 1 }, new TextDTO { Id = 2 } };
 
             this.mockRepoWrapper
-                .Setup(r => r.TextRepository.GetAllAsync(null, null))
+                .Setup(r => r.TextRepository.GetAllAsync(
+                    It.IsAny<Expression<Func<Text, bool>>>(),
+                    It.IsAny<Func<IQueryable<Text>, IIncludableQueryable<Text, object>>>(),
+                    It.IsAny<bool>()))
                 .ReturnsAsync(textsList);
 
             this.mockMapper
@@ -63,7 +69,10 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetAll
             string errorMsg = "Cannot find any text";
 
             this.mockRepoWrapper
-                .Setup(r => r.TextRepository.GetAllAsync(null, null))
+                .Setup(r => r.TextRepository.GetAllAsync(
+                    It.IsAny<Expression<Func<Text, bool>>>(),
+                    It.IsAny<Func<IQueryable<Text>, IIncludableQueryable<Text, object>>>(),
+                    It.IsAny<bool>()))
                 .ReturnsAsync((IEnumerable<Text>?)null!);
 
             // Act
@@ -82,7 +91,10 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetAll
             var emptyTextsListDTOs = new List<TextDTO>();
 
             this.mockRepoWrapper
-                .Setup(r => r.TextRepository.GetAllAsync(null, null))
+                .Setup(r => r.TextRepository.GetAllAsync(
+                    It.IsAny<Expression<Func<Text, bool>>>(),
+                    It.IsAny<Func<IQueryable<Text>, IIncludableQueryable<Text, object>>>(),
+                    It.IsAny<bool>()))
                 .ReturnsAsync(emptyTextsList);
             this.mockMapper
                 .Setup(m => m.Map<IEnumerable<TextDTO>>(emptyTextsList))
@@ -95,7 +107,12 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetAll
             result.IsSuccess.Should().BeTrue();
             result.Value.Should().BeEmpty();
 
-            this.mockRepoWrapper.Verify(r => r.TextRepository.GetAllAsync(null, null), Times.Once);
+            this.mockRepoWrapper.Verify(
+                r => r.TextRepository.GetAllAsync(
+                    It.IsAny<Expression<Func<Text, bool>>>(),
+                    It.IsAny<Func<IQueryable<Text>, IIncludableQueryable<Text, object>>>(),
+                    It.IsAny<bool>()),
+                Times.Once);
         }
     }
 }

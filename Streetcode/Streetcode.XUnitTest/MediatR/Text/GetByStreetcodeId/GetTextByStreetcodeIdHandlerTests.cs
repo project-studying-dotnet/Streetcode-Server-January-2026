@@ -2,6 +2,8 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
+using Microsoft.EntityFrameworkCore.Query;
+
 namespace Streetcode.XUnitTest.MediatR.Text.GetByStreetcodeId
 {
     using System.Linq.Expressions;
@@ -50,7 +52,9 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetByStreetcodeId
 
             this.mockRepoWrapper
                 .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
-                    It.IsAny<Expression<Func<Text, bool>>>(), null))
+                    It.IsAny<Expression<Func<Text, bool>>>(),
+                    It.IsAny<Func<IQueryable<Text>, IIncludableQueryable<Text, object>>>(),
+                    It.IsAny<bool>()))
                 .ReturnsAsync(text);
 
             this.mockTextService
@@ -80,7 +84,9 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetByStreetcodeId
 
             this.mockRepoWrapper
                 .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
-                    It.IsAny<Expression<Func<Text, bool>>>(), null))
+                    It.IsAny<Expression<Func<Text, bool>>>(),
+                    It.IsAny<Func<IQueryable<Text>, IIncludableQueryable<Text, object>>>(),
+                    It.IsAny<bool>()))
                 .ReturnsAsync(text);
 
             this.mockTextService
@@ -109,12 +115,16 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetByStreetcodeId
 
             this.mockRepoWrapper
                 .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
-                    It.IsAny<Expression<Func<Text, bool>>>(), null))
+                    It.IsAny<Expression<Func<Text, bool>>>(),
+                    It.IsAny<Func<IQueryable<Text>, IIncludableQueryable<Text, object>>>(),
+                    It.IsAny<bool>()))
                 .ReturnsAsync((Text?)null);
 
             this.mockRepoWrapper
                 .Setup(r => r.StreetcodeRepository.GetFirstOrDefaultAsync(
-                    It.IsAny<Expression<Func<StreetcodeContent, bool>>>(), null))
+                    It.IsAny<Expression<Func<StreetcodeContent, bool>>>(),
+                    It.IsAny<Func<IQueryable<StreetcodeContent>, IIncludableQueryable<StreetcodeContent, object>>>(),
+                    It.IsAny<bool>()))
                 .ReturnsAsync((StreetcodeContent?)null);
 
             // Act

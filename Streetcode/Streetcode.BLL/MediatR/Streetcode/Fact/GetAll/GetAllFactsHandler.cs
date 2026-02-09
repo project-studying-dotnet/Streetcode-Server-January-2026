@@ -1,14 +1,14 @@
 ﻿using AutoMapper;
 using FluentResults;
 using MediatR;
-using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
+using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Fact;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Fact.GetAll;
 
-public class GetAllFactsHandler : IRequestHandler<GetAllFactsQuery, Result<IEnumerable<FactDto>>>
+public class GetAllFactsHandler : IRequestHandler<GetAllFactsQuery, Result<IEnumerable<FactDTO>>>
 {
     private readonly IMapper _mapper;
     private readonly IRepositoryWrapper _repositoryWrapper;
@@ -21,9 +21,10 @@ public class GetAllFactsHandler : IRequestHandler<GetAllFactsQuery, Result<IEnum
         _logger = logger;
     }
 
-    public async Task<Result<IEnumerable<FactDto>>> Handle(GetAllFactsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<FactDTO>>> Handle(GetAllFactsQuery request, CancellationToken cancellationToken)
     {
-        var facts = await _repositoryWrapper.FactRepository.GetAllAsync();
+        var facts = await _repositoryWrapper.FactRepository.GetAllAsync(
+            include: q => q.Include(f => f.Image).ThenInclude(i => i.ImageDetails));
 
         if (facts is null)
         {
@@ -32,6 +33,8 @@ public class GetAllFactsHandler : IRequestHandler<GetAllFactsQuery, Result<IEnum
             return Result.Fail(new Error(errorMsg));
         }
 
-        return Result.Ok(_mapper.Map<IEnumerable<FactDto>>(facts));
+        var sortedFacts = facts.OrderByDescending(f => f.Order);
+
+        return Result.Ok(_mapper.Map<IEnumerable<FactDTO>>(sortedFacts));
     }
 }

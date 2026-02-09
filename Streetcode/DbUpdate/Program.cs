@@ -7,13 +7,15 @@
     {
         static int Main(string[] args)
         {
-            string migrationPath = Path.Combine(Directory.GetCurrentDirectory(),
-                "Streetcode.DAL", "Persistence", "ScriptsMigration");
-
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Local";
+            var streetcodeBasePath = environment == "Local"
+                ? Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\"))
+                : AppContext.BaseDirectory;
+ 
+            var migrationPath = Path.Combine(streetcodeBasePath, "Streetcode.DAL", "Persistence", "ScriptsMigration");
 
             var configuration = new ConfigurationBuilder()
-                .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "Streetcode.WebApi"))
+                .SetBasePath(Path.Combine(streetcodeBasePath, "Streetcode.WebApi"))
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables("STREETCODE_")
@@ -21,17 +23,10 @@
 
             var connectionString = configuration.GetConnectionString("DefaultConnection");
 
-            string pathToScript = "";
-
-            Console.WriteLine("Enter '-m' to MIGRATE or '-s' to SEED db:");
-            pathToScript = Console.ReadLine();
-
-            pathToScript = migrationPath;
-
             var upgrader =
                 DeployChanges.To
                     .SqlDatabase(connectionString)
-                    .WithScriptsFromFileSystem(pathToScript)
+                    .WithScriptsFromFileSystem(migrationPath)
                     .LogToConsole()
                     .Build();
 
