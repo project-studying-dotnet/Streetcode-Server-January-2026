@@ -4,9 +4,11 @@ using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using NLog;
 using Serilog.Events;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Cache;
@@ -112,22 +114,27 @@ public static class ServiceCollectionExtensions
         });
     }
 
-    public static void AddRedisCacheServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddRedisCacheServices(this IServiceCollection services, IConfiguration configuration)
     {
-        var redisSettings = configuration.GetSection("RedisSettings");
+        var redisConnection = configuration.GetConnectionString("Redis");
 
-        if (redisSettings.GetValue<bool>("Enabled"))
+        if (!string.IsNullOrEmpty(redisConnection))
         {
+            Console.WriteLine($"[CACHE] Redis connection string found: {redisConnection}");
             services.AddStackExchangeRedisCache(options =>
             {
-                options.Configuration = configuration.GetConnectionString("Redis");
+                options.Configuration = redisConnection;
+                options.InstanceName = "Streetcode_";
             });
             services.AddScoped<ICacheService, RedisCacheService>();
+            Console.WriteLine("[CACHE] Using RedisCacheService");
         }
         else
         {
             services.AddScoped<ICacheService, NoCacheService>();
         }
+
+        return services;
     }
 
     public class CorsConfiguration
