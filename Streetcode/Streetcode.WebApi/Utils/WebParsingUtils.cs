@@ -197,8 +197,11 @@ public class WebParsingUtils
         // deletes out of date data in data.csv
         if (dataToDelete.Count > 0)
         {
-            var 
-            alreadyParsedRowsToWrite.RemoveAll(r => dataToDelete.Any(d => r.Contains(d)));
+            dataToDelete = alreadyParsedRows.FindAll(r => dataToDelete.Any(d => r.Contains(d)));
+
+            var dataToDeleteSet = dataToDelete.ToHashSet<string>();
+
+            alreadyParsedRowsToWrite.RemoveAll(r => dataToDeleteSet.Contains(r));
 
             await File.WriteAllLinesAsync(csvPath, alreadyParsedRowsToWrite, Encoding.GetEncoding(1251));
 
@@ -256,50 +259,55 @@ public class WebParsingUtils
 
     public async Task SaveToponymsToDbAsync(List<string> dataToUpload, List<string> dataToDelete)
     {
-        foreach (var rowToDelete in dataToDelete)
+        var isDataChanged = false;
+
+        if (dataToUpload.Count > 0)
         {
-            var toponym = await _repository.ToponymRepository. GetFirstOrDefaultAsync(t => t.)
+            var toponymsToUpload = dataToUpload
+            .Select(row => ConvertRowToToponym(row))
+            .ToList();
+
+            await _repository.ToponymRepository.CreateRangeAsync(toponymsToUpload);
+            isDataChanged = true;
         }
 
-        var rows = new List<string>(
-                await File.ReadAllLinesAsync(csvPath, Encoding.GetEncoding(1251)))
-            .Skip(1)
-            .Select(x => x.Split(';'));
-
-        // this part of code truncates Toponyms table
-        _streetcodeContext.Set<Toponym>().RemoveRange(_streetcodeContext.Set<Toponym>());
-        _streetcodeContext.SaveChanges();
-
-        foreach (var row in rows)
+        if (dataToDelete.Count > 0)
         {
-            try
-            {
-                var (streetName, streetType) = OptimizeStreetname(row[AddressColumn]);
+            var possibleToponymsToDelete = dataToDelete
+            .Select(row => ConvertRowToToponym(row))
+            .ToList();
 
-                await _repository.ToponymRepository.CreateAsync(new Toponym
+            var toponymEntitesToDelete = new List<Toponym>();
+
+            foreach (var candidate in possibleToponymsToDelete)
+            {
+                var entity = await _repository.ToponymRepository.GetFirstOrDefaultAsync(t =>
+                    t.Gromada == candidate.Gromada &&
+                    t.Coordinate.Latitude == candidate.Coordinate.Latitude &&
+                    t.Coordinate.Longtitude == candidate.Coordinate.Longtitude &&
+                    t.Community == candidate.Community &&
+                    t.Oblast == candidate.Oblast &&
+                    t.StreetType == candidate.StreetType &&
+                    t.StreetName == candidate.StreetName);
+
+                if (entity != null)
                 {
-                    Oblast = row[RegionColumn],
-                    AdminRegionOld = row[AdministrativeRegionOldColumn],
-                    AdminRegionNew = row[AdministrativeRegionNewColumn],
-                    Gromada = row[CommonalityColumn],
-                    Community = row[CommunityColumn],
-                    StreetName = streetName,
-                    StreetType = streetType,
-                    Coordinate = new ToponymCoordinate
-                    {
-                        Latitude = decimal.Parse(row[LatitudeColumn], CultureInfo.InvariantCulture),
-                        Longtitude = decimal.Parse(row[LongitudeColumn], CultureInfo.InvariantCulture)
-                    }
-                });
+                    toponymEntitesToDelete.Add(entity);
+                }
             }
-            catch (Exception ex)
+
+            if (toponymEntitesToDelete.Count > 0)
             {
-                Console.WriteLine(ex.Message);
+                _repository.ToponymRepository.DeleteRange(toponymEntitesToDelete);
+                isDataChanged = true;
             }
         }
 
-        var isChangeSuccessful = await _repository.SaveChangesAsync() > 0;
-        Console.WriteLine($"Success: {isChangeSuccessful}");
+        if (isDataChanged)
+        {
+            var isChangeSuccessful = await _repository.SaveChangesAsync() > 0;
+            Console.WriteLine($"Success: {isChangeSuccessful}");
+        }
     }
 
     /// <summary>
@@ -348,6 +356,29 @@ public class WebParsingUtils
         rows.Select(x => string.Join(";", x.Split(';').Take(beforeColumn)))
             .Distinct()
             .ToList();
+
+    private Toponym ConvertRowToToponym(string row)
+    {
+        var rowParts = row.Split(';');
+
+        var (streetName, streetType) = OptimizeStreetname(rowParts[AddressColumn]);
+
+        return new Toponym
+        {
+            Oblast = rowParts[RegionColumn],
+            AdminRegionOld = rowParts[AdministrativeRegionOldColumn],
+            AdminRegionNew = rowParts[AdministrativeRegionNewColumn],
+            Gromada = rowParts[CommonalityColumn],
+            Community = rowParts[CommunityColumn],
+            StreetName = streetName,
+            StreetType = streetType,
+            Coordinate = new ToponymCoordinate
+            {
+                Latitude = decimal.Parse(rowParts[LatitudeColumn], CultureInfo.InvariantCulture),
+                Longtitude = decimal.Parse(rowParts[LongitudeColumn], CultureInfo.InvariantCulture)
+            }
+        };
+    }
 
     // Following method returns name of the street optimized in such kind of way that will allow OSM Nominatim find its coordinates
     private static (string, string) OptimizeStreetname(string streetname)
