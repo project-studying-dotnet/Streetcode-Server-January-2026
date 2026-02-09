@@ -33,7 +33,8 @@ namespace Streetcode.XUnitTest.MediatR.News
             int id = 1;
             _repositoryWrapperMock.Setup(r => r.NewsRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
-                null
+                null,
+                false
             ))
                 .ReturnsAsync((NewsEntity)null);
             var command = new DeleteNewsCommand(id);
@@ -64,7 +65,8 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Setup(r => r.NewsRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
-                null
+                null,
+                false
             ))
                 .ReturnsAsync(news);
 
@@ -97,7 +99,8 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Setup(r => r.NewsRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
-                null
+                null,
+                false
             ))
                 .ReturnsAsync(news);
 
@@ -135,7 +138,8 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Setup(r => r.NewsRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
-                null
+                null,
+                false
             ))
                 .ReturnsAsync(news);
 

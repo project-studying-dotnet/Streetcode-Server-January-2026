@@ -53,7 +53,8 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
-                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()))
+                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
+                false))
                 .ReturnsAsync((NewsEntity)null);
 
             // act
@@ -85,7 +86,8 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
-                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()))
+                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
+                false))
                 .ReturnsAsync(news);
 
             _blobServiceMock.Setup(bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()))
@@ -121,7 +123,8 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
-                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()))
+                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
+                false))
                 .ReturnsAsync(news);
 
             // act

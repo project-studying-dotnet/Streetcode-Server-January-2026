@@ -77,7 +77,8 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Setup(repo => repo.ImageRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<Image, bool>>>(),
-                null))
+                null,
+                false))
                 .ReturnsAsync((Image)null);
 
             var req = new UpdateNewsCommand(newsDto);
@@ -147,7 +148,8 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Setup(repo => repo.ImageRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<Image, bool>>>(),
-                null))
+                null,
+                false))
                 .ReturnsAsync(oldImage);
 
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.Update(It.IsAny<NewsEntity>()));

@@ -50,7 +50,8 @@ namespace Streetcode.XUnitTest.MediatR.News
             // arrange
             _repositoryWrapperMock.Setup(r => r.NewsRepository.GetAllAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
-                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()
+                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
+                false
             ))
             .ReturnsAsync((IEnumerable<NewsEntity>)null!);
 
@@ -83,7 +84,8 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Setup(r => r.NewsRepository.GetAllAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
-                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()
+                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
+                false
             ))
             .ReturnsAsync(news);
 
@@ -118,7 +120,8 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Setup(r => r.NewsRepository.GetAllAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
-                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()
+                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
+                false
             ))
             .ReturnsAsync(news);
 

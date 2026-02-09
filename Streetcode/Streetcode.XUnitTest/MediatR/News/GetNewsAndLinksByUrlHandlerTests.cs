@@ -53,7 +53,8 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
-                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()))
+                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
+                false))
                 .ReturnsAsync((NewsEntity)null);
 
             // act
@@ -83,10 +84,14 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
-                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()))
+                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
+                false))
                 .ReturnsAsync(targetNewsEntity);
 
-            _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetAllAsync(null, null))
+            _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetAllAsync(
+                null,
+                null,
+                false))
                 .ReturnsAsync(allNews);
 
             _blobServiceMock.Setup(bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()))
@@ -124,10 +129,14 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
-                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()))
+                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
+                false))
                 .ReturnsAsync(targetNewsEntity);
 
-            _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetAllAsync(null, null))
+            _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetAllAsync(
+                null,
+                null,
+                false))
                 .ReturnsAsync(allNews);
 
             var request = new GetNewsAndLinksByUrlQuery(url);
@@ -162,10 +171,14 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
-                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()))
+                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
+                false))
                 .ReturnsAsync(targetNewsEntity);
 
-            _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetAllAsync(null, null))
+            _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetAllAsync(
+                null,
+                null,
+                false))
                 .ReturnsAsync(allNews);
 
             var request = new GetNewsAndLinksByUrlQuery(url);
@@ -199,10 +212,14 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
-                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()))
+                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
+                false))
                 .ReturnsAsync(targetNewsEntity);
 
-            _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetAllAsync(null, null))
+            _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetAllAsync(
+                null,
+                null,
+                false))
                 .ReturnsAsync(allNews);
 
             var request = new GetNewsAndLinksByUrlQuery(url);
@@ -236,10 +253,14 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
-                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>()))
+                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
+                false))
                 .ReturnsAsync(targetNewsEntity);
 
-            _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetAllAsync(null, null))
+            _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetAllAsync(
+                null,
+                null,
+                false))
                 .ReturnsAsync(allNews);
 
             var request = new GetNewsAndLinksByUrlQuery(url);
