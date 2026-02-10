@@ -1,14 +1,19 @@
 ﻿using System.Reflection;
 using System.Text;
+using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Streetcode.Auth.BLL.Interfaces;
+using Streetcode.Auth.BLL.MediatR.Behaviors;
 using Streetcode.Auth.BLL.Services;
 using Streetcode.Auth.DAL.Entities;
 using Streetcode.Auth.DAL.Persistence;
+using Streetcode.Auth.DAL.Repositories.Interfaces;
+using Streetcode.Auth.DAL.Repositories.Realizations;
 using Streetcode.Auth.WebApi.Services.Interfaces;
 using Streetcode.Auth.WebApi.Services.Realizations;
 
@@ -28,6 +33,8 @@ public static class ServiceCollectionExtensions
                 opt.MigrationsHistoryTable("__EFMigrationsHistory", schema: "entity_framework");
             });
         });
+
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
     }
 
     public static void AddIdentityServices(this IServiceCollection services, IConfiguration configuration)
@@ -72,6 +79,9 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IRefreshTokenCookieService, RefreshTokenCookieService>();
+
+        services.AddValidatorsFromAssembly(bllAssembly);
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidatorBehavior<,>));
 
         // RabbitMQ cpmmunication
         // services.AddMassTransit(x =>

@@ -26,8 +26,4 @@
   <ItemGroup>
     <ProjectReference Include="..\Streetcode.Auth.DAL\Streetcode.Auth.DAL.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Mapping\" />
-  </ItemGroup>
 </Project>

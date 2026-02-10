@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Streetcode.Auth.BLL.Exceptions;
 using Streetcode.Auth.BLL.Interfaces;
 using Streetcode.Auth.DAL.Entities;
 using Streetcode.Auth.DAL.Repositories.Interfaces;
@@ -43,17 +44,17 @@ namespace Streetcode.Auth.BLL.Services
 
             if (existingToken == null)
             {
-                throw new Exception("Invalid token");
+                throw new UnauthorizedException("Invalid refresh token");
             }
 
             if (existingToken.Revoked)
             {
-                throw new Exception("Token is already revoked");
+                throw new UnauthorizedException("Token is revoked");
             }
 
             if (existingToken.Expires < DateTime.UtcNow)
             {
-                throw new Exception("Token expired");
+                throw new UnauthorizedException("Token expired");
             }
 
             existingToken.Revoked = true;

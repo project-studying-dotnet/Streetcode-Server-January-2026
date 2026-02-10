@@ -1,6 +1,6 @@
 ﻿namespace Streetcode.Auth.BLL.DTO.Auth
 {
-    public class RegisterDTO
+    public class RegisterRequestDTO
     {
         public string Name { get; set; }
         public string Surname { get; set; }

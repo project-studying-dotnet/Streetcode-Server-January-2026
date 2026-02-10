@@ -1,4 +1,5 @@
 using Streetcode.Auth.WebApi.Extensions;
+using Streetcode.Auth.WebApi.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 app.UseHttpsRedirection();
 
 app.UseCors(opt => opt.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
@@ -25,6 +28,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+await app.ApplyMigrationsAsync();
 
 await app.ApplySeedingAsync();
 

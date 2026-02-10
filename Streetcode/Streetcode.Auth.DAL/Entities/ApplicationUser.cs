@@ -8,9 +8,11 @@ namespace Streetcode.Auth.DAL.Entities
     public class ApplicationUser : IdentityUser
     {
         [Required]
+        [MaxLength(100)]
         public string Name { get; set; }
 
         [Required]
+        [MaxLength(150)]
         public string Surname { get; set; }
 
         public List<RefreshToken>? RefreshTokens { get; set; }
