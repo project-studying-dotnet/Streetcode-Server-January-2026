@@ -26,4 +26,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+await app.ApplySeedingAsync();
+
 app.Run();

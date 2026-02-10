@@ -117,7 +117,7 @@ namespace Streetcode.Auth.BLL.Services
             return new RefreshToken
             {
                 Token = tokenString,
-                Expires = DateTime.UtcNow.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpireDays"]!)),
+                Expires = DateTime.UtcNow.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpireDays"] !)),
                 CreatedAt = DateTime.UtcNow,
                 Revoked = false,
                 UserId = userId
