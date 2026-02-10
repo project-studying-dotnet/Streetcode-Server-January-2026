@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
 using FluentResults;
 using MediatR;
-using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Fact;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Fact.GetAll;
 
@@ -25,13 +26,13 @@ public class GetAllFactsHandler : IRequestHandler<GetAllFactsQuery, Result<IEnum
     {
         var facts = await _repositoryWrapper.FactRepository.GetAllAsync();
 
-        if (facts is null)
+        if (facts.Any())
         {
-            const string errorMsg = $"Cannot find any fact";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            return Result.Ok(_mapper.Map<IEnumerable<FactDto>>(facts));
         }
 
-        return Result.Ok(_mapper.Map<IEnumerable<FactDto>>(facts));
+        var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(DAL.Entities.Streetcode.TextContent.Fact));
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

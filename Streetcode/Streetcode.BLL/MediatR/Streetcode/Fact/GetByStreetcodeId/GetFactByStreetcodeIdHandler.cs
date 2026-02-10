@@ -4,6 +4,8 @@ using MediatR;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Fact;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Fact.GetByStreetcodeId;
 
@@ -30,7 +32,10 @@ public class GetFactByStreetcodeIdHandler : IRequestHandler<GetFactByStreetcodeI
             return Result.Ok(_mapper.Map<IEnumerable<FactDto>>(facts));
         }
 
-        var errorMsg = $"Cannot find any fact by the streetcode id: {request.StreetcodeId}";
+        var errorMsg = Messages.Error_EntityWithStreetcodeIdNotFound.Format(
+            nameof(DAL.Entities.Streetcode.TextContent.Fact),
+            request.StreetcodeId);
+
         _logger.LogError(request, errorMsg);
         return Result.Fail(new Error(errorMsg));
     }

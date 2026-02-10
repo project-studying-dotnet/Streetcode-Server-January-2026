@@ -1,9 +1,7 @@
-﻿using Serilog.Events;
-using Serilog;
+﻿using Serilog;
 using Streetcode.BLL.Services.BlobStorageService;
 using Streetcode.BLL.Services.Instagram;
 using Streetcode.BLL.Services.Payment;
-using Serilog.Sinks.SystemConsole.Themes;
 
 namespace Streetcode.WebApi.Extensions;
 

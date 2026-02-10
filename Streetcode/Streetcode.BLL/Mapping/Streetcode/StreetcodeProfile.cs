@@ -23,7 +23,7 @@ public class StreetcodeProfile : Profile
 
     private StreetcodeType GetStreetcodeType(StreetcodeContent streetcode)
     {
-        if(streetcode is EventStreetcode)
+        if (streetcode is EventStreetcode)
         {
             return StreetcodeType.Event;
         }

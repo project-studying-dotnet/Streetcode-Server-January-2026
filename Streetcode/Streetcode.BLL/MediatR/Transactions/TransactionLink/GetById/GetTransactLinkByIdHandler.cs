@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
 using FluentResults;
 using MediatR;
-using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.DTO.Transactions;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Transactions.TransactionLink.GetById;
 
@@ -26,13 +27,16 @@ public class GetTransactLinkByIdHandler : IRequestHandler<GetTransactLinkByIdQue
         var transactLink = await _repositoryWrapper.TransactLinksRepository
             .GetFirstOrDefaultAsync(f => f.Id == request.Id);
 
-        if (transactLink is null)
+        if (transactLink is not null)
         {
-            string errorMsg = $"Cannot find any transaction link with corresponding id: {request.Id}";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            return Result.Ok(_mapper.Map<TransactLinkDTO>(transactLink));
         }
 
-        return Result.Ok(_mapper.Map<TransactLinkDTO>(transactLink));
+        var errorMsg = Messages.Error_EntityWithIdNotFound.Format(
+            nameof(DAL.Entities.Transactions.TransactionLink),
+            request.Id);
+
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

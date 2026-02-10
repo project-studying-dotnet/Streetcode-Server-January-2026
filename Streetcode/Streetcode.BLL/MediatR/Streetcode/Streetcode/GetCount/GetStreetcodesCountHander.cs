@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using FluentResults;
 using MediatR;
-using Streetcode.BLL.DTO.Streetcode;
 using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.BLL.MediatR.Streetcode.Streetcode.GetAllShort;
+using Streetcode.DAL.Entities.Streetcode;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Streetcode.GetCount
 {
@@ -29,12 +25,12 @@ namespace Streetcode.BLL.MediatR.Streetcode.Streetcode.GetCount
         {
             var streetcodes = await _repositoryWrapper.StreetcodeRepository.GetAllAsync();
 
-            if (streetcodes != null)
+            if (streetcodes.Any())
             {
                 return Result.Ok(streetcodes.Count());
             }
 
-            const string errorMsg = "No streetcodes exist now";
+            var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(StreetcodeContent));
             _logger.LogError(request, errorMsg);
             return Result.Fail(errorMsg);
         }

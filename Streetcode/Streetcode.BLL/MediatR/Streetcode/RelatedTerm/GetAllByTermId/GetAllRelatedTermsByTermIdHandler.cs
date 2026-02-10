@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Streetcode.TextContent;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.RelatedTerm.GetAllByTermId
 {
@@ -25,26 +27,17 @@ namespace Streetcode.BLL.MediatR.Streetcode.RelatedTerm.GetAllByTermId
         {
             var relatedTerms = await _repository.RelatedTermRepository
                 .GetAllAsync(
-                predicate: rt => rt.TermId == request.id,
-                include: rt => rt.Include(rt => rt.Term));
+                    rt => rt.TermId == request.Id,
+                    rt => rt.Include(rt => rt.Term));
 
-            if (relatedTerms is null)
+            if (relatedTerms.Any())
             {
-                const string errorMsg = "Cannot get words by term id";
-                _logger.LogError(request, errorMsg);
-                return new Error(errorMsg);
+                return Result.Ok(_mapper.Map<IEnumerable<RelatedTermDTO>>(relatedTerms));
             }
 
-            var relatedTermsDTO = _mapper.Map<IEnumerable<RelatedTermDTO>>(relatedTerms);
-
-            if (relatedTermsDTO is null)
-            {
-                const string errorMsg = "Cannot create DTOs for related words!";
-                _logger.LogError(request, errorMsg);
-                return new Error(errorMsg);
-            }
-
-            return Result.Ok(relatedTermsDTO);
+            var errorNotFoundMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(RelatedTerm), request.Id);
+            _logger.LogError(request, errorNotFoundMsg);
+            return new Error(errorNotFoundMsg);
         }
     }
 }

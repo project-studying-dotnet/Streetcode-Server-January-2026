@@ -2,10 +2,11 @@ using AutoMapper;
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.DTO.Timeline;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.GetByStreetcodeId;
 
@@ -29,15 +30,18 @@ public class GetTimelineItemsByStreetcodeIdHandler : IRequestHandler<GetTimeline
                 predicate: f => f.StreetcodeId == request.StreetcodeId,
                 include: ti => ti
                     .Include(til => til.HistoricalContextTimelines)
-                        .ThenInclude(x => x.HistoricalContext)!);
+                    .ThenInclude(x => x.HistoricalContext) !);
 
-        if (timelineItems is null)
+        if (timelineItems.Any())
         {
-            string errorMsg = $"Cannot find any timeline item by the streetcode id: {request.StreetcodeId}";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            return Result.Ok(_mapper.Map<IEnumerable<TimelineItemDTO>>(timelineItems));
         }
 
-        return Result.Ok(_mapper.Map<IEnumerable<TimelineItemDTO>>(timelineItems));
+        var errorMsg = Messages.Error_EntityWithStreetcodeIdNotFound.Format(
+            nameof(DAL.Entities.Timeline.TimelineItem),
+            nameof(request.StreetcodeId));
+
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

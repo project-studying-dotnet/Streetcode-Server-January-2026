@@ -4,7 +4,10 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Streetcode.RelatedFigure;
 using Streetcode.BLL.Interfaces.Logging;
+using Streetcode.DAL.Entities.Streetcode;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Streetcode.GetAllCatalog
 {
@@ -26,15 +29,17 @@ namespace Streetcode.BLL.MediatR.Streetcode.Streetcode.GetAllCatalog
         {
             var streetcodes = await _repositoryWrapper.StreetcodeRepository.GetAllAsync(
                 predicate: sc => sc.Status == DAL.Enums.StreetcodeStatus.Published,
-                include: src => src.Include(item => item.Tags).Include(item => item.Images));
+                include: src => src
+                    .Include(item => item.Tags)
+                    .Include(item => item.Images));
 
-            if (streetcodes != null)
+            if (!streetcodes.Any())
             {
-                var skipped = streetcodes.Skip((request.page - 1) * request.count).Take(request.count);
+                var skipped = streetcodes.Skip((request.Page - 1) * request.Count).Take(request.Count);
                 return Result.Ok(_mapper.Map<IEnumerable<RelatedFigureDTO>>(skipped));
             }
 
-            const string errorMsg = $"Cannot find any subtitles";
+            var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(StreetcodeContent));
             _logger.LogError(request, errorMsg);
             return Result.Fail(errorMsg);
         }

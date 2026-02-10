@@ -4,10 +4,12 @@ using MediatR;
 using Streetcode.BLL.DTO.AdditionalContent;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.AdditionalContent.Tag.Create
 {
-  public class CreateTagHandler : IRequestHandler<CreateTagQuery, Result<TagDTO>>
+  public class CreateTagHandler : IRequestHandler<CreateTagCommand, Result<TagDTO>>
     {
         private readonly IMapper _mapper;
         private readonly IRepositoryWrapper _repositoryWrapper;
@@ -20,24 +22,31 @@ namespace Streetcode.BLL.MediatR.AdditionalContent.Tag.Create
             _logger = logger;
         }
 
-        public async Task<Result<TagDTO>> Handle(CreateTagQuery request, CancellationToken cancellationToken)
+        public async Task<Result<TagDTO>> Handle(CreateTagCommand request, CancellationToken cancellationToken)
         {
-            var newTag = await _repositoryWrapper.TagRepository.CreateAsync(new DAL.Entities.AdditionalContent.Tag()
-            {
-                Title = request.tag.Title
-            });
-
             try
             {
-                _repositoryWrapper.SaveChanges();
+                var newTag = await _repositoryWrapper.TagRepository.CreateAsync(
+                    new DAL.Entities.AdditionalContent.Tag
+                    {
+                        Title = request.Tag.Title
+                    });
+
+                var success = await _repositoryWrapper.SaveChangesAsync() > 0;
+                if (success)
+                {
+                    return Result.Ok(_mapper.Map<TagDTO>(newTag));
+                }
+
+                var errorMsg = Messages.Error_FailedToCreateEntity.Format(nameof(DAL.Entities.AdditionalContent.Tag));
+                _logger.LogError(request, errorMsg);
+                return Result.Fail<TagDTO>(errorMsg);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(request, ex.ToString());
                 return Result.Fail(ex.ToString());
             }
-
-            return Result.Ok(_mapper.Map<TagDTO>(newTag));
         }
     }
 }

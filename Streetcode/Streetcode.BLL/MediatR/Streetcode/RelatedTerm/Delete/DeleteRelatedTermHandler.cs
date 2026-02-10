@@ -4,6 +4,8 @@ using MediatR;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.DTO.Streetcode.TextContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.RelatedTerm.Delete
 {
@@ -22,29 +24,27 @@ namespace Streetcode.BLL.MediatR.Streetcode.RelatedTerm.Delete
 
         public async Task<Result<RelatedTermDTO>> Handle(DeleteRelatedTermCommand request, CancellationToken cancellationToken)
         {
-            var relatedTerm = await _repository.RelatedTermRepository.GetFirstOrDefaultAsync(rt => rt.Word.ToLower().Equals(request.word.ToLower()));
+            var relatedTerm = await _repository.RelatedTermRepository.GetFirstOrDefaultAsync(rt => rt.Word.ToLower().Equals(request.Word.ToLower()));
 
             if (relatedTerm is null)
             {
-                string errorMsg = $"Cannot find a related term: {request.word}";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(new Error(errorMsg));
+                var errorNotFoundMsg = Messages.Error_RelatedTermNotFound.Format(request.Word);
+                _logger.LogError(request, errorNotFoundMsg);
+                return Result.Fail(new Error(errorNotFoundMsg));
             }
 
             _repository.RelatedTermRepository.Delete(relatedTerm);
 
             var resultIsSuccess = await _repository.SaveChangesAsync() > 0;
             var relatedTermDto = _mapper.Map<RelatedTermDTO>(relatedTerm);
-            if(resultIsSuccess && relatedTermDto != null)
+            if (resultIsSuccess && relatedTermDto != null)
             {
                 return Result.Ok(relatedTermDto);
             }
-            else
-            {
-                const string errorMsg = "Failed to delete a related term";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(new Error(errorMsg));
-            }
+
+            var errorMsg = Messages.Error_FailedToDeleteEntity.Format(nameof(RelatedTerm));
+            _logger.LogError(request, errorMsg);
+            return Result.Fail(new Error(errorMsg));
         }
     }
 }

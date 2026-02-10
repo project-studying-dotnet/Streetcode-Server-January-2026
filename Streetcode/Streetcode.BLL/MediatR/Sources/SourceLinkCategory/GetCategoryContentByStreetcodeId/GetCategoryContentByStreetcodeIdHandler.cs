@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using FluentResults;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Sources;
 using Streetcode.BLL.Interfaces.Logging;
+using Streetcode.DAL.Entities.Sources;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Sources.SourceLinkCategory.GetCategoryContentByStreetcodeId
 {
@@ -23,26 +25,21 @@ namespace Streetcode.BLL.MediatR.Sources.SourceLinkCategory.GetCategoryContentBy
 
         public async Task<Result<StreetcodeCategoryContentDTO>> Handle(GetCategoryContentByStreetcodeIdQuery request, CancellationToken cancellationToken)
         {
-            if((await _repositoryWrapper.StreetcodeRepository
-                .GetFirstOrDefaultAsync(s => s.Id == request.streetcodeId)) == null)
-            {
-                string errorMsg = $"No such streetcode with id = {request.streetcodeId}";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(new Error(errorMsg));
-            }
-
             var streetcodeContent = await _repositoryWrapper.StreetcodeCategoryContentRepository
                 .GetFirstOrDefaultAsync(
-                    sc => sc.StreetcodeId == request.streetcodeId && sc.SourceLinkCategoryId == request.categoryId);
+                    sc => sc.StreetcodeId == request.StreetcodeId && sc.SourceLinkCategoryId == request.CategoryId);
 
-            if (streetcodeContent == null)
+            if (streetcodeContent != null)
             {
-                string errorMsg = "The streetcode content is null";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(new Error(errorMsg));
+                return Result.Ok(_mapper.Map<StreetcodeCategoryContentDTO>(streetcodeContent));
             }
 
-            return Result.Ok(_mapper.Map<StreetcodeCategoryContentDTO>(streetcodeContent));
+            var errorMsg = Messages.Error_EntityWithStreetcodeIdNotFound.Format(
+                nameof(StreetcodeCategoryContent),
+                request.CategoryId);
+
+            _logger.LogError(request, errorMsg);
+            return Result.Fail(new Error(errorMsg));
         }
     }
 }

@@ -1,6 +1,9 @@
 ﻿using FluentResults;
 using MediatR;
+using Streetcode.DAL.Entities.AdditionalContent.Coordinates.Types;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.AdditionalContent.Coordinate.Delete;
 
@@ -19,12 +22,14 @@ public class DeleteCoordinateHandler : IRequestHandler<DeleteCoordinateCommand, 
 
         if (streetcodeCoordinate is null)
         {
-            return Result.Fail(new Error($"Cannot find a coordinate with corresponding categoryId: {request.Id}"));
+            return Result.Fail(new Error(Messages.Error_EntityWithIdNotFound.Format(nameof(StreetcodeCoordinate), request.Id)));
         }
 
         _repositoryWrapper.StreetcodeCoordinateRepository.Delete(streetcodeCoordinate);
 
         var resultIsSuccess = await _repositoryWrapper.SaveChangesAsync() > 0;
-        return resultIsSuccess ? Result.Ok(Unit.Value) : Result.Fail(new Error("Failed to delete a coordinate"));
+        return resultIsSuccess
+            ? Result.Ok(Unit.Value)
+            : Result.Fail(new Error(Messages.Error_FailedToDeleteEntity.Format(nameof(StreetcodeCoordinate))));
     }
 }

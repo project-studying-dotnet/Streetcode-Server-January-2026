@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Timeline;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.GetById;
 
@@ -28,15 +30,15 @@ public class GetTimelineItemByIdHandler : IRequestHandler<GetTimelineItemByIdQue
                 predicate: ti => true,
                 include: ti => ti
                     .Include(til => til.HistoricalContextTimelines)
-                        .ThenInclude(x => x.HistoricalContext)!);
+                    .ThenInclude(x => x.HistoricalContext) !);
 
-        if (timelineItem is null)
+        if (timelineItem is not null)
         {
-            string errorMsg = $"Cannot find a timeline item with corresponding id: {request.Id}";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            return Result.Ok(_mapper.Map<TimelineItemDTO>(timelineItem));
         }
 
-        return Result.Ok(_mapper.Map<TimelineItemDTO>(timelineItem));
+        var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(DAL.Entities.Timeline.TimelineItem), request.Id);
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }
