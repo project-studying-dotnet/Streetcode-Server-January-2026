@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Streetcode.Auth.BLL.DTO
+namespace Streetcode.Auth.BLL.MediatR.Register
 {
-    public class LoginDTO
+    internal class RegisterHandler
     {
     }
 }

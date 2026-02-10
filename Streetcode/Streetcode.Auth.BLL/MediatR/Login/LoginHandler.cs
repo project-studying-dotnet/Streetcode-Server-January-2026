@@ -1,7 +1,7 @@
 ﻿using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Streetcode.Auth.BLL.DTO;
+using Streetcode.Auth.BLL.DTO.Auth;
 using Streetcode.Auth.BLL.Interfaces;
 using Streetcode.Auth.DAL.Entities;
 

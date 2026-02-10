@@ -1,14 +1,14 @@
-﻿using System.Text;
-using System.Reflection;
-using MediatR;
+﻿using System.Reflection;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Streetcode.Auth.BLL.Interfaces;
+using Streetcode.Auth.BLL.Services;
 using Streetcode.Auth.DAL.Entities;
 using Streetcode.Auth.DAL.Persistence;
-using MassTransit;
 
 namespace Streetcode.Auth.WebApi.Extensions;
 
@@ -67,6 +67,8 @@ public static class ServiceCollectionExtensions
 
         services.AddAutoMapper(bllAssembly);
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(bllAssembly));
+
+        services.AddScoped<ITokenService, TokenService>();
 
         // RabbitMQ cpmmunication
         // services.AddMassTransit(x =>

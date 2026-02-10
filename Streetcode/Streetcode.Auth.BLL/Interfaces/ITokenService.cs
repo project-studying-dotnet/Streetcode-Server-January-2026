@@ -1,12 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Streetcode.Auth.DAL.Entities;
 
 namespace Streetcode.Auth.BLL.Interfaces
 {
-    public class ITokenService
+    public interface ITokenService
     {
+        Task<(string AccessToken, RefreshToken RefreshToken)> GenerateTokensAsync(ApplicationUser user);
+
+        Task<(string AccessToken, RefreshToken RefreshToken)> RotateRefreshTokenAsync(string oldRefreshToken);
+
+        Task RevokeRefreshTokenAsync(string token);
+
+        Task RevokeAllAsync(string userId);
     }
 }
