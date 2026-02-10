@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FluentResults;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Fact;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
@@ -9,7 +10,7 @@ using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Fact.GetAll;
 
-public class GetAllFactsHandler : IRequestHandler<GetAllFactsQuery, Result<IEnumerable<FactDto>>>
+public class GetAllFactsHandler : IRequestHandler<GetAllFactsQuery, Result<IEnumerable<FactDTO>>>
 {
     private readonly IMapper _mapper;
     private readonly IRepositoryWrapper _repositoryWrapper;
@@ -22,13 +23,16 @@ public class GetAllFactsHandler : IRequestHandler<GetAllFactsQuery, Result<IEnum
         _logger = logger;
     }
 
-    public async Task<Result<IEnumerable<FactDto>>> Handle(GetAllFactsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<FactDTO>>> Handle(GetAllFactsQuery request, CancellationToken cancellationToken)
     {
-        var facts = await _repositoryWrapper.FactRepository.GetAllAsync();
+        var facts = await _repositoryWrapper.FactRepository.GetAllAsync(
+            include: q => q
+                .Include(f => f.Image)
+                .ThenInclude(i => i.ImageDetails));
 
         if (facts.Any())
         {
-            return Result.Ok(_mapper.Map<IEnumerable<FactDto>>(facts));
+            return Result.Ok(_mapper.Map<IEnumerable<FactDTO>>(facts));
         }
 
         var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(DAL.Entities.Streetcode.TextContent.Fact));

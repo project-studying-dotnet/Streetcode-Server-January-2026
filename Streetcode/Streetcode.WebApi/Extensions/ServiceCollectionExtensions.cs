@@ -19,7 +19,7 @@ using Streetcode.BLL.Services.Instagram;
 using Streetcode.BLL.Interfaces.Text;
 using Streetcode.BLL.Services.Text;
 using FluentValidation;
-using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
+using MediatR;
 
 namespace Streetcode.WebApi.Extensions;
 
@@ -39,7 +39,7 @@ public static class ServiceCollectionExtensions
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(currentAssemblies));
 
         services.AddValidatorsFromAssemblies(currentAssemblies);
-        services.AddFluentValidationAutoValidation();
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(BLL.MediatR.ValidatorBehavior<,>));
 
         services.AddScoped<IBlobService, BlobService>();
         services.AddScoped<ILoggerService, LoggerService>();

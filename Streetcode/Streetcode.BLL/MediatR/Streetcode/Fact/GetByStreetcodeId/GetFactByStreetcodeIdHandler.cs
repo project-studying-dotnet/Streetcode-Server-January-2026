@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FluentResults;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Fact;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
@@ -9,7 +10,7 @@ using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Fact.GetByStreetcodeId;
 
-public class GetFactByStreetcodeIdHandler : IRequestHandler<GetFactByStreetcodeIdQuery, Result<IEnumerable<FactDto>>>
+public class GetFactByStreetcodeIdHandler : IRequestHandler<GetFactByStreetcodeIdQuery, Result<IEnumerable<FactDTO>>>
 {
     private readonly IMapper _mapper;
     private readonly IRepositoryWrapper _repositoryWrapper;
@@ -22,15 +23,13 @@ public class GetFactByStreetcodeIdHandler : IRequestHandler<GetFactByStreetcodeI
         _logger = logger;
     }
 
-    public async Task<Result<IEnumerable<FactDto>>> Handle(GetFactByStreetcodeIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<FactDTO>>> Handle(GetFactByStreetcodeIdQuery request, CancellationToken cancellationToken)
     {
-        var facts = await _repositoryWrapper.FactRepository
-            .GetAllAsync(predicate: f => f.StreetcodeId == request.StreetcodeId);
+        var facts = await _repositoryWrapper.FactRepository.GetAllAsync(
+            predicate: f => f.StreetcodeId == request.StreetcodeId,
+            include: q => q.Include(f => f.Image).ThenInclude(i => i.ImageDetails));
 
-        if (facts.Any())
-        {
-            return Result.Ok(_mapper.Map<IEnumerable<FactDto>>(facts));
-        }
+        var sortedFacts = facts.OrderByDescending(f => f.Order);
 
         var errorMsg = Messages.Error_EntityWithStreetcodeIdNotFound.Format(
             nameof(DAL.Entities.Streetcode.TextContent.Fact),

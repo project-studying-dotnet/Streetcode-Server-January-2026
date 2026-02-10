@@ -49,6 +49,7 @@ namespace Streetcode.BLL.MediatR.Media.Art.GetByStreetcodeId
             }
 
             var artsDto = _mapper.Map<IEnumerable<ArtDTO>>(arts);
+
             foreach (var artDto in artsDto)
             {
                 if (artDto.Image != null && artDto.Image.BlobName != null)

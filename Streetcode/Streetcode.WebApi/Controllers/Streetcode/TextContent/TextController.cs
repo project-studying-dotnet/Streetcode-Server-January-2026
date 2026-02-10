@@ -37,19 +37,19 @@ public class TextController : BaseApiController
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateText([FromBody] TextBaseDTO textBaseDTO)
+    public async Task<IActionResult> CreateText([FromBody] TextCreateDTO textCreateDTO)
     {
-        return HandleResult(await Mediator.Send(new CreateTextCommand(textBaseDTO)));
+        return HandleResult(await Mediator.Send(new CreateTextCommand(textCreateDTO)));
     }
 
     [HttpPut]
-    public async Task<IActionResult> UpdateText([FromBody] TextBaseDTO textBaseDTO)
+    public async Task<IActionResult> UpdateText([FromBody] TextUpdateDTO textUpdateDTO)
     {
-        return HandleResult(await Mediator.Send(new UpdateTextCommand(textBaseDTO)));
+        return HandleResult(await Mediator.Send(new UpdateTextCommand(textUpdateDTO)));
     }
 
-    [HttpDelete]
-    public async Task<IActionResult> DeleteText([FromQuery] int id)
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteText([FromRoute] int id)
     {
         return HandleResult(await Mediator.Send(new DeleteTextCommand(id)));
     }
