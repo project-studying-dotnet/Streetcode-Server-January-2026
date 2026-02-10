@@ -9,6 +9,8 @@ using Streetcode.Auth.BLL.Interfaces;
 using Streetcode.Auth.BLL.Services;
 using Streetcode.Auth.DAL.Entities;
 using Streetcode.Auth.DAL.Persistence;
+using Streetcode.Auth.WebApi.Services.Interfaces;
+using Streetcode.Auth.WebApi.Services.Realizations;
 
 namespace Streetcode.Auth.WebApi.Extensions;
 
@@ -69,6 +71,7 @@ public static class ServiceCollectionExtensions
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(bllAssembly));
 
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IRefreshTokenCookieService, RefreshTokenCookieService>();
 
         // RabbitMQ cpmmunication
         // services.AddMassTransit(x =>
