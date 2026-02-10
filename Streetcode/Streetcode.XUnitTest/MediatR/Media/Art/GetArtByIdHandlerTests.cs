@@ -4,7 +4,6 @@
     using AutoMapper;
     using Microsoft.EntityFrameworkCore.Query;
     using Moq;
-    using Streetcode.BLL.DTO.Media.Art;
     using Streetcode.BLL.Interfaces.Logging;
     using Streetcode.BLL.Mapping.Media.Images;
     using Streetcode.BLL.MediatR.Media.Art.GetById;

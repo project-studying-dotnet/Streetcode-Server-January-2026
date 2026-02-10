@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using FluentValidation;
+﻿using FluentValidation;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
 using Streetcode.Resources;
 using Streetcode.Shared.Extensions;
