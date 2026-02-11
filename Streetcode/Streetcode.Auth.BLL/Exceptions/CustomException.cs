@@ -1,4 +1,5 @@
 ﻿using System.Net;
+
 namespace Streetcode.Auth.BLL.Exceptions
 {
     public class CustomException : Exception

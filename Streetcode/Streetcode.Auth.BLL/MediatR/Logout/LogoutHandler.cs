@@ -1,12 +1,6 @@
-﻿using AutoMapper;
-using FluentResults;
+﻿using FluentResults;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
-using Streetcode.Auth.BLL.DTO.Auth;
 using Streetcode.Auth.BLL.Interfaces;
-using Streetcode.Auth.BLL.MediatR.Login;
-using Streetcode.Auth.DAL.Entities;
 
 namespace Streetcode.Auth.BLL.MediatR.Logout
 {

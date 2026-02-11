@@ -7,7 +7,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddDataAccessServices(builder.Configuration);
 builder.Services.AddIdentityServices(builder.Configuration);
-builder.Services.AddCustomServices();
+builder.Services.AddCustomServices(builder.Configuration);
 builder.Services.AddSwaggerServices();
 
 var app = builder.Build();

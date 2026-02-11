@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Text;
 using FluentValidation;
+using MassTransit;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -70,7 +71,7 @@ public static class ServiceCollectionExtensions
         });
     }
 
-    public static void AddCustomServices(this IServiceCollection services)
+    public static void AddCustomServices(this IServiceCollection services, IConfiguration configuration)
     {
         var bllAssembly = Assembly.Load("Streetcode.Auth.BLL");
 
@@ -83,18 +84,23 @@ public static class ServiceCollectionExtensions
         services.AddValidatorsFromAssembly(bllAssembly);
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidatorBehavior<,>));
 
-        // RabbitMQ cpmmunication
-        // services.AddMassTransit(x =>
-        // {
-        //    x.UsingRabbitMq((context, cfg) =>
-        //    {
-        //        cfg.Host("localhost", "/", h =>
-        //        {
-        //            h.Username("guest");
-        //            h.Password("guest");
-        //        });
-        //    });
-        // });
+        services.AddMassTransit(x =>
+        {
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                var host = configuration["RabbitMQ:Host"] ?? "localhost";
+                var user = configuration["RabbitMQ:Username"] ?? "guest";
+                var pass = configuration["RabbitMQ:Password"] ?? "guest";
+
+                cfg.Host(host, "/", h =>
+                {
+                    h.Username(user);
+                    h.Password(pass);
+                });
+
+                cfg.ConfigureEndpoints(context);
+            });
+        });
     }
 
     public static void AddSwaggerServices(this IServiceCollection services)

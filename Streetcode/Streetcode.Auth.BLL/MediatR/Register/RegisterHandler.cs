@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentResults;
+using MassTransit;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -8,6 +9,7 @@ using Streetcode.Auth.BLL.DTO.Users;
 using Streetcode.Auth.BLL.Interfaces;
 using Streetcode.Auth.DAL.Entities;
 using Streetcode.Auth.DAL.Enums;
+using Streetcode.Shared.DTO.Events;
 
 namespace Streetcode.Auth.BLL.MediatR.Register
 {
@@ -17,17 +19,20 @@ namespace Streetcode.Auth.BLL.MediatR.Register
         private readonly IMapper _mapper;
         private readonly ITokenService _tokenService;
         private readonly IConfiguration _configuration;
+        private readonly IPublishEndpoint _publishEndpoint;
 
         public RegisterHandler(
             UserManager<ApplicationUser> userManager,
             IMapper mapper,
             ITokenService tokenService,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IPublishEndpoint publishEndpoint)
         {
             _userManager = userManager;
             _mapper = mapper;
             _tokenService = tokenService;
             _configuration = configuration;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task<Result<(TokenResponseDTO, string)>> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -49,6 +54,16 @@ namespace Streetcode.Auth.BLL.MediatR.Register
             await _userManager.AddToRoleAsync(user, nameof(UserRole.User));
 
             var (accessToken, refreshToken) = await _tokenService.GenerateTokensAsync(user);
+
+            await _publishEndpoint.Publish(
+                new UserRegisteredEvent
+                    {
+                        UserId = user.Id,
+                        Email = user.Email,
+                        Name = user.Name,
+                        Surname = user.Surname,
+                        PhoneNumber = user.PhoneNumber
+                    }, cancellationToken);
 
             var responseDto = new TokenResponseDTO
             {

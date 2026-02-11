@@ -3,8 +3,9 @@
     [Flags]
     public enum UserRole
     {
-        MainAdministrator,
-        Administrator,
-        Moderator
+        User = 1,
+        Moderator = 2,
+        Administrator = 4,
+        MainAdministrator = 8
     }
 }
