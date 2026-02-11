@@ -4,6 +4,8 @@ using MediatR;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Text.Update
 {
@@ -27,9 +29,12 @@ namespace Streetcode.BLL.MediatR.Streetcode.Text.Update
 
             if (text == null)
             {
-                string errorMsg = $"No text found with Id {request.Text.Id}";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(new Error(errorMsg));
+                var errorNotFoundMsg = Messages.Error_EntityWithIdNotFound.Format(
+                    nameof(DAL.Entities.Streetcode.TextContent.Text),
+                    request.Text.Id);
+
+                _logger.LogError(request, errorNotFoundMsg);
+                return Result.Fail(new Error(errorNotFoundMsg));
             }
 
             text = _mapper.Map(request.Text, text);
@@ -37,15 +42,16 @@ namespace Streetcode.BLL.MediatR.Streetcode.Text.Update
             _repositoryWrapper.TextRepository.Update(text);
             var successSave = await _repositoryWrapper.SaveChangesAsync() > 0;
 
-            if (!successSave)
+            if (successSave)
             {
-                string errorMsg = "Error while saving changes to database";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(new Error(errorMsg));
+                return Result.Ok(_mapper.Map<TextDTO>(text));
             }
 
-            var updatedTextDTO = _mapper.Map<TextDTO>(text);
-            return Result.Ok(updatedTextDTO);
+            var errorMsg = Messages.Error_FailedToUpdateEntity.Format(
+                nameof(DAL.Entities.Streetcode.TextContent.Text));
+
+            _logger.LogError(request, errorMsg);
+            return Result.Fail(new Error(errorMsg));
         }
     }
 }

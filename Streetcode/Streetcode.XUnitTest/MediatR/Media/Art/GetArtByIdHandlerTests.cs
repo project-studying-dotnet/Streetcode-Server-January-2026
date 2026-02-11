@@ -1,4 +1,7 @@
-﻿namespace Streetcode.XUnitTest.MediatR.Media.Art
+﻿using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+
+namespace Streetcode.XUnitTest.MediatR.Media.Art
 {
     using System.Linq.Expressions;
     using AutoMapper;
@@ -105,7 +108,7 @@
 
             // Assert
             Assert.Equal(
-                $"Cannot find an art with corresponding id: {artId}",
+                Messages.Error_EntityWithIdNotFound.Format(nameof(Art), artId),
                 result.Errors[0].Message);
         }
 

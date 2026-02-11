@@ -1,4 +1,7 @@
-﻿namespace Streetcode.XUnitTest.MediatR.Fact.GetById
+﻿using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+
+namespace Streetcode.XUnitTest.MediatR.Fact.GetById
 {
     using System.Linq.Expressions;
     using AutoMapper;
@@ -113,7 +116,9 @@
         {
             // Arrange
             var testId = 1;
-            string expectedErrorMsg = $"Cannot find any fact with corresponding id: {testId}";
+            string expectedErrorMsg = Messages.Error_EntityWithIdNotFound.Format(
+                nameof(DAL.Entities.Streetcode.TextContent.Fact),
+                testId);
 
             this.SetupGetFactById(null);
 

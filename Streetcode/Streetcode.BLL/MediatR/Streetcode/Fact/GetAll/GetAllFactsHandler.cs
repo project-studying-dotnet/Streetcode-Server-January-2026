@@ -32,6 +32,7 @@ public class GetAllFactsHandler : IRequestHandler<GetAllFactsQuery, Result<IEnum
 
         if (facts.Any())
         {
+            facts = facts.OrderByDescending(x => x.Order);
             return Result.Ok(_mapper.Map<IEnumerable<FactDTO>>(facts));
         }
 

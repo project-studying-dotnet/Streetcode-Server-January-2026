@@ -2,6 +2,8 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
+using Streetcode.Resources;
+
 namespace Streetcode.XUnitTest.MediatR.Text.Create
 {
     using FluentValidation.TestHelper;
@@ -29,7 +31,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Create
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.Text)
-                  .WithErrorMessage("TextDataRequired");
+                  .WithErrorMessage(Messages.Error_CommandDataRequired);
         }
 
         [Fact]

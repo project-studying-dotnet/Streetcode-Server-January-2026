@@ -3,6 +3,8 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore.Query;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.XUnitTest.MediatR.Text.Delete
 {
@@ -41,7 +43,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Delete
         {
             // Arrange
             int id = 1;
-            string errorMsg = $"No text found with Id {id}";
+            string errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(DAL.Entities.Streetcode.TextContent.Text), id);
             var textRepoMock = new Mock<ITextRepository>(MockBehavior.Strict);
 
             this.repositoryWrapperMock
@@ -116,7 +118,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Delete
         public async Task Handle_WhenSaveChangesFails_ShouldReturnFailure()
         {
             // Arrange
-            string errorMsg = "Error while saving changes to database";
+            string errorMsg = Messages.Error_FailedToDeleteEntity.Format(nameof(DAL.Entities.Streetcode.TextContent.Text));
             var textEntity = new TextEntity { Id = 1, TextContent = "Sample content" };
 
             var textRepoMock = new Mock<ITextRepository>(MockBehavior.Strict);

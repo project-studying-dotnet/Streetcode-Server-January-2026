@@ -2,6 +2,8 @@
 using MediatR;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Fact.Delete
 {
@@ -23,23 +25,26 @@ namespace Streetcode.BLL.MediatR.Streetcode.Fact.Delete
 
             if (fact is null)
             {
-                string errorMsg = $"Cannot find a fact with Id: {request.Id}";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(new Error(errorMsg));
+                var errorNotFoundMsg = Messages.Error_EntityWithIdNotFound.Format(
+                    nameof(DAL.Entities.Streetcode.TextContent.Fact),
+                    request.Id);
+
+                _logger.LogError(request, errorNotFoundMsg);
+                return Result.Fail(new Error(errorNotFoundMsg));
             }
 
             _repositoryWrapper.FactRepository.Delete(fact);
 
             var successSave = await _repositoryWrapper.SaveChangesAsync() > 0;
 
-            if (!successSave)
+            if (successSave)
             {
-                string errorMsg = "Error while saving changes to database";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(new Error(errorMsg));
+                return Result.Ok(Unit.Value);
             }
 
-            return Result.Ok(Unit.Value);
+            var errorMsg = Messages.Error_FailedToDeleteEntity.Format(nameof(DAL.Entities.Streetcode.TextContent.Fact));
+            _logger.LogError(request, errorMsg);
+            return Result.Fail(new Error(errorMsg));
         }
     }
 }

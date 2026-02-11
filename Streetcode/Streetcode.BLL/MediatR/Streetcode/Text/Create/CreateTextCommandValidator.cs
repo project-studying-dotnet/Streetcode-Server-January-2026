@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Streetcode.Resources;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Text.Create
 {
@@ -8,7 +9,7 @@ namespace Streetcode.BLL.MediatR.Streetcode.Text.Create
         {
             RuleFor(x => x.Text)
                 .NotNull()
-                .WithMessage("TextDataRequired")
+                .WithMessage(Messages.Error_CommandDataRequired)
                 .SetValidator(new TextCreateDTOValidator());
         }
     }

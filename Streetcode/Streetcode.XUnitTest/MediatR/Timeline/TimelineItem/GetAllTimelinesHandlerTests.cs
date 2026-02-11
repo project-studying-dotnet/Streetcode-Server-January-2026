@@ -1,4 +1,7 @@
-﻿namespace Streetcode.XUnitTest.MediatRTests.Timeline.TimelineItem;
+﻿using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+
+namespace Streetcode.XUnitTest.MediatR.Timeline.TimelineItem;
 
 using AutoMapper;
 using Moq;
@@ -72,16 +75,18 @@ public class GetAllTimelineItemsHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ReturnsFail_WhenTimelineItemsAreNull()
+    public async Task Handle_ReturnsFail_WhenTimelineItemsAreEmpty()
     {
         //Arrange
+        var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(TimelineItem));
+
         timelineRepoMock
             .Setup(r => r.GetAllAsync(
                 It.IsAny<Expression<Func<TimelineItem, bool>>>(),
                 It.IsAny<Func<IQueryable<TimelineItem>,
                     IIncludableQueryable<TimelineItem, object>>>(),
                 It.IsAny<bool>()))
-            .ReturnsAsync((IEnumerable<TimelineItem>)null!);
+            .ReturnsAsync([]);
 
         // Act
         var result = await CreateHandler().Handle(
@@ -90,35 +95,12 @@ public class GetAllTimelineItemsHandlerTests
 
         // Assert
         Assert.True(result.IsFailed);
-        Assert.Equal("Cannot find any timelineItem", result.Errors[0].Message);
+        Assert.Equal(errorMsg, result.Errors[0].Message);
 
         loggerMock.Verify(
             l => l.LogError(
                 It.IsAny<GetAllTimelineItemsQuery>(),
-                It.IsAny<string>()),
+                errorMsg),
             Times.Once);
-    }
-
-    [Fact]
-    public async Task Handle_ReturnsOk_WhenTimelineItemsListIsEmpty()
-    {
-        //Arrange
-        timelineRepoMock
-            .Setup(r => r.GetAllAsync(
-                It.IsAny<Expression<Func<TimelineItem, bool>>>(),
-                It.IsAny<Func<IQueryable<TimelineItem>,
-                    IIncludableQueryable<TimelineItem, object>>>(),
-                It.IsAny<bool>()))
-            .ReturnsAsync(new List<TimelineItem>());
-
-        // Act
-        var result = await CreateHandler().Handle(
-            new GetAllTimelineItemsQuery(),
-            CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsSuccess);
-        Assert.NotNull(result.Value);
-        Assert.Empty(result.Value);
     }
 }

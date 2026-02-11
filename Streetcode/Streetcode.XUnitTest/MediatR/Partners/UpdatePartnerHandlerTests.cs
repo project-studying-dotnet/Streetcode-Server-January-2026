@@ -18,6 +18,8 @@ using Streetcode.DAL.Enums;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.DAL.Repositories.Interfaces.Partners;
 using Streetcode.DAL.Repositories.Interfaces.Streetcode;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using Xunit;
 
 namespace Streetcode.XUnitTest.MediatR.Partners;
@@ -383,7 +385,7 @@ public class UpdatePartnerHandlerTests
         };
 
         var command = new UpdatePartnerCommand(updatePartnerDto);
-        const string errorMsg = "LogoId is required and must be greater than zero.";
+        var errorMsg = Messages.Error_PropertyMustBeGreaterThanZero.Format(nameof(UpdatePartnerDTO.LogoId));
 
         // Act
         var result = await this.updatePartnerHandler.Handle(command, CancellationToken.None);
@@ -415,7 +417,7 @@ public class UpdatePartnerHandlerTests
         };
 
         var command = new UpdatePartnerCommand(updatePartnerDto);
-        const string errorMsg = "Partner with Id 0 not found.";
+        var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(Partner), updatePartnerDto.Id);
 
         this.partnersRepositoryMock
             .Setup(r => r.GetFirstOrDefaultAsync(

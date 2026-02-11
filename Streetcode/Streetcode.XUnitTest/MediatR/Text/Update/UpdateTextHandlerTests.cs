@@ -2,6 +2,9 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+
 namespace Streetcode.XUnitTest.MediatR.Text.Update
 {
     using System;
@@ -44,9 +47,9 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
         public async Task Handle_WhenTextNotFound_ShouldReturnFail()
         {
             // Arrange
-            var Id = 1;
-            var command = new UpdateTextCommand(new TextUpdateDTO { Id = Id });
-            string expectedErrorMsg = $"No text found with Id {Id}";
+            var id = 1;
+            var command = new UpdateTextCommand(new TextUpdateDTO { Id = id });
+            string expectedErrorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(Text), id);
 
             _mockRepoWrapper
                 .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(

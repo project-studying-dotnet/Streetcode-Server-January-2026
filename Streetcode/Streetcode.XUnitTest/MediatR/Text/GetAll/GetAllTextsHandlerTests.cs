@@ -4,6 +4,8 @@
 
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.XUnitTest.MediatR.Text.GetAll
 {
@@ -63,32 +65,12 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetAll
         }
 
         [Fact]
-        public async Task Handle_ReturnFail_WhenRepositoryReturnsNull()
-        {
-            // Arrange
-            string errorMsg = "Cannot find any text";
-
-            this.mockRepoWrapper
-                .Setup(r => r.TextRepository.GetAllAsync(
-                    It.IsAny<Expression<Func<Text, bool>>>(),
-                    It.IsAny<Func<IQueryable<Text>, IIncludableQueryable<Text, object>>>(),
-                    It.IsAny<bool>()))
-                .ReturnsAsync((IEnumerable<Text>?)null!);
-
-            // Act
-            var result = await this.handler.Handle(new GetAllTextsQuery(), CancellationToken.None);
-
-            // Assert
-            result.IsFailed.Should().BeTrue();
-            result.Errors.First().Message.Should().Be(errorMsg);
-        }
-
-        [Fact]
-        public async Task Handle_ReturnOk_WhenRepositoryReturnsEmptyList()
+        public async Task Handle_ReturnFail_WhenRepositoryReturnsEmptyList()
         {
             // Arrange
             var emptyTextsList = new List<Text>();
             var emptyTextsListDTOs = new List<TextDTO>();
+            string errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(Text));
 
             this.mockRepoWrapper
                 .Setup(r => r.TextRepository.GetAllAsync(
@@ -104,15 +86,8 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetAll
             var result = await this.handler.Handle(new GetAllTextsQuery(), CancellationToken.None);
 
             // Assert
-            result.IsSuccess.Should().BeTrue();
-            result.Value.Should().BeEmpty();
-
-            this.mockRepoWrapper.Verify(
-                r => r.TextRepository.GetAllAsync(
-                    It.IsAny<Expression<Func<Text, bool>>>(),
-                    It.IsAny<Func<IQueryable<Text>, IIncludableQueryable<Text, object>>>(),
-                    It.IsAny<bool>()),
-                Times.Once);
+            result.IsFailed.Should().BeTrue();
+            result.Errors.First().Message.Should().Be(errorMsg);
         }
     }
 }

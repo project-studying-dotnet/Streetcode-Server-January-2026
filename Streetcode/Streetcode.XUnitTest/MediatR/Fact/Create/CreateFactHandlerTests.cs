@@ -1,4 +1,7 @@
-﻿namespace Streetcode.XUnitTest.MediatR.Fact.Create
+﻿using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+
+namespace Streetcode.XUnitTest.MediatR.Fact.Create
 {
     using System.Linq.Expressions;
     using AutoMapper;
@@ -12,7 +15,6 @@
     using Streetcode.DAL.Entities.Media.Images;
     using Streetcode.DAL.Repositories.Interfaces.Base;
     using Streetcode.DAL.Repositories.Interfaces.Media.Images;
-    using Streetcode.DAL.Repositories.Interfaces.Streetcode;
     using Streetcode.DAL.Repositories.Interfaces.Streetcode.TextContent;
     using Xunit;
     using FactEntity = Streetcode.DAL.Entities.Streetcode.TextContent.Fact;
@@ -23,26 +25,23 @@
     {
         private readonly Mock<IRepositoryWrapper> repositoryWrapperMock;
         private readonly Mock<IFactRepository> factRepositoryMock;
-        private readonly Mock<IStreetcodeRepository> streetcodeRepositoryMock;
         private readonly Mock<IImageRepository> imageRepositoryMock;
         private readonly Mock<IImageDetailsRepository> imageDetailsRepositoryMock;
         private readonly Mock<ILoggerService> loggerMock;
         private readonly IMapper mapper;
         private readonly CreateFactHandler handler;
+        private static readonly string[] AllowedImageTypes = { "image/jpeg", "image/png", "image/jpg", "image/webp" };
 
         public CreateFactHandlerTests()
         {
             this.repositoryWrapperMock = new Mock<IRepositoryWrapper>();
             this.factRepositoryMock = new Mock<IFactRepository>();
-            this.streetcodeRepositoryMock = new Mock<IStreetcodeRepository>();
             this.imageRepositoryMock = new Mock<IImageRepository>();
             this.imageDetailsRepositoryMock = new Mock<IImageDetailsRepository>();
             this.loggerMock = new Mock<ILoggerService>();
 
             this.repositoryWrapperMock.Setup(r => r.FactRepository)
                 .Returns(this.factRepositoryMock.Object);
-            this.repositoryWrapperMock.Setup(r => r.StreetcodeRepository)
-                .Returns(this.streetcodeRepositoryMock.Object);
             this.repositoryWrapperMock.Setup(r => r.ImageRepository)
                 .Returns(this.imageRepositoryMock.Object);
             this.repositoryWrapperMock.Setup(r => r.ImageDetailsRepository)
@@ -58,16 +57,6 @@
                 this.mapper,
                 this.repositoryWrapperMock.Object,
                 this.loggerMock.Object);
-        }
-
-        private void SetupStreetcode(StreetcodeEntity? streetcode)
-        {
-            this.streetcodeRepositoryMock
-                .Setup(r => r.GetFirstOrDefaultAsync(
-                    It.IsAny<Expression<Func<StreetcodeEntity, bool>>>(),
-                    null,
-                    It.IsAny<bool>()))
-                .ReturnsAsync(streetcode);
         }
 
         private void SetupImage(ImageEntity? image)
@@ -119,11 +108,9 @@
         {
             // Arrange
             var command = new CreateFactCommand(GetCreateFactDTO());
-            var streetcode = new StreetcodeEntity { Id = 1 };
             var image = new ImageEntity { Id = 1, MimeType = "image/jpeg" };
             var createdFact = new FactEntity { Id = 10, Title = "New Fact" };
 
-            this.SetupStreetcode(streetcode);
             this.SetupImage(image);
             this.SetupImageDetails(null);
             this.SetupCreateFact(createdFact);
@@ -150,7 +137,6 @@
             var image = new ImageEntity { Id = 1, MimeType = "image/jpeg" };
             var createdFact = new FactEntity { Id = 10 };
 
-            this.SetupStreetcode(streetcode);
             this.SetupImage(image);
             this.SetupImageDetails(null);
             this.SetupCreateFact(createdFact);
@@ -178,7 +164,6 @@
             var existingDetails = new ImageDetails { Id = 5, ImageId = 1, Title = "Old Description" };
             var createdFact = new FactEntity { Id = 10 };
 
-            this.SetupStreetcode(streetcode);
             this.SetupImage(image);
             this.SetupImageDetails(existingDetails);
             this.SetupCreateFact(createdFact);
@@ -196,28 +181,10 @@
         }
 
         [Fact]
-        public async Task Handle_ReturnsFail_WhenStreetcodeNotFound()
-        {
-            // Arrange
-            var command = new CreateFactCommand(GetCreateFactDTO());
-            this.SetupStreetcode(null);
-
-            // Act
-            var result = await this.handler.Handle(command, CancellationToken.None);
-
-            // Assert
-            Assert.True(result.IsFailed);
-            Assert.Equal("Streetcode with the specified id was not found", result.Errors.First().Message);
-
-            this.loggerMock.Verify(x => x.LogError(It.IsAny<object>(), It.IsAny<string>()), Times.Once);
-        }
-
-        [Fact]
         public async Task Handle_ReturnsFail_WhenImageNotFound()
         {
             // Arrange
             var command = new CreateFactCommand(GetCreateFactDTO());
-            this.SetupStreetcode(new StreetcodeEntity());
             this.SetupImage(null);
 
             // Act
@@ -225,7 +192,7 @@
 
             // Assert
             Assert.True(result.IsFailed);
-            Assert.Equal("Image with the specified id was not found", result.Errors.First().Message);
+            Assert.Equal(Messages.Error_EntityWithIdNotFound.Format(nameof(Image), command.Fact.ImageId), result.Errors.First().Message);
         }
 
         [Fact]
@@ -234,8 +201,8 @@
             // Arrange
             var command = new CreateFactCommand(GetCreateFactDTO());
             var image = new ImageEntity { Id = 1, MimeType = "image/gif" };
-
-            this.SetupStreetcode(new StreetcodeEntity());
+            var allowedTypes = string.Join(",", AllowedImageTypes);
+            var errorMsg = Messages.Error_InvalidImageFormat.Format(image.MimeType, allowedTypes);
             this.SetupImage(image);
 
             // Act
@@ -243,7 +210,7 @@
 
             // Assert
             Assert.True(result.IsFailed);
-            Assert.Contains("Invalid image format", result.Errors.First().Message);
+            Assert.Contains(errorMsg, result.Errors.First().Message);
 
             this.factRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<FactEntity>()), Times.Never);
         }

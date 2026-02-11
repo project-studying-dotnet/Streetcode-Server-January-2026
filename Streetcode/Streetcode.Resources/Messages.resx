@@ -177,9 +177,6 @@
   <data name="Error_CannotMapEntityToDto" xml:space="preserve">
     <value>Cannot map {0} to {1}</value>
   </data>
-  <data name="Error_EntityWithStreetcodeIdNotFound_StreetCodeNotExists" xml:space="preserve">
-    <value>{0}(s) with StreetcodeId: {0} not found because Streetcode with such Id does not exist</value>
-  </data>
   <data name="Error_PropertyIsRequired" xml:space="preserve">
     <value>{0} is required</value>
   </data>
@@ -194,5 +191,17 @@
   </data>
   <data name="Error_InvalidMonobankTokenException" xml:space="preserve">
     <value>The provided token is not recognized by Monobank API</value>
+  </data>
+  <data name="Error_InvalidImageFormat" xml:space="preserve">
+    <value>Invalid Image format: {0}. Only {1} are allowed</value>
+  </data>
+  <data name="Error_FactsListEmpty" xml:space="preserve">
+    <value>Facts list cannot be empty</value>
+  </data>
+  <data name="Error_PropertyMustBeEqualOrGreaterThanZero" xml:space="preserve">
+    <value>{0} must be equal or grater than 0</value>
+  </data>
+  <data name="Error_CommandDataRequired" xml:space="preserve">
+    <value>{} data required</value>
   </data>
 </root>

@@ -78,6 +78,15 @@ namespace Streetcode.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {} data required.
+        /// </summary>
+        public static string Error_CommandDataRequired {
+            get {
+                return ResourceManager.GetString("Error_CommandDataRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot convert null to {0}.
         /// </summary>
         public static string Error_ConvertNullToEntity {
@@ -114,11 +123,11 @@ namespace Streetcode.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0}(s) with StreetcodeId: {0} not found because Streetcode with such Id does not exist.
+        ///   Looks up a localized string similar to Facts list cannot be empty.
         /// </summary>
-        public static string Error_EntityWithStreetcodeIdNotFound_StreetCodeNotExists {
+        public static string Error_FactsListEmpty {
             get {
-                return ResourceManager.GetString("Error_EntityWithStreetcodeIdNotFound_StreetCodeNotExists", resourceCulture);
+                return ResourceManager.GetString("Error_FactsListEmpty", resourceCulture);
             }
         }
         
@@ -177,6 +186,15 @@ namespace Streetcode.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid Image format: {0}. Only {1} are allowed.
+        /// </summary>
+        public static string Error_InvalidImageFormat {
+            get {
+                return ResourceManager.GetString("Error_InvalidImageFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The provided token is not recognized by Monobank API.
         /// </summary>
         public static string Error_InvalidMonobankTokenException {
@@ -200,6 +218,15 @@ namespace Streetcode.Resources {
         public static string Error_PropertyIsRequired {
             get {
                 return ResourceManager.GetString("Error_PropertyIsRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} must be equal or grater than 0.
+        /// </summary>
+        public static string Error_PropertyMustBeEqualOrGreaterThanZero {
+            get {
+                return ResourceManager.GetString("Error_PropertyMustBeEqualOrGreaterThanZero", resourceCulture);
             }
         }
         
