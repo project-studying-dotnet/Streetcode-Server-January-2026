@@ -2,9 +2,12 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Streetcode.Auth.BLL.DTO.Options;
 using Streetcode.Auth.BLL.Exceptions;
 using Streetcode.Auth.BLL.Interfaces;
 using Streetcode.Auth.DAL.Entities;
@@ -14,16 +17,16 @@ namespace Streetcode.Auth.BLL.Services
 {
     public class TokenService : ITokenService
     {
-        private readonly IConfiguration _configuration;
+        private readonly JwtOptionsDTO _jwtOptions;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
 
         public TokenService(
-            IConfiguration configuration,
+            IOptions<JwtOptionsDTO> jwtOptions,
             UserManager<ApplicationUser> userManager,
             IRefreshTokenRepository refreshTokenRepository)
         {
-            _configuration = configuration;
+            _jwtOptions = jwtOptions.Value;
             _userManager = userManager;
             _refreshTokenRepository = refreshTokenRepository;
         }
@@ -94,14 +97,14 @@ namespace Streetcode.Auth.BLL.Services
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] !));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
+                issuer: _jwtOptions.Issuer,
+                audience: _jwtOptions.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(double.Parse(_configuration["Jwt:ExpireMinutes"] !)),
+                expires: DateTime.UtcNow.AddMinutes(_jwtOptions.ExpireMinutes),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
@@ -118,7 +121,7 @@ namespace Streetcode.Auth.BLL.Services
             return new RefreshToken
             {
                 Token = tokenString,
-                Expires = DateTime.UtcNow.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpireDays"] !)),
+                Expires = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenExpireDays),
                 CreatedAt = DateTime.UtcNow,
                 Revoked = false,
                 UserId = userId

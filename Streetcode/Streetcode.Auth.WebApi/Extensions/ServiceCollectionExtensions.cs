@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Streetcode.Auth.BLL.DTO.Options;
 using Streetcode.Auth.BLL.Interfaces;
 using Streetcode.Auth.BLL.MediatR.Behaviors;
 using Streetcode.Auth.BLL.Services;
@@ -51,6 +52,13 @@ public static class ServiceCollectionExtensions
         .AddEntityFrameworkStores<AuthDbContext>()
         .AddDefaultTokenProviders();
 
+        var jwtOptions = new JwtOptionsDTO();
+        configuration.GetSection("Jwt").Bind(jwtOptions);
+
+        services.Configure<JwtOptionsDTO>(configuration.GetSection("Jwt"));
+
+        var key = Encoding.UTF8.GetBytes(jwtOptions.Key);
+
         services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -64,9 +72,9 @@ public static class ServiceCollectionExtensions
                 ValidateAudience = true,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
-                ValidIssuer = configuration["Jwt:Issuer"],
-                ValidAudience = configuration["Jwt:Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"] !))
+                ValidIssuer = jwtOptions.Issuer,
+                ValidAudience = jwtOptions.Audience,
+                IssuerSigningKey = new SymmetricSecurityKey(key)
             };
         });
     }
