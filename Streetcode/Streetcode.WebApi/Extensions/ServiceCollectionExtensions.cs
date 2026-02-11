@@ -1,3 +1,4 @@
+using System.Text;
 using FluentValidation;
 using Hangfire;
 using MassTransit;
@@ -23,7 +24,6 @@ using Streetcode.DAL.Entities.AdditionalContent.Email;
 using Streetcode.DAL.Persistence;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.DAL.Repositories.Realizations.Base;
-using System.Text;
 
 namespace Streetcode.WebApi.Extensions;
 
