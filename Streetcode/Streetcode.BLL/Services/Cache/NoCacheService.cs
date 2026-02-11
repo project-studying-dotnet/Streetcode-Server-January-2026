@@ -14,7 +14,7 @@ namespace Streetcode.BLL.Services.Cache
             return Task.CompletedTask;
         }
 
-        public Task SetAsync<T>(string key, T value, TimeSpan? absoluteExpiration = null, CancellationToken cancellationToken = default)
+        public Task SetAsync<T>(string key, T value, TimeSpan? absoluteExpiration)
         {
             return Task.CompletedTask;
         }

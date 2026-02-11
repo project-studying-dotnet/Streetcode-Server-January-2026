@@ -31,7 +31,7 @@ namespace Streetcode.BLL.Services.Cache
             await _distributedCache.RemoveAsync(key, cancellationToken);
         }
 
-        public async Task SetAsync<T>(string key, T value, TimeSpan? absoluteExpiration = null, CancellationToken cancellationToken = default)
+        public async Task SetAsync<T>(string key, T value, TimeSpan? absoluteExpiration = null)
         {
             string serializedData = JsonSerializer.Serialize(value);
 
@@ -40,7 +40,7 @@ namespace Streetcode.BLL.Services.Cache
                 AbsoluteExpirationRelativeToNow = absoluteExpiration ?? DefaultExpiration
             };
 
-            await _distributedCache.SetStringAsync(key, serializedData, options, cancellationToken);
+            await _distributedCache.SetStringAsync(key, serializedData, options);
         }
     }
 }
