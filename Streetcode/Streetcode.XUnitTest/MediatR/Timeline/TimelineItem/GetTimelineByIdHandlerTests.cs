@@ -1,4 +1,4 @@
-﻿namespace Streetcode.XUnitTest.MediatRTests.Timeline.TimelineItem;
+﻿namespace Streetcode.XUnitTest.MediatR.Timeline.TimelineItem;
 
 using AutoMapper;
 using Moq;
