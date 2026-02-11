@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Streetcode.BLL.DTO.Partners;
 using Streetcode.BLL.MediatR.Partners.Create;
@@ -37,18 +38,21 @@ public class PartnersController : BaseApiController
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] CreatePartnerDTO partner)
     {
         return HandleResult(await Mediator.Send(new CreatePartnerCommand(partner)));
     }
 
     [HttpPut]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update([FromBody] UpdatePartnerDTO partner)
     {
         return HandleResult(await Mediator.Send(new UpdatePartnerCommand(partner)));
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete([FromRoute] int id)
     {
         return HandleResult(await Mediator.Send(new DeletePartnerCommand(id)));
