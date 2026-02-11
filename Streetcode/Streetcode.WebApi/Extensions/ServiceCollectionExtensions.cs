@@ -50,7 +50,6 @@ public static class ServiceCollectionExtensions
 
         services.AddValidatorsFromAssemblies(currentAssemblies);
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidatorBehavior<,>));
-        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(RedisBehavior<,>));
 
         services.AddScoped<IBlobService, BlobService>();
         services.AddScoped<ILoggerService, LoggerService>();
