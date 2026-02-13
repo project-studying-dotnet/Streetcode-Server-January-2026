@@ -41,18 +41,17 @@ namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Create
                     return Result.Fail(errorMsg);
                 }
 
-                var streetcodeExists = await _repositoryWrapper.StreetcodeRepository
-                .GetFirstOrDefaultAsync(s => s.Id == request.streetcodeId);
+                var existingStreetcode = await _repositoryWrapper.StreetcodeRepository
+                    .GetFirstOrDefaultAsync(s => s.Id == request.StreetcodeId);
 
-                if (streetcodeExists is null)
+                if (existingStreetcode is null)
                 {
-                    string errorMsg = $"Streetcode with Id={request.streetcodeId} not found";
+                    string errorMsg = $"Streetcode with Id={request.StreetcodeId} not found";
                     _logger.LogError(request, errorMsg);
                     return Result.Fail(errorMsg);
                 }
 
-                newTimelineItem.StreetcodeId = request.streetcodeId;
-
+                newTimelineItem.StreetcodeId = request.StreetcodeId;
                 newTimelineItem.HistoricalContextTimelines = new List<HistoricalContextTimeline>();
 
                 var validationCheck = await ValidateAndBuildHistoricalContextsAsync(request, newTimelineItem);
@@ -68,12 +67,10 @@ namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Create
                 {
                     return Result.Ok(_mapper.Map<TimelineItemDTO>(entity));
                 }
-                else
-                {
-                    const string errorMsg = "Failed to create a timeline item";
-                    _logger.LogError(request, errorMsg);
-                    return Result.Fail(errorMsg);
-                }
+
+                const string createErrorMsg = "Failed to create a timeline item";
+                _logger.LogError(request, createErrorMsg);
+                return Result.Fail(createErrorMsg);
             }
             catch (Exception ex)
             {

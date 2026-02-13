@@ -53,12 +53,10 @@ namespace Streetcode.BLL.MediatR.Timeline.HistoricalContext.Delete
                     var resultDto = _mapper.Map<HistoricalContextDTO>(historicalContext);
                     return Result.Ok(resultDto);
                 }
-                else
-                {
-                    const string errorMsg = "Failed to delete the historical context.";
-                    _logger.LogError(request, errorMsg);
-                    return Result.Fail(errorMsg);
-                }
+
+                const string deleteErrorMsg = "Failed to delete the historical context.";
+                _logger.LogError(request, deleteErrorMsg);
+                return Result.Fail(deleteErrorMsg);
             }
             catch (Exception ex)
             {

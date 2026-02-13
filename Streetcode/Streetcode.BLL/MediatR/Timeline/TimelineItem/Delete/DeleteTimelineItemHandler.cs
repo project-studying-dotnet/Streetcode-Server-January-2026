@@ -27,12 +27,12 @@ namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Delete
             try
             {
                 var timelineItem = await _repositoryWrapper.TimelineRepository.GetFirstOrDefaultAsync(
-                    x => x.Id == request.id,
+                    x => x.Id == request.Id,
                     include: i => i.Include(ti => ti.HistoricalContextTimelines));
 
                 if (timelineItem == null)
                 {
-                    var errorMsg = $"Cannot find a timeline item with an ID: {request.id}";
+                    var errorMsg = $"Cannot find a timeline item with an ID: {request.Id}";
                     _logger.LogError(request, errorMsg);
                     return Result.Fail(errorMsg);
                 }
@@ -47,12 +47,10 @@ namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Delete
                 {
                     return Result.Ok(Unit.Value);
                 }
-                else
-                {
-                    var errorMsg = "Failed to delete the timeline item.";
-                    _logger.LogError(request, errorMsg);
-                    return Result.Fail(errorMsg);
-                }
+
+                var createErrorMsg = "Failed to delete the timeline item.";
+                _logger.LogError(request, createErrorMsg);
+                return Result.Fail(createErrorMsg);
             }
             catch (Exception ex)
             {
