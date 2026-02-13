@@ -11,8 +11,8 @@
     using Streetcode.Auth.BLL.Mapping;
     using Streetcode.Auth.BLL.MediatR.Register;
     using Streetcode.Auth.DAL.Entities;
-    using Streetcode.Auth.DAL.Enums;
     using Streetcode.Shared.DTO.Events;
+    using Streetcode.Shared.Enums;
 
     public class RegisterHandlerTests
     {
