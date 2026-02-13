@@ -79,6 +79,30 @@ public static class ServiceCollectionExtensions
         });
     }
 
+    public static void AddCorsServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        var corsConfig = configuration.GetSection("CORS").Get<CorsConfigurationDTO>()
+                         ?? throw new InvalidOperationException("CORS configuration is missing");
+
+        services.AddCors(opt =>
+        {
+            opt.AddPolicy("CorsPolicy", policy =>
+            {
+                policy.WithOrigins(corsConfig.AllowedOrigins.ToArray())
+                      .AllowAnyHeader()
+                      .AllowAnyMethod()
+                      .AllowCredentials();
+            });
+        });
+
+        services.AddHsts(opt =>
+        {
+            opt.Preload = true;
+            opt.IncludeSubDomains = true;
+            opt.MaxAge = TimeSpan.FromDays(10);
+        });
+    }
+
     public static void AddCustomServices(this IServiceCollection services, IConfiguration configuration)
     {
         var bllAssembly = Assembly.Load("Streetcode.Auth.BLL");

@@ -8,6 +8,7 @@ builder.Services.AddControllers();
 builder.Services.AddDataAccessServices(builder.Configuration);
 builder.Services.AddIdentityServices(builder.Configuration);
 builder.Services.AddCustomServices(builder.Configuration);
+builder.Services.AddCorsServices(builder.Configuration);
 builder.Services.AddSwaggerServices();
 
 var app = builder.Build();
@@ -17,12 +18,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    app.UseHsts();
+}
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 
-app.UseCors(opt => opt.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+app.UseCors("CorsPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();
