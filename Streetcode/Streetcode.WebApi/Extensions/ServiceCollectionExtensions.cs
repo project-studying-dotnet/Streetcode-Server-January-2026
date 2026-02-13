@@ -5,16 +5,24 @@ using MassTransit;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using NLog;
+using Serilog.Events;
 using Streetcode.BLL.Interfaces.BlobStorage;
+using Streetcode.BLL.Interfaces.Cache;
 using Streetcode.BLL.Interfaces.Email;
 using Streetcode.BLL.Interfaces.Instagram;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.Interfaces.Payment;
 using Streetcode.BLL.Interfaces.Text;
+using Streetcode.BLL.Interfaces.Users;
+using Streetcode.BLL.MediatR.PipelineBehavior;
 using Streetcode.BLL.Services.BlobStorageService;
+using Streetcode.BLL.Services.Cache;
 using Streetcode.BLL.Services.Email;
 using Streetcode.BLL.Services.Instagram;
 using Streetcode.BLL.Services.Logging;
@@ -43,7 +51,7 @@ public static class ServiceCollectionExtensions
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(currentAssemblies));
 
         services.AddValidatorsFromAssemblies(currentAssemblies);
-        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(BLL.MediatR.ValidatorBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidatorBehavior<,>));
 
         services.AddScoped<IBlobService, BlobService>();
         services.AddScoped<ILoggerService, LoggerService>();
@@ -169,6 +177,29 @@ public static class ServiceCollectionExtensions
                 }
             });
         });
+    }
+
+    public static IServiceCollection AddRedisCacheServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        var redisConnection = configuration.GetConnectionString("Redis");
+
+        if (!string.IsNullOrEmpty(redisConnection))
+        {
+            Console.WriteLine($"[CACHE] Redis connection string found: {redisConnection}");
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = redisConnection;
+                options.InstanceName = "Streetcode_";
+            });
+            services.AddScoped<ICacheService, RedisCacheService>();
+            Console.WriteLine("[CACHE] Using RedisCacheService");
+        }
+        else
+        {
+            services.AddScoped<ICacheService, NoCacheService>();
+        }
+
+        return services;
     }
 
     public class CorsConfiguration
