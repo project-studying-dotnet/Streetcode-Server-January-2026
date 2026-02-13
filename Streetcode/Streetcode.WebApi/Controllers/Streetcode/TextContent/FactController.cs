@@ -14,20 +14,21 @@ namespace Streetcode.WebApi.Controllers.Streetcode.TextContent;
 public class FactController : BaseApiController
 {
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll()
     {
         return HandleResult(await Mediator.Send(new GetAllFactsQuery()));
     }
 
-    [Authorize]
-    [HttpGet("{id:int}")]
+    [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetById([FromRoute] int id)
     {
         return HandleResult(await Mediator.Send(new GetFactByIdQuery(id)));
     }
 
-    [Authorize(Roles = "Admin")]
     [HttpGet("getByStreetcodeId/{streetcodeId:int}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetByStreetcodeId([FromRoute] int streetcodeId)
     {
         return HandleResult(await Mediator.Send(new GetFactByStreetcodeIdQuery(streetcodeId)));

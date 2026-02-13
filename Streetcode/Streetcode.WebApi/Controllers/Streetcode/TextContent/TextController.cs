@@ -16,24 +16,28 @@ namespace Streetcode.WebApi.Controllers.Streetcode.TextContent;
 public class TextController : BaseApiController
 {
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll()
     {
         return HandleResult(await Mediator.Send(new GetAllTextsQuery()));
     }
 
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetById([FromRoute] int id)
     {
         return HandleResult(await Mediator.Send(new GetTextByIdQuery(id)));
     }
 
     [HttpGet("{streetcodeId:int}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetByStreetcodeId([FromRoute] int streetcodeId)
     {
         return HandleResult(await Mediator.Send(new GetTextByStreetcodeIdQuery(streetcodeId)));
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetParsedText([FromQuery] string text)
     {
         return HandleResult(await Mediator.Send(new GetParsedTextForAdminPreviewCommand(text)));

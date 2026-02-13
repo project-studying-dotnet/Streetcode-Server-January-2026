@@ -9,6 +9,7 @@ namespace Streetcode.WebApi.Controllers.Team
     public class PositionController : BaseApiController
     {
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll()
         {
             return HandleResult(await Mediator.Send(new GetAllPositionsQuery()));

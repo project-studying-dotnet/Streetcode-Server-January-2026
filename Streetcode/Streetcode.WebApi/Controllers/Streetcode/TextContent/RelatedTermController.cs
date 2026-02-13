@@ -11,6 +11,7 @@ namespace Streetcode.WebApi.Controllers.Streetcode.TextContent
     public class RelatedTermController : BaseApiController
     {
         [HttpGet("{id:int}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetByTermId([FromRoute] int id)
         {
             return HandleResult(await Mediator.Send(new GetAllRelatedTermsByTermIdQuery(id)));

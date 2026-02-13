@@ -14,24 +14,28 @@ namespace Streetcode.WebApi.Controllers.Partners;
 public class PartnersController : BaseApiController
 {
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll()
     {
         return HandleResult(await Mediator.Send(new GetAllPartnersQuery()));
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAllShort()
     {
         return HandleResult(await Mediator.Send(new GetAllPartnersShortQuery()));
     }
 
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetById([FromRoute] int id)
     {
         return HandleResult(await Mediator.Send(new GetPartnerByIdQuery(id)));
     }
 
     [HttpGet("{streetcodeId:int}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetByStreetcodeId([FromRoute] int streetcodeId)
     {
         return HandleResult(await Mediator.Send(new GetPartnersByStreetcodeIdQuery(streetcodeId)));

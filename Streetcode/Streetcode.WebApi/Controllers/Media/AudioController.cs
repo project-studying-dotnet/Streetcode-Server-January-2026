@@ -13,24 +13,28 @@ namespace Streetcode.WebApi.Controllers.Media;
 public class AudioController : BaseApiController
 {
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll()
     {
         return HandleResult(await Mediator.Send(new GetAllAudiosQuery()));
     }
 
     [HttpGet("{streetcodeId:int}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetByStreetcodeId([FromRoute] int streetcodeId)
     {
         return HandleResult(await Mediator.Send(new GetAudioByStreetcodeIdQuery(streetcodeId)));
     }
 
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetById([FromRoute] int id)
     {
         return HandleResult(await Mediator.Send(new GetAudioByIdQuery(id)));
     }
 
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetBaseAudio([FromRoute] int id)
     {
         return HandleResult(await Mediator.Send(new GetBaseAudioQuery(id)));
