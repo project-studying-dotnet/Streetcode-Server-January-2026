@@ -1,4 +1,4 @@
-﻿namespace Streetcode.DAL.Enums
+﻿namespace Streetcode.Shared.Enums
 {
     [Flags]
     public enum UserRole

@@ -1,7 +1,5 @@
-using FluentResults;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Streetcode.BLL.DTO.Streetcode.TextContent;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
 using Streetcode.BLL.MediatR.Streetcode.Text.Create;
 using Streetcode.BLL.MediatR.Streetcode.Text.Delete;
@@ -10,6 +8,7 @@ using Streetcode.BLL.MediatR.Streetcode.Text.GetById;
 using Streetcode.BLL.MediatR.Streetcode.Text.GetByStreetcodeId;
 using Streetcode.BLL.MediatR.Streetcode.Text.GetParsed;
 using Streetcode.BLL.MediatR.Streetcode.Text.Update;
+using Streetcode.Shared.Enums;
 
 namespace Streetcode.WebApi.Controllers.Streetcode.TextContent;
 
@@ -44,21 +43,21 @@ public class TextController : BaseApiController
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = nameof(UserRole.Administrator))]
     public async Task<IActionResult> CreateText([FromBody] TextCreateDTO textCreateDTO)
     {
         return HandleResult(await Mediator.Send(new CreateTextCommand(textCreateDTO)));
     }
 
     [HttpPut]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = nameof(UserRole.Administrator))]
     public async Task<IActionResult> UpdateText([FromBody] TextUpdateDTO textUpdateDTO)
     {
         return HandleResult(await Mediator.Send(new UpdateTextCommand(textUpdateDTO)));
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = nameof(UserRole.Administrator))]
     public async Task<IActionResult> DeleteText([FromRoute] int id)
     {
         return HandleResult(await Mediator.Send(new DeleteTextCommand(id)));

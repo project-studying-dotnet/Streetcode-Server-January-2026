@@ -7,6 +7,7 @@ using Streetcode.BLL.MediatR.Media.Audio.GetAll;
 using Streetcode.BLL.MediatR.Media.Audio.GetBaseAudio;
 using Streetcode.BLL.MediatR.Media.Audio.GetById;
 using Streetcode.BLL.MediatR.Media.Audio.GetByStreetcodeId;
+using Streetcode.Shared.Enums;
 
 namespace Streetcode.WebApi.Controllers.Media;
 
@@ -41,14 +42,14 @@ public class AudioController : BaseApiController
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = nameof(UserRole.Administrator))]
     public async Task<IActionResult> Create([FromBody] AudioFileBaseCreateDTO audio)
     {
         return HandleResult(await Mediator.Send(new CreateAudioCommand(audio)));
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = nameof(UserRole.Administrator))]
     public async Task<IActionResult> Delete([FromRoute] int id)
     {
         return HandleResult(await Mediator.Send(new DeleteAudioCommand(id)));

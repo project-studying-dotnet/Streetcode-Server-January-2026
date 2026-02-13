@@ -18,6 +18,7 @@ using Streetcode.DAL.Entities.Transactions;
 using Streetcode.DAL.Enums;
 using Streetcode.DAL.Persistence;
 using Streetcode.DAL.Repositories.Realizations.Base;
+using Streetcode.Shared.Enums;
 
 namespace Streetcode.WebApi.Extensions
 {

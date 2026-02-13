@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Streetcode.DAL.Enums;
+using Streetcode.Shared.Enums;
 
 namespace Streetcode.DAL.Entities.Users
 {

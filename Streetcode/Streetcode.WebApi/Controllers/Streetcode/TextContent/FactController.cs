@@ -8,6 +8,7 @@ using Streetcode.BLL.MediatR.Streetcode.Fact.GetById;
 using Streetcode.BLL.MediatR.Streetcode.Fact.GetByStreetcodeId;
 using Streetcode.BLL.MediatR.Streetcode.Fact.Update;
 using Streetcode.BLL.MediatR.Streetcode.Fact.UpdateOrder;
+using Streetcode.Shared.Enums;
 
 namespace Streetcode.WebApi.Controllers.Streetcode.TextContent;
 
@@ -35,28 +36,28 @@ public class FactController : BaseApiController
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = nameof(UserRole.Administrator))]
     public async Task<IActionResult> Create([FromBody] CreateFactDTO fact)
     {
         return HandleResult(await Mediator.Send(new CreateFactCommand(fact)));
     }
 
     [HttpPut]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = nameof(UserRole.Administrator))]
     public async Task<IActionResult> Update([FromBody] UpdateFactDTO fact)
     {
         return HandleResult(await Mediator.Send(new UpdateFactCommand(fact)));
     }
 
     [HttpPut("update-order")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = nameof(UserRole.Administrator))]
     public async Task<IActionResult> UpdateOrder([FromBody] List<UpdateFactOrderDTO> facts)
     {
         return HandleResult(await Mediator.Send(new UpdateOrderFactCommand(facts)));
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = nameof(UserRole.Administrator))]
     public async Task<IActionResult> Delete([FromRoute] int id)
     {
         return HandleResult(await Mediator.Send(new DeleteFactCommand(id)));

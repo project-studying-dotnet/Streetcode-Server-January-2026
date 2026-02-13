@@ -7,6 +7,7 @@ using Streetcode.BLL.MediatR.Media.Image.GetAll;
 using Streetcode.BLL.MediatR.Media.Image.GetBaseImage;
 using Streetcode.BLL.MediatR.Media.Image.GetById;
 using Streetcode.BLL.MediatR.Media.Image.GetByStreetcodeId;
+using Streetcode.Shared.Enums;
 
 namespace Streetcode.WebApi.Controllers.Media.Images;
 
@@ -34,14 +35,14 @@ public class ImageController : BaseApiController
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = nameof(UserRole.Administrator))]
     public async Task<IActionResult> Create([FromBody] ImageFileBaseCreateDTO image)
     {
         return HandleResult(await Mediator.Send(new CreateImageCommand(image)));
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = nameof(UserRole.Administrator))]
     public async Task<IActionResult> Delete([FromRoute] int id)
     {
         return HandleResult(await Mediator.Send(new DeleteImageCommand(id)));

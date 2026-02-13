@@ -8,8 +8,8 @@ using Streetcode.Auth.BLL.DTO.Auth;
 using Streetcode.Auth.BLL.DTO.Users;
 using Streetcode.Auth.BLL.Interfaces;
 using Streetcode.Auth.DAL.Entities;
-using Streetcode.Auth.DAL.Enums;
 using Streetcode.Shared.DTO.Events;
+using Streetcode.Shared.Enums;
 
 namespace Streetcode.Auth.BLL.MediatR.Register
 {
@@ -57,13 +57,14 @@ namespace Streetcode.Auth.BLL.MediatR.Register
 
             await _publishEndpoint.Publish(
                 new UserRegisteredEvent
-                    {
-                        UserId = user.Id,
-                        Email = user.Email,
-                        Name = user.Name,
-                        Surname = user.Surname,
-                        PhoneNumber = user.PhoneNumber
-                    }, cancellationToken);
+                {
+                    UserId = user.Id,
+                    Email = user.Email,
+                    Name = user.Name,
+                    Surname = user.Surname,
+                    PhoneNumber = user.PhoneNumber
+                },
+                cancellationToken);
 
             var responseDto = new TokenResponseDTO
             {

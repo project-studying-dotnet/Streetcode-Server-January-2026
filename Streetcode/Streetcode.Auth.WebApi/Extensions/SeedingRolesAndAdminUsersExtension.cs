@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Streetcode.Auth.DAL.Entities;
-using Streetcode.Auth.DAL.Enums;
+using Streetcode.Shared.Enums;
 
 namespace Streetcode.Auth.WebApi.Extensions
 {
@@ -27,24 +27,22 @@ namespace Streetcode.Auth.WebApi.Extensions
 
         private static async Task SeedDataAsync(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
-            string[] roles = { nameof(UserRole.User), nameof(UserRole.Admin) };
-
-            foreach (var role in roles)
+            foreach (var roleName in Enum.GetNames(typeof(UserRole)))
             {
-                if (!await roleManager.RoleExistsAsync(role))
+                if (!await roleManager.RoleExistsAsync(roleName))
                 {
-                    await roleManager.CreateAsync(new IdentityRole(role));
+                    await roleManager.CreateAsync(new IdentityRole(roleName));
                 }
             }
 
-            var adminEmail = "admin67@streetcode.com";
+            var adminEmail = "admin@streetcode.com";
             if (await userManager.FindByEmailAsync(adminEmail) == null)
             {
                 var adminUser = new ApplicationUser
                 {
                     UserName = adminEmail,
                     Email = adminEmail,
-                    Name = "AdminTop",
+                    Name = "Admin",
                     Surname = "SuperUser",
                     EmailConfirmed = true,
                     PhoneNumber = "+380670000000"
@@ -54,7 +52,7 @@ namespace Streetcode.Auth.WebApi.Extensions
 
                 if (result.Succeeded)
                 {
-                    await userManager.AddToRoleAsync(adminUser, nameof(UserRole.Admin));
+                    await userManager.AddToRoleAsync(adminUser, nameof(UserRole.Administrator));
                 }
             }
         }
