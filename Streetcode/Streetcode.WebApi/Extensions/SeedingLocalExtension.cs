@@ -268,22 +268,6 @@ namespace Streetcode.WebApi.Extensions
                         }
                     }
 
-                    if (!dbContext.Users.Any())
-                    {
-                        dbContext.Users.AddRange(
-                            new DAL.Entities.Users.User
-                            {
-                                Id = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                                Email = "admin",
-                                Role = UserRole.Administrator,
-                                Name = "admin",
-                                Surname = "admin",
-                                PhoneNumber = "+380000000000"
-                            });
-
-                        await dbContext.SaveChangesAsync();
-                    }
-
                     if (!dbContext.News.Any())
                     {
                         dbContext.News.AddRange(

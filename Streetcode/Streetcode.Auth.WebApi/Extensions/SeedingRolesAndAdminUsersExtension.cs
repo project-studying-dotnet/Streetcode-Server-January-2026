@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using MassTransit;
+using Microsoft.AspNetCore.Identity;
 using Streetcode.Auth.DAL.Entities;
+using Streetcode.Shared.DTO.Events;
 using Streetcode.Shared.Enums;
 
 namespace Streetcode.Auth.WebApi.Extensions
@@ -15,8 +17,10 @@ namespace Streetcode.Auth.WebApi.Extensions
             {
                 var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
                 var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+                var configuration = services.GetRequiredService<IConfiguration>();
+                var publishEndpoint = services.GetRequiredService<IPublishEndpoint>();
 
-                await SeedDataAsync(userManager, roleManager);
+                await SeedDataAsync(userManager, roleManager, configuration, publishEndpoint);
             }
             catch (Exception ex)
             {
@@ -25,7 +29,11 @@ namespace Streetcode.Auth.WebApi.Extensions
             }
         }
 
-        private static async Task SeedDataAsync(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+        private static async Task SeedDataAsync(
+            UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager,
+            IConfiguration configuration,
+            IPublishEndpoint publishEndpoint)
         {
             foreach (var roleName in Enum.GetNames(typeof(UserRole)))
             {
@@ -35,7 +43,11 @@ namespace Streetcode.Auth.WebApi.Extensions
                 }
             }
 
-            var adminEmail = "admin@streetcode.com";
+            var adminEmail = configuration["Admin:Email"]
+                ?? throw new InvalidOperationException("Admin Email is missing in configuration");
+            var adminPassword = configuration["Admin:Password"]
+                ?? throw new InvalidOperationException("Admin Password is missing in configuration");
+
             if (await userManager.FindByEmailAsync(adminEmail) == null)
             {
                 var adminUser = new ApplicationUser
@@ -48,11 +60,21 @@ namespace Streetcode.Auth.WebApi.Extensions
                     PhoneNumber = "+380670000000"
                 };
 
-                var result = await userManager.CreateAsync(adminUser, "Pa$$w0rdAdmin1!");
+                var result = await userManager.CreateAsync(adminUser, adminPassword);
 
                 if (result.Succeeded)
                 {
                     await userManager.AddToRoleAsync(adminUser, nameof(UserRole.Administrator));
+
+                    await publishEndpoint.Publish(new UserRegisteredEvent
+                    {
+                        UserId = adminUser.Id,
+                        Email = adminUser.Email,
+                        Name = adminUser.Name,
+                        Surname = adminUser.Surname,
+                        PhoneNumber = adminUser.PhoneNumber,
+                        Role = UserRole.Administrator
+                    });
                 }
             }
         }

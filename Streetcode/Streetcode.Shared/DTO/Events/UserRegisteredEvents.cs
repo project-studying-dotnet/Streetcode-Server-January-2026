@@ -1,4 +1,6 @@
-﻿namespace Streetcode.Shared.DTO.Events
+﻿using Streetcode.Shared.Enums;
+
+namespace Streetcode.Shared.DTO.Events
 {
     public class UserRegisteredEvent
     {
@@ -7,5 +9,6 @@
         public string Name { get; set; }
         public string Surname { get; set; }
         public string PhoneNumber { get; set; }
+        public UserRole Role { get; set; }
     }
 }

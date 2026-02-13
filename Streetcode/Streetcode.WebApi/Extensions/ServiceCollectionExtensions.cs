@@ -42,7 +42,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
     }
 
-    public static void AddCustomServices(this IServiceCollection services)
+    public static void AddCustomServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddRepositoryServices();
         services.AddFeatureManagement();
@@ -66,10 +66,19 @@ public static class ServiceCollectionExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host("localhost", "/", h =>
+                var rabbitSection = configuration.GetSection("RabbitMQ");
+
+                var host = rabbitSection["Host"]
+                    ?? throw new InvalidOperationException("RabbitMQ Host is missing");
+                var username = rabbitSection["Username"]
+                    ?? throw new InvalidOperationException("RabbitMQ Username is missing");
+                var password = rabbitSection["Password"]
+                    ?? throw new InvalidOperationException("RabbitMQ Password is missing");
+
+                cfg.Host(host, "/", h =>
                 {
-                    h.Username("guest");
-                    h.Password("guest");
+                    h.Username(username);
+                    h.Password(password);
                 });
                 cfg.ConfigureEndpoints(context);
             });
@@ -208,5 +217,12 @@ public static class ServiceCollectionExtensions
         public List<string> AllowedHeaders { get; set; }
         public List<string> AllowedMethods { get; set; }
         public int PreflightMaxAge { get; set; }
+    }
+
+    public class JwtOptions
+    {
+        public string Key { get; set; }
+        public string Issuer { get; set; }
+        public string Audience { get; set; }
     }
 }

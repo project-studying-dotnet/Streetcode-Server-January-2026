@@ -62,7 +62,8 @@ namespace Streetcode.Auth.BLL.MediatR.Register
                     Email = user.Email,
                     Name = user.Name,
                     Surname = user.Surname,
-                    PhoneNumber = user.PhoneNumber
+                    PhoneNumber = user.PhoneNumber,
+                    Role = UserRole.User
                 },
                 cancellationToken);
 

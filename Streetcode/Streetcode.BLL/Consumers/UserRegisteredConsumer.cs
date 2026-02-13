@@ -19,6 +19,14 @@ namespace Streetcode.BLL.Consumers
         {
             var message = context.Message;
 
+            var existingUser = await _repositoryWrapper.UserRepository
+                .GetFirstOrDefaultAsync(u => u.Id == message.UserId || u.Email == message.Email);
+
+            if (existingUser != null)
+            {
+                return;
+            }
+
             var newUser = new User
             {
                 Id = message.UserId,
@@ -26,7 +34,7 @@ namespace Streetcode.BLL.Consumers
                 Surname = message.Surname,
                 Email = message.Email,
                 PhoneNumber = message.PhoneNumber,
-                Role = UserRole.User
+                Role = message.Role
             };
 
             await _repositoryWrapper.UserRepository.CreateAsync(newUser);
