@@ -24,7 +24,7 @@ namespace Streetcode.BLL.MediatR
 
             if (failures.Count != 0)
             {
-                throw new ValidationException("Validation exception", failures);
+                throw new Exceptions.ValidationException(failures);
             }
 
             return next();
