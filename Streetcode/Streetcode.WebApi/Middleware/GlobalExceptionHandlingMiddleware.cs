@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Streetcode.BLL.Exceptions;
 
 namespace Streetcode.WebApi.Middleware
@@ -34,23 +35,21 @@ namespace Streetcode.WebApi.Middleware
             }
         }
 
-        private static Task HandleValidationAsync(HttpContext context, ValidationException exeption)
+        private static Task HandleValidationAsync(HttpContext context, ValidationException exception)
         {
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
 
-            var response = new
+            var problemDetails = new ValidationProblemDetails(exception.Errors)
             {
-                StatusCodes = StatusCodes.Status400BadRequest,
-                Title = "Validation Error",
-                errors = exeption.Errors.Select(e => new
-                {
-                    field = e.Key,
-                    messages = e.Value
-                })
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                Title = "One or more validation errors occurred.",
+                Status = StatusCodes.Status400BadRequest,
+                Detail = "See the errors property for details.",
+                Instance = context.Request.Path
             };
 
-            return context.Response.WriteAsync(JsonSerializer.Serialize(response));
+            return context.Response.WriteAsJsonAsync(problemDetails);
         }
 
         private Task HandleUnhandledAsync(HttpContext context, Exception exception)
@@ -60,13 +59,16 @@ namespace Streetcode.WebApi.Middleware
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             context.Response.ContentType = "application/json";
 
-            var response = new
+            var problemDetails = new ValidationProblemDetails
             {
-                statusCode = context.Response.StatusCode,
-                message = "Internal server error"
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1",
+                Title = "Internal Server Error",
+                Status = StatusCodes.Status500InternalServerError,
+                Detail = "An unexpected error occurred. Please try again later.",
+                Instance = context.Request.Path
             };
 
-            return context.Response.WriteAsync(JsonSerializer.Serialize(response));
+            return context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails));
         }
     }
 }
