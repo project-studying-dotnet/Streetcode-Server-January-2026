@@ -9,11 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Exceptions\**" />
     <Compile Remove="MediatR\Analytics\**" />
     <EmbeddedResource Remove="Exceptions\**" />
     <EmbeddedResource Remove="MediatR\Analytics\**" />
-    <None Remove="Exceptions\**" />
     <None Remove="MediatR\Analytics\**" />
   </ItemGroup>
 
