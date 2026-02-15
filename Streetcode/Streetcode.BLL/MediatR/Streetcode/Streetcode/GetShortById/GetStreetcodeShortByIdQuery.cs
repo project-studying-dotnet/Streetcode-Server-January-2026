@@ -5,5 +5,5 @@ using Streetcode.BLL.Interfaces.Cache;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Streetcode.GetShortById
 {
-    public record GetStreetcodeShortByIdQuery(int id) : IRequest<Result<StreetcodeShortDTO>>;
+    public record GetStreetcodeShortByIdQuery(int Id) : IRequest<Result<StreetcodeShortDTO>>;
 }

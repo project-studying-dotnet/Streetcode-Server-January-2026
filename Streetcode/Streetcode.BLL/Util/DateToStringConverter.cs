@@ -26,7 +26,7 @@ namespace Streetcode.BLL.Util
             {
                 return "весна";
             }
-            else if(dateTime.Month >= 6 && dateTime.Month < 9)
+            else if (dateTime.Month >= 6 && dateTime.Month < 9)
             {
                 return "літо";
             }

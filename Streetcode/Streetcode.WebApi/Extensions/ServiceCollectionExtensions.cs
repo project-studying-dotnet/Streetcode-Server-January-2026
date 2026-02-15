@@ -1,15 +1,6 @@
-using FluentValidation;
 using Hangfire;
-using MediatR;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.FeatureManagement;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using NLog;
-using Serilog.Events;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Cache;
 using Streetcode.BLL.Interfaces.Email;
@@ -17,7 +8,6 @@ using Streetcode.BLL.Interfaces.Instagram;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.Interfaces.Payment;
 using Streetcode.BLL.Interfaces.Text;
-using Streetcode.BLL.Interfaces.Users;
 using Streetcode.BLL.MediatR.PipelineBehavior;
 using Streetcode.BLL.Services.BlobStorageService;
 using Streetcode.BLL.Services.Cache;
@@ -30,6 +20,9 @@ using Streetcode.DAL.Entities.AdditionalContent.Email;
 using Streetcode.DAL.Persistence;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.DAL.Repositories.Realizations.Base;
+using Microsoft.FeatureManagement;
+using FluentValidation;
+using MediatR;
 
 namespace Streetcode.WebApi.Extensions;
 

@@ -6,7 +6,10 @@ using Streetcode.BLL.DTO.AdditionalContent.Tag;
 using Streetcode.BLL.DTO.Streetcode;
 using Streetcode.BLL.Interfaces.Cache;
 using Streetcode.BLL.Interfaces.Logging;
+using Streetcode.DAL.Entities.Streetcode;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Streetcode.GetById;
 
@@ -40,15 +43,15 @@ public class GetStreetcodeByIdHandler : IRequestHandler<GetStreetcodeByIdQuery, 
 
         if (streetcode is null)
         {
-            string errorMsg = $"Cannot find any streetcode with corresponding id: {request.Id}";
+            var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(StreetcodeContent), request.Id);
             _logger.LogError(request, errorMsg);
             return Result.Fail(new Error(errorMsg));
         }
 
         var tagIndexed = await _repositoryWrapper.StreetcodeTagIndexRepository
-                                        .GetAllAsync(
-                                            t => t.StreetcodeId == request.Id,
-                                            include: q => q.Include(ti => ti.Tag));
+            .GetAllAsync(
+                t => t.StreetcodeId == request.Id,
+                q => q.Include(ti => ti.Tag));
         var streetcodeDto = _mapper.Map<StreetcodeDTO>(streetcode);
         streetcodeDto.Tags = _mapper.Map<List<StreetcodeTagDTO>>(tagIndexed);
 

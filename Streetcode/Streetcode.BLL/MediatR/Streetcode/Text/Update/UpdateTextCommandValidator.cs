@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using Streetcode.BLL.MediatR.Streetcode.Text.Update;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Text.Update
 {

@@ -2,12 +2,12 @@
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Streetcode.BLL.DTO.Media.Images;
 using Streetcode.BLL.DTO.Sources;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.BLL.Services.BlobStorageService;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Sources.SourceLinkCategory.GetAll
 {
@@ -17,7 +17,11 @@ namespace Streetcode.BLL.MediatR.Sources.SourceLinkCategory.GetAll
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IBlobService _blobService;
         private readonly ILoggerService _logger;
-        public GetAllCategoriesHandler(IRepositoryWrapper repositoryWrapper, IMapper mapper, IBlobService blobService, ILoggerService logger)
+        public GetAllCategoriesHandler(
+            IRepositoryWrapper repositoryWrapper,
+            IMapper mapper,
+            IBlobService blobService,
+            ILoggerService logger)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
@@ -29,9 +33,9 @@ namespace Streetcode.BLL.MediatR.Sources.SourceLinkCategory.GetAll
         {
             var allCategories = await _repositoryWrapper.SourceCategoryRepository.GetAllAsync(
                 include: cat => cat.Include(img => img.Image) !);
-            if (allCategories == null)
+            if (!allCategories.Any())
             {
-                const string errorMsg = $"Categories is null";
+                var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(DAL.Entities.Sources.SourceLinkCategory));
                 _logger.LogError(request, errorMsg);
                 return Result.Fail(new Error(errorMsg));
             }

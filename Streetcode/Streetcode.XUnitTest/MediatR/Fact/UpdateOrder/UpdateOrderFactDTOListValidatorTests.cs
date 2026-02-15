@@ -1,4 +1,7 @@
-﻿namespace Streetcode.XUnitTest.MediatR.Fact.UpdateOrder
+﻿using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+
+namespace Streetcode.XUnitTest.MediatR.Fact.UpdateOrder
 {
     using FluentValidation.TestHelper;
     using Streetcode.BLL.DTO.Streetcode.TextContent.Fact;
@@ -25,7 +28,7 @@
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x)
-                  .WithErrorMessage("Facts list cannot be empty.");
+                  .WithErrorMessage(Messages.Error_FactsListEmpty);
         }
 
         [Theory]
@@ -36,7 +39,7 @@
             // Arrange
             var model = new List<UpdateFactOrderDTO>
             {
-                new() { Id = 1, Order = 1 },
+                new () { Id = 1, Order = 1 },
                 new () { Id = invalidId, Order = 2 },
             };
 
@@ -45,7 +48,7 @@
 
             // Assert
             result.ShouldHaveValidationErrorFor($"x[{1}].Id")
-                  .WithErrorMessage("Fact Id must be greater than 0.");
+                  .WithErrorMessage(Messages.Error_PropertyMustBeGreaterThanZero.Format(nameof(UpdateFactOrderDTO.Id)));
         }
 
         [Fact]
@@ -62,7 +65,7 @@
 
             // Assert
             result.ShouldHaveValidationErrorFor("x[0].Order")
-                  .WithErrorMessage("Order must be 0 or greater.");
+                  .WithErrorMessage(Messages.Error_PropertyMustBeEqualOrGreaterThanZero.Format(nameof(UpdateFactOrderDTO.Order)));
         }
 
         [Fact]

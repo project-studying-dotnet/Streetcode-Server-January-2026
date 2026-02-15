@@ -1,4 +1,7 @@
-﻿namespace Streetcode.XUnitTest.MediatR.Partners;
+﻿using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+
+namespace Streetcode.XUnitTest.MediatR.Partners;
 
 using Streetcode.BLL.DTO.Partners.Create;
 using Streetcode.BLL.Mapping.Streetcode;
@@ -223,7 +226,7 @@ public class CreatePartnerHandlerTests
         };
 
         var command = new CreatePartnerCommand(createPartnerDto);
-        const string errorMsg = "LogoId is required and must be greater than zero.";
+        var errorMsg = Messages.Error_PropertyMustBeGreaterThanZero.Format(nameof(createPartnerDto.LogoId));
 
         // Act
         var result = await this.createPartnerHandler.Handle(command, CancellationToken.None);
@@ -266,7 +269,7 @@ public class CreatePartnerHandlerTests
         };
 
         var command = new CreatePartnerCommand(createPartnerDto);
-        const string errorMsg = "Failed to create a new Partner.";
+        var errorMsg = Messages.Error_FailedToCreateEntity.Format(nameof(Partner));
 
         this.SetupGetAllStreetcodesMock([]);
 

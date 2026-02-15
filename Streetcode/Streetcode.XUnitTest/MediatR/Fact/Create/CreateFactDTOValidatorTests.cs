@@ -1,4 +1,7 @@
-﻿namespace Streetcode.XUnitTest.MediatR.Fact.Create
+﻿using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+
+namespace Streetcode.XUnitTest.MediatR.Fact.Create
 {
     using FluentValidation.TestHelper;
     using Streetcode.BLL.DTO.Streetcode.TextContent.Fact;
@@ -25,7 +28,7 @@
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.Title)
-                  .WithErrorMessage("Title is required.");
+                  .WithErrorMessage(Messages.Error_PropertyIsRequired.Format(nameof(CreateFactDTO.Title)));
         }
 
         [Fact]
@@ -39,7 +42,7 @@
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.Title)
-                  .WithErrorMessage("Title length must not exceed 68 characters.");
+                  .WithErrorMessage(Messages.Error_PropertyMustNotExceedCharacters.Format(nameof(CreateFactDTO.Title), 68));
         }
 
         [Fact]
@@ -53,7 +56,7 @@
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.FactContent)
-                  .WithErrorMessage("Fact content is required.");
+                  .WithErrorMessage(Messages.Error_PropertyIsRequired.Format(nameof(CreateFactDTO.FactContent)));
         }
 
         [Fact]
@@ -67,7 +70,7 @@
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.FactContent)
-                  .WithErrorMessage("Fact content length must not exceed 600 characters.");
+                  .WithErrorMessage(Messages.Error_PropertyMustNotExceedCharacters.Format(nameof(CreateFactDTO.FactContent), 600));
         }
 
         [Theory]
@@ -83,7 +86,7 @@
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.ImageId)
-                  .WithErrorMessage("ImageId must be greater than 0.");
+                  .WithErrorMessage(Messages.Error_PropertyMustBeGreaterThanZero.Format(nameof(CreateFactDTO.ImageId)));
         }
 
         [Theory]
@@ -99,7 +102,7 @@
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.StreetcodeId)
-                  .WithErrorMessage("StreetcodeId must be greater than 0.");
+                  .WithErrorMessage(Messages.Error_PropertyMustBeGreaterThanZero.Format(nameof(CreateFactDTO.StreetcodeId)));
         }
 
         [Fact]
@@ -113,7 +116,7 @@
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.ImageDescription)
-                  .WithErrorMessage("Image description must not exceed 200 characters.");
+                  .WithErrorMessage(Messages.Error_PropertyMustNotExceedCharacters.Format(nameof(CreateFactDTO.ImageDescription), 200));
         }
 
         [Fact]

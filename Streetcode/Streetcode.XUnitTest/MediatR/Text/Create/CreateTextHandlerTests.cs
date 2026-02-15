@@ -2,6 +2,9 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+
 namespace Streetcode.XUnitTest.MediatR.Text.Create
 {
     using AutoMapper;
@@ -69,7 +72,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Create
         public async Task Handle_IfSaveChangesFails_ShouldReturnFail()
         {
             // Arrange
-            string errorMsg = "Error while saving changes to database";
+            string errorMsg = Messages.Error_FailedToCreateEntity.Format(nameof(DAL.Entities.Streetcode.TextContent.Text));
             var textCreateDTO = new TextCreateDTO { Title = "Test Title" };
             var command = new CreateTextCommand(textCreateDTO);
 

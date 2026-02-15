@@ -2,6 +2,9 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+
 namespace Streetcode.XUnitTest.MediatR.Text.Update
 {
     using FluentValidation.TestHelper;
@@ -32,7 +35,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.Text.StreetcodeId)
-                  .WithErrorMessage("StreetcodeId must be greater than zero");
+                  .WithErrorMessage(Messages.Error_PropertyMustBeGreaterThanZero.Format(nameof(TextUpdateDTO.StreetcodeId)));
         }
 
         [Fact]
@@ -47,7 +50,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.Text.TextContent)
-                  .WithErrorMessage("TextContent is required");
+                  .WithErrorMessage(Messages.Error_PropertyIsRequired.Format(nameof(TextUpdateDTO.TextContent)));
         }
 
         [Fact]

@@ -2,12 +2,11 @@
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.DTO.Streetcode.RelatedFigure;
 using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.BLL.MediatR.Streetcode.Streetcode.GetByIndex;
-using Streetcode.DAL.Entities.Streetcode.Types;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.RelatedFigure.GetByTagId
 {
@@ -29,19 +28,19 @@ namespace Streetcode.BLL.MediatR.Streetcode.RelatedFigure.GetByTagId
             var streetcodes = await _repositoryWrapper.StreetcodeRepository
                 .GetAllAsync(
                 predicate: sc => sc.Status == DAL.Enums.StreetcodeStatus.Published &&
-                  sc.Tags.Select(t => t.Id).Any(tag => tag == request.tagId),
+                  sc.Tags.Select(t => t.Id).Any(tag => tag == request.TagId),
                 include: scl => scl
                     .Include(sc => sc.Images)
                     .Include(sc => sc.Tags));
 
-            if (streetcodes is null)
+            if (streetcodes.Any())
             {
-                string errorMsg = $"Cannot find any streetcode with corresponding tagid: {request.tagId}";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(new Error(errorMsg));
+                return Result.Ok(_mapper.Map<IEnumerable<RelatedFigureDTO>>(streetcodes));
             }
 
-            return Result.Ok(_mapper.Map<IEnumerable<RelatedFigureDTO>>(streetcodes));
+            var errorMsg = Messages.Error_StreetcodeWithTagIdNotFound.Format(request.TagId);
+            _logger.LogError(request, errorMsg);
+            return Result.Fail(new Error(errorMsg));
         }
     }
 }

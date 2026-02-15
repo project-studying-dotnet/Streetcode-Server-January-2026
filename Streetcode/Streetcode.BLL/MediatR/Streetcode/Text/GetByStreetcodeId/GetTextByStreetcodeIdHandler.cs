@@ -4,8 +4,9 @@ using MediatR;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.Interfaces.Text;
-using Streetcode.BLL.MediatR.ResultVariations;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Text.GetByStreetcodeId;
 
@@ -31,22 +32,16 @@ public class GetTextByStreetcodeIdHandler : IRequestHandler<GetTextByStreetcodeI
 
         if (text is null)
         {
-            if (await _repositoryWrapper.StreetcodeRepository
-                 .GetFirstOrDefaultAsync(s => s.Id == request.StreetcodeId) == null)
-            {
-                string errorMsg = $"Cannot find a transaction link by a streetcode id: {request.StreetcodeId}, because such streetcode doesn`t exist";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(new Error(errorMsg));
-            }
+            var errorMsg = Messages.Error_EntityWithStreetcodeIdNotFound.Format(
+                nameof(DAL.Entities.Streetcode.TextContent.Text),
+                request.StreetcodeId);
+
+            _logger.LogError(request, errorMsg);
+            return Result.Fail(new Error(errorMsg));
         }
 
-        NullResult<TextDTO?> result = new NullResult<TextDTO?>();
-        if (text != null)
-        {
-            text.TextContent = await _textService.AddTermsTag(text?.TextContent ?? "");
-            result.WithValue(_mapper.Map<TextDTO?>(text));
-        }
+        text.TextContent = await _textService.AddTermsTag(text?.TextContent ?? string.Empty);
 
-        return result;
+        return new Result<TextDTO?>().WithValue(_mapper.Map<TextDTO?>(text));
     }
 }

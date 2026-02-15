@@ -12,6 +12,8 @@ using Streetcode.BLL.MediatR.Partners.Delete;
 using Streetcode.DAL.Entities.Partners;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.DAL.Repositories.Interfaces.Partners;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using Xunit;
 
 namespace Streetcode.XUnitTest.MediatR.Partners;
@@ -112,7 +114,7 @@ public class DeletePartnerHandlerTests
         // Arrange
         const int partnerId = 1;
         var command = new DeletePartnerCommand(partnerId);
-        var errorMsg = $"Partner with id {partnerId} not found";
+        var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(Partner), partnerId);
 
         this.partnersRepositoryMock
             .Setup(r => r.GetFirstOrDefaultAsync(
