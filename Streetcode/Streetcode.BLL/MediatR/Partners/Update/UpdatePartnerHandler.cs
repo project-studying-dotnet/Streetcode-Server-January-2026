@@ -6,6 +6,8 @@ using Streetcode.BLL.DTO.Partners;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Entities.Partners;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Partners.Update
 {
@@ -27,7 +29,7 @@ namespace Streetcode.BLL.MediatR.Partners.Update
             // Move validation to a separate validator class if it becomes more complex
             if (request.Partner.LogoId < 1)
             {
-                const string errorMsg = "LogoId is required and must be greater than zero.";
+                var errorMsg = Messages.Error_PropertyMustBeGreaterThanZero.Format(nameof(Partner.LogoId));
                 _logger.LogError(request, errorMsg);
                 return Result.Fail(new Error(errorMsg));
             }
@@ -44,7 +46,7 @@ namespace Streetcode.BLL.MediatR.Partners.Update
 
                 if (partner == null)
                 {
-                    var errorMsg = $"Partner with Id {request.Partner.Id} not found.";
+                    var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(Partner), request.Partner.Id);
                     _logger.LogError(request, errorMsg);
                     return Result.Fail(new Error(errorMsg));
                 }
@@ -62,7 +64,7 @@ namespace Streetcode.BLL.MediatR.Partners.Update
                     return Result.Ok(_mapper.Map<PartnerDTO>(partner));
                 }
 
-                const string resultErrorMsg = "Failed to update Partner.";
+                var resultErrorMsg = Messages.Error_FailedToUpdateEntity.Format(nameof(Partner));
                 _logger.LogError(request, resultErrorMsg);
                 return Result.Fail(new Error(resultErrorMsg));
             }

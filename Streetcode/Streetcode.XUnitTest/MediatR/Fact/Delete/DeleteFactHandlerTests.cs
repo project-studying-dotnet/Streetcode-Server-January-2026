@@ -1,4 +1,7 @@
-﻿namespace Streetcode.XUnitTest.MediatR.Fact.Delete
+﻿using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+
+namespace Streetcode.XUnitTest.MediatR.Fact.Delete
 {
     using System.Linq.Expressions;
     using global::MediatR;
@@ -86,7 +89,9 @@
         {
             // Arrange
             int testId = 1;
-            string expectedErrorMsg = $"Cannot find a fact with Id: {testId}";
+            string expectedErrorMsg = Messages.Error_EntityWithIdNotFound.Format(
+                nameof(DAL.Entities.Streetcode.TextContent.Fact),
+                testId);
 
             this.SetupGetById(null);
 
@@ -107,7 +112,8 @@
             // Arrange
             int testId = 1;
             var factEntity = GetFactEntity(testId);
-            string expectedErrorMsg = "Error while saving changes to database";
+            string expectedErrorMsg = Messages.Error_FailedToDeleteEntity.Format(
+                nameof(DAL.Entities.Streetcode.TextContent.Fact));
 
             this.SetupGetById(factEntity);
             this.SetupSaveChanges(0);

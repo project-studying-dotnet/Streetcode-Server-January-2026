@@ -1,4 +1,7 @@
-﻿namespace Streetcode.XUnitTest.MediatR.Media.Art
+﻿using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+
+namespace Streetcode.XUnitTest.MediatR.Media.Art
 {
     using System.Linq.Expressions;
     using AutoMapper;
@@ -124,7 +127,7 @@
         [InlineData(1)]
         [InlineData(0)]
         [InlineData(-1)]
-        public async Task Handle_ReturnsSuccessAndEmpty_WhenArtsAreNullOrEmpty(int streetcodeId)
+        public async Task Handle_ReturnsFail_WhenArtsAreEmpty(int streetcodeId)
         {
             // Arrange
             this.SetupArts(new List<Art>());
@@ -134,8 +137,10 @@
                 .Handle(new GetArtsByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
 
             // Assert
-            Assert.True(result.IsSuccess);
-            Assert.Empty(result.Value);
+            Assert.True(result.IsFailed);
+            Assert.Equal(
+                Messages.Error_EntityWithStreetcodeIdNotFound.Format(nameof(Art), streetcodeId),
+                result.Errors[0].Message);
         }
 
         private void SetupArts(List<Art>? arts)

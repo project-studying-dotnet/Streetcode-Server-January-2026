@@ -1,7 +1,4 @@
-﻿using Streetcode.BLL.DTO.Partners;
-using Streetcode.BLL.DTO.Streetcode;
-
-namespace Streetcode.BLL.DTO.Team
+﻿namespace Streetcode.BLL.DTO.Team
 {
     public class TeamMemberDTO
     {

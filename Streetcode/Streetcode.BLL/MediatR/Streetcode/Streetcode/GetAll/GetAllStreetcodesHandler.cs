@@ -2,6 +2,7 @@
 using AutoMapper;
 using FluentResults;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Streetcode;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Entities.Streetcode;
@@ -44,9 +45,11 @@ public class GetAllStreetcodesHandler : IRequestHandler<GetAllStreetcodesQuery, 
             FindFilteredStreetcodes(ref streetcodes, filterRequest.Filter);
         }
 
-        int pagesAmount = ApplyPagination(ref streetcodes, filterRequest.Amount, filterRequest.Page);
+        var pagesAmount = ApplyPagination(ref streetcodes, filterRequest.Amount, filterRequest.Page);
 
-        var streetcodeDtos = _mapper.Map<IEnumerable<StreetcodeDTO>>(streetcodes.AsEnumerable());
+        var streetcodesList = await streetcodes.ToListAsync(cancellationToken);
+
+        var streetcodeDtos = _mapper.Map<IEnumerable<StreetcodeDTO>>(streetcodesList);
 
         var response = new GetAllStreetcodesResponseDTO
         {
@@ -73,7 +76,6 @@ public class GetAllStreetcodesHandler : IRequestHandler<GetAllStreetcodesQuery, 
         string filter)
     {
         var filterParams = filter.Split(':');
-        var filterColumn = filterParams[0];
         var filterValue = filterParams[1];
 
         streetcodes = streetcodes

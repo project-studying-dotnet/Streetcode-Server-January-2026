@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Streetcode;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Streetcode.GetByIndex;
 
@@ -27,13 +29,13 @@ public class GetStreetcodeByIndexHandler : IRequestHandler<GetStreetcodeByIndexQ
             predicate: st => st.Index == request.Index,
             include: source => source.Include(l => l.Tags));
 
-        if (streetcode is null)
+        if (streetcode is not null)
         {
-            string errorMsg = $"Cannot find any streetcode with corresponding index: {request.Index}";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            return Result.Ok(_mapper.Map<StreetcodeDTO>(streetcode));
         }
 
-        return Result.Ok(_mapper.Map<StreetcodeDTO>(streetcode));
+        var errorMsg = Messages.Error_StreetcodeWithIndexNotFound.Format(request.Index);
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

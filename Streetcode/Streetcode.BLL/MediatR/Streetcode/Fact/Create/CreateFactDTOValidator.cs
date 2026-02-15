@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Fact;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Fact.Create
 {
@@ -8,21 +10,27 @@ namespace Streetcode.BLL.MediatR.Streetcode.Fact.Create
         public CreateFactDTOValidator()
         {
             RuleFor(x => x.Title)
-                .NotEmpty().WithMessage("Title is required.")
-                .MaximumLength(68).WithMessage("Title length must not exceed 68 characters.");
+                .NotEmpty().WithMessage(Messages.Error_PropertyIsRequired.Format(nameof(CreateFactDTO.Title)))
+                .MaximumLength(68).WithMessage(Messages.Error_PropertyMustNotExceedCharacters.Format(
+                    nameof(CreateFactDTO.Title),
+                    68));
 
             RuleFor(x => x.FactContent)
-                .NotEmpty().WithMessage("Fact content is required.")
-                .MaximumLength(600).WithMessage("Fact content length must not exceed 600 characters.");
+                .NotEmpty().WithMessage(Messages.Error_PropertyIsRequired.Format(nameof(CreateFactDTO.FactContent)))
+                .MaximumLength(600).WithMessage(Messages.Error_PropertyMustNotExceedCharacters.Format(
+                    nameof(CreateFactDTO.FactContent),
+                    600));
 
             RuleFor(x => x.ImageId)
-                .GreaterThan(0).WithMessage("ImageId must be greater than 0.");
+                .GreaterThan(0).WithMessage(Messages.Error_PropertyMustBeGreaterThanZero.Format(nameof(CreateFactDTO.ImageId)));
 
             RuleFor(x => x.StreetcodeId)
-                .GreaterThan(0).WithMessage("StreetcodeId must be greater than 0.");
+                .GreaterThan(0).WithMessage(Messages.Error_PropertyMustBeGreaterThanZero.Format(nameof(CreateFactDTO.StreetcodeId)));
 
             RuleFor(x => x.ImageDescription)
-                .MaximumLength(200).WithMessage("Image description must not exceed 200 characters.");
+                .MaximumLength(200).WithMessage(Messages.Error_PropertyMustNotExceedCharacters.Format(
+                    nameof(CreateFactDTO.ImageDescription),
+                    200));
         }
     }
 }

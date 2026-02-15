@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Streetcode.BLL.DTO.Transactions;
 using Streetcode.BLL.MediatR.Transactions.TransactionLink.GetAll;
 using Streetcode.BLL.MediatR.Transactions.TransactionLink.GetById;
 using Streetcode.BLL.MediatR.Transactions.TransactionLink.GetByStreetcodeId;

@@ -6,6 +6,8 @@ using Streetcode.BLL.DTO.Media.Art;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Media.StreetcodeArt.GetByStreetcodeId
 {
@@ -30,25 +32,19 @@ namespace Streetcode.BLL.MediatR.Media.StreetcodeArt.GetByStreetcodeId
 
         public async Task<Result<IEnumerable<StreetcodeArtDTO>>> Handle(GetStreetcodeArtByStreetcodeIdQuery request, CancellationToken cancellationToken)
         {
-            /*
-            if ((await _repositoryWrapper.StreetcodeRepository.GetFirstOrDefaultAsync(s => s.Id == request.StreetcodeId)) is null)
-            {
-                return Result.Fail(
-                    new Error($"Cannot find a streetcode arts by a streetcode id: {request.StreetcodeId}, because such streetcode doesn`t exist"));
-            }
-            */
-
-            var arts = await _repositoryWrapper
-            .StreetcodeArtRepository
-            .GetAllAsync(
-                predicate: s => s.StreetcodeId == request.StreetcodeId,
-                include: art => art
-                    .Include(a => a.Art)
-                    .Include(i => i.Art.Image) !);
+            var arts = await _repositoryWrapper.StreetcodeArtRepository
+                .GetAllAsync(
+                    predicate: s => s.StreetcodeId == request.StreetcodeId,
+                    include: art => art
+                        .Include(a => a.Art)
+                        .Include(i => i.Art.Image) !);
 
             if (!arts.Any())
             {
-                var errorMsg = $"Cannot find an art with corresponding streetcode id: {request.StreetcodeId}";
+                var errorMsg = Messages.Error_EntityWithStreetcodeIdNotFound.Format(
+                    nameof(DAL.Entities.Media.Images.Image),
+                    request.StreetcodeId);
+
                 _logger.LogError(request, errorMsg);
                 return Result.Fail(new Error(errorMsg));
             }

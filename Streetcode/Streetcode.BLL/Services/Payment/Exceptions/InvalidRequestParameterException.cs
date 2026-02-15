@@ -1,7 +1,7 @@
 ﻿namespace Streetcode.BLL.Services.Payment.Exceptions
 {
     /// <summary>
-    /// Represents error received as a response with status 400 that is caused by invalid parameters of the request.
+    /// Represents error received as a response with status 400 that is caused by invalid parameters of the Request.
     /// </summary>
     public class InvalidRequestParameterException : MonobankException
     {

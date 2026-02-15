@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.4.33122.133
+VisualStudioVersion = 17.14.36717.8 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Streetcode.WebApi", "Streetcode.WebApi\Streetcode.WebApi.csproj", "{CAA32FB4-F481-4748-BFCE-33B0DBF433E8}"
 EndProject
@@ -37,6 +37,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streetcode.Shared", "Streetcode.Shared\Streetcode.Shared.csproj", "{00D85447-2B32-4B68-A4C2-1B467C42FD16}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streetcode.Auth.XUnitTest", "Streetcode.Auth.XUnitTest\Streetcode.Auth.XUnitTest.csproj", "{DF36FE52-8788-4490-8406-62132A7E6756}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streetcode.Resources", "Streetcode.Resources\Streetcode.Resources.csproj", "{42EC9582-F9D7-9F18-42AB-C0D335E17C5C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -90,6 +92,10 @@ Global
 		{DF36FE52-8788-4490-8406-62132A7E6756}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF36FE52-8788-4490-8406-62132A7E6756}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF36FE52-8788-4490-8406-62132A7E6756}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42EC9582-F9D7-9F18-42AB-C0D335E17C5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42EC9582-F9D7-9F18-42AB-C0D335E17C5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42EC9582-F9D7-9F18-42AB-C0D335E17C5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42EC9582-F9D7-9F18-42AB-C0D335E17C5C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

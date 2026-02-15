@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Fact;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Fact.UpdateOrder
 {
@@ -8,15 +10,16 @@ namespace Streetcode.BLL.MediatR.Streetcode.Fact.UpdateOrder
         public UpdateOrderFactDTOListValidator()
         {
             RuleFor(x => x)
-                .NotEmpty().WithMessage("Facts list cannot be empty.");
+                .NotEmpty().WithMessage(Messages.Error_FactsListEmpty);
 
             RuleForEach(x => x).ChildRules(fact =>
             {
                 fact.RuleFor(item => item.Id)
-                    .GreaterThan(0).WithMessage("Fact Id must be greater than 0.");
+                    .GreaterThan(0).WithMessage(Messages.Error_PropertyMustBeGreaterThanZero.Format(nameof(UpdateFactDTO.Id)));
 
                 fact.RuleFor(item => item.Order)
-                    .GreaterThanOrEqualTo(0).WithMessage("Order must be 0 or greater.");
+                    .GreaterThanOrEqualTo(0).WithMessage(Messages.Error_PropertyMustBeEqualOrGreaterThanZero.Format(
+                        nameof(UpdateFactOrderDTO.Order)));
             });
         }
     }

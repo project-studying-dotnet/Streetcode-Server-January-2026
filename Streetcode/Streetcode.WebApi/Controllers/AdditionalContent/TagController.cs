@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetAll;
 using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetById;
 using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetByStreetcodeId;
+using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetByTitle;
 
 namespace Streetcode.WebApi.Controllers.AdditionalContent;
 

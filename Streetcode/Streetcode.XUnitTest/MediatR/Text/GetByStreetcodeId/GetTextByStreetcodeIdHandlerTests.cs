@@ -3,6 +3,8 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore.Query;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.XUnitTest.MediatR.Text.GetByStreetcodeId
 {
@@ -111,7 +113,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetByStreetcodeId
         {
             // Arrange
             var query = new GetTextByStreetcodeIdQuery(streetcodeId);
-            var errorMsg = $"Cannot find a transaction link by a streetcode id: {streetcodeId}, because such streetcode doesn`t exist";
+            var errorMsg = Messages.Error_EntityWithStreetcodeIdNotFound.Format(nameof(Text), streetcodeId);
 
             this.mockRepoWrapper
                 .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(
@@ -119,13 +121,6 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetByStreetcodeId
                     It.IsAny<Func<IQueryable<Text>, IIncludableQueryable<Text, object>>>(),
                     It.IsAny<bool>()))
                 .ReturnsAsync((Text?)null);
-
-            this.mockRepoWrapper
-                .Setup(r => r.StreetcodeRepository.GetFirstOrDefaultAsync(
-                    It.IsAny<Expression<Func<StreetcodeContent, bool>>>(),
-                    It.IsAny<Func<IQueryable<StreetcodeContent>, IIncludableQueryable<StreetcodeContent, object>>>(),
-                    It.IsAny<bool>()))
-                .ReturnsAsync((StreetcodeContent?)null);
 
             // Act
             var result = await this.handler.Handle(query, CancellationToken.None);

@@ -4,6 +4,8 @@ using MediatR;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using EntityText = Streetcode.DAL.Entities.Streetcode.TextContent.Text;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Text.Create
@@ -28,15 +30,14 @@ namespace Streetcode.BLL.MediatR.Streetcode.Text.Create
             var createdText = await _repositoryWrapper.TextRepository.CreateAsync(text);
             var successSave = await _repositoryWrapper.SaveChangesAsync() > 0;
 
-            if (!successSave)
+            if (successSave)
             {
-                string errorMsg = "Error while saving changes to database";
-                _logger.LogError(command, errorMsg);
-                return Result.Fail(new Error(errorMsg));
+                return Result.Ok(_mapper.Map<TextDTO>(createdText));
             }
 
-            var createdTextDTO = _mapper.Map<TextDTO>(createdText);
-            return Result.Ok(createdTextDTO);
+            var errorMsg = Messages.Error_FailedToCreateEntity.Format(nameof(DAL.Entities.Streetcode.TextContent.Text));
+            _logger.LogError(command, errorMsg);
+            return Result.Fail(new Error(errorMsg));
         }
     }
 }

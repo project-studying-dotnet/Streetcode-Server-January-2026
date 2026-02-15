@@ -1,4 +1,7 @@
-﻿namespace Streetcode.XUnitTest.MediatR.Media.Art
+﻿using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+
+namespace Streetcode.XUnitTest.MediatR.Media.Art
 {
     using System.Linq.Expressions;
     using AutoMapper;
@@ -85,7 +88,7 @@
         }
 
         [Fact]
-        public async Task Handle_ReturnsSuccess_WhenArtsAreEmpty()
+        public async Task Handle_ReturnsFail_WhenArtsAreEmpty()
         {
             // Arrange
             this.SetupMocks([]);
@@ -95,30 +98,14 @@
                 .Handle(new GetAllArtsQuery(), CancellationToken.None);
 
             // Assert
-            Assert.True(result.IsSuccess);
+            Assert.Equal(Messages.Error_EntitiesNotFound.Format(nameof(Art)), result.Errors[0].Message);
         }
 
         [Fact]
-        public async Task Handle_ReturnsEmpty_WhenArtsAreEmpty()
+        public async Task Handle_ReturnsFailStatus_WhenArtsAreEmpty()
         {
             // Arrange
             this.SetupMocks([]);
-
-            // Act
-            var result = await this.handler
-                .Handle(new GetAllArtsQuery(), CancellationToken.None);
-
-            // Assert
-            Assert.Empty(result.Value);
-        }
-
-        [Fact]
-        public async Task Handle_ReturnsFailStatus_WhenArtsAreNull()
-        {
-            // Arrange
-            List<Art>? arts = null;
-
-            this.SetupMocks(arts);
 
             // Act
             var result = await this.handler
@@ -129,27 +116,25 @@
         }
 
         [Fact]
-        public async Task Handle_ReturnsErrorMessage_WhenArtsAreNull()
+        public async Task Handle_ReturnsErrorMessage_WhenArtsAreEmpty()
         {
             // Arrange
-            List<Art>? arts = null;
-
-            this.SetupMocks(arts);
+            this.SetupMocks([]);
 
             // Act
             var result = await this.handler
                 .Handle(new GetAllArtsQuery(), CancellationToken.None);
 
             // Assert
-            Assert.Equal("Cannot find any arts", result.Errors[0].Message);
+            Assert.Equal(Messages.Error_EntitiesNotFound.Format(nameof(Art)), result.Errors[0].Message);
         }
 
         private void SetupMocks(List<Art>? arts)
         {
             this.repositoryWrapperMock.Setup(r => r.ArtRepository.GetAllAsync(
                 It.IsAny<Expression<Func<Art, bool>>>(),
-                It.IsAny<Func<IQueryable<Art>, IIncludableQueryable<Art, object>>>(),
-                    It.IsAny<bool>()))
+                It.IsAny<Func<IQueryable<Art>, IIncludableQueryable<Art, object>>>(), 
+                It.IsAny<bool>()))
                 .ReturnsAsync(arts);
         }
 

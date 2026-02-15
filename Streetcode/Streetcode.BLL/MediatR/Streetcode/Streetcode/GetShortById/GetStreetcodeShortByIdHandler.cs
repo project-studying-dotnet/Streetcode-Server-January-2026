@@ -3,7 +3,10 @@ using FluentResults;
 using MediatR;
 using Streetcode.BLL.DTO.Streetcode;
 using Streetcode.BLL.Interfaces.Logging;
+using Streetcode.DAL.Entities.Streetcode;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Streetcode.GetShortById
 {
@@ -22,25 +25,25 @@ namespace Streetcode.BLL.MediatR.Streetcode.Streetcode.GetShortById
 
         public async Task<Result<StreetcodeShortDTO>> Handle(GetStreetcodeShortByIdQuery request, CancellationToken cancellationToken)
         {
-            var streetcode = await _repository.StreetcodeRepository.GetFirstOrDefaultAsync(st => st.Id == request.id);
+            var streetcode = await _repository.StreetcodeRepository.GetFirstOrDefaultAsync(st => st.Id == request.Id);
 
             if (streetcode == null)
             {
-                const string errorMsg = "Cannot find streetcode by id";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(new Error(errorMsg));
+                var errorNotFoundMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(StreetcodeContent), request.Id);
+                _logger.LogError(request, errorNotFoundMsg);
+                return Result.Fail(new Error(errorNotFoundMsg));
             }
 
             var streetcodeShortDTO = _mapper.Map<StreetcodeShortDTO>(streetcode);
 
-            if(streetcodeShortDTO == null)
+            if (streetcodeShortDTO != null)
             {
-                const string errorMsg = "Cannot map streetcode to shortDTO";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(new Error(errorMsg));
+                return Result.Ok(streetcodeShortDTO);
             }
 
-            return Result.Ok(streetcodeShortDTO);
+            var errorMsg = Messages.Error_CannotMapEntityToDto.Format(nameof(StreetcodeContent), nameof(StreetcodeShortDTO));
+            _logger.LogError(request, errorMsg);
+            return Result.Fail(new Error(errorMsg));
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿namespace Streetcode.XUnitTest.MediatR.Fact.Update
+﻿using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+
+namespace Streetcode.XUnitTest.MediatR.Fact.Update
 {
     using System.Linq.Expressions;
     using AutoMapper;
@@ -26,6 +29,7 @@
         private readonly Mock<ILoggerService> loggerMock;
         private readonly IMapper mapper;
         private readonly UpdateFactHandler handler;
+        private static readonly string[] AllowedImageTypes = { "image/jpeg", "image/png", "image/jpg", "image/webp" };
 
         public UpdateFactHandlerTests()
         {
@@ -187,7 +191,9 @@
             // Arrange
             int testId = 1;
             var command = new UpdateFactCommand(GetUpdateFactDTO(testId));
-            string expectedError = $"Cannot find a fact with Id: {testId}";
+            string expectedError = Messages.Error_EntityWithIdNotFound.Format(
+                nameof(DAL.Entities.Streetcode.TextContent.Fact),
+                testId);
 
             this.SetupFact(null);
 
@@ -207,7 +213,9 @@
             int testId = 1;
             var command = new UpdateFactCommand(GetUpdateFactDTO(testId));
             var existingFact = new FactEntity { Id = testId };
-            string expectedError = "Image with the specified id was not found";
+            string expectedError = Messages.Error_EntityWithIdNotFound.Format(
+                nameof(Image),
+                testId);
 
             this.SetupFact(existingFact);
             this.SetupImage(null);
@@ -228,6 +236,8 @@
             var command = new UpdateFactCommand(GetUpdateFactDTO(testId));
             var existingFact = new FactEntity { Id = testId };
             var invalidImage = new ImageEntity { Id = 1, MimeType = "image/gif" };
+            var allowedTypes = string.Join(",", AllowedImageTypes);
+            var errorMsg = Messages.Error_InvalidImageFormat.Format(invalidImage.MimeType, allowedTypes);
 
             this.SetupFact(existingFact);
             this.SetupImage(invalidImage);
@@ -237,7 +247,7 @@
 
             // Assert
             Assert.True(result.IsFailed);
-            Assert.Contains("Invalid image format", result.Errors.First().Message);
+            Assert.Contains(errorMsg, result.Errors.First().Message);
 
             this.factRepositoryMock.Verify(x => x.Update(It.IsAny<FactEntity>()), Times.Never);
         }
@@ -250,7 +260,7 @@
             var command = new UpdateFactCommand(GetUpdateFactDTO(testId));
             var existingFact = new FactEntity { Id = testId };
             var existingImage = new ImageEntity { Id = 1, MimeType = "image/jpeg" };
-            string expectedError = "Error while saving changes to database";
+            string expectedError = Messages.Error_FailedToUpdateEntity.Format(nameof(DAL.Entities.Streetcode.TextContent.Fact));
 
             this.SetupFact(existingFact);
             this.SetupImage(existingImage);
