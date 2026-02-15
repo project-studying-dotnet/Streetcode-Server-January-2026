@@ -9,6 +9,7 @@ builder.Host.ConfigureApplication();
 
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddSwaggerServices();
+builder.Services.AddRedisCacheServices(builder.Configuration);
 builder.Services.AddCustomServices();
 builder.Services.ConfigureBlob(builder);
 builder.Services.ConfigurePayment(builder);
