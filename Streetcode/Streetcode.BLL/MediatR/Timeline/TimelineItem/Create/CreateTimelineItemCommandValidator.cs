@@ -1,12 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FluentValidation;
+using Streetcode.Resources;
 
 namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Create
 {
-    internal class CreateTimelineItemCommandValidator
+    public class CreateTimelineItemCommandValidator : AbstractValidator<CreateTimelineItemCommand>
     {
+        public CreateTimelineItemCommandValidatoro()
+        {
+            RuleFor(x => x.TimelineItem)
+                .NotNull()
+                .WithMessage(Messages.Error_CommandDataRequired)
+                .SetValidator(new TimelineItemCreateDTOValidator());
+        }
     }
 }

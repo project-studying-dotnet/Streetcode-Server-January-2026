@@ -319,5 +319,16 @@ namespace Streetcode.Resources {
                 return ResourceManager.GetString("Info_EntityDeleteSuccess", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string for invalid property format error.
+        /// </summary>
+        public static string Error_InvalidPropertyFormat
+        {
+            get 
+            {
+                return ResourceManager.GetString("Error_InvalidPropertyFormat", resourceCulture);
+            }
+        }
     }
 }
