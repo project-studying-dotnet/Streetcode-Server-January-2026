@@ -1,4 +1,7 @@
-﻿namespace Streetcode.XUnitTest.MediatRTests.Timeline.TimelineItem;
+﻿using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+
+namespace Streetcode.XUnitTest.MediatR.Timeline.TimelineItem;
 
 using AutoMapper;
 using Moq;
@@ -77,6 +80,10 @@ public class GetTimelineItemByIdHandlerTests
     public async Task Handle_ReturnsFail_WhenTimelineItemNotExists()
     {
         // Arrange
+        var id = 99;
+        var query = new GetTimelineItemByIdQuery(id);
+        var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(TimelineItem), id);
+
         timelineRepoMock
             .Setup(r => r.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<TimelineItem, bool>>>(),
@@ -85,7 +92,7 @@ public class GetTimelineItemByIdHandlerTests
                 It.IsAny<bool>()))
             .ReturnsAsync((TimelineItem)null!);
 
-        var query = new GetTimelineItemByIdQuery(99);
+
 
         // Act
         var result = await CreateHandler().Handle(
@@ -94,14 +101,10 @@ public class GetTimelineItemByIdHandlerTests
 
         // Assert
         Assert.True(result.IsFailed);
-        Assert.Equal(
-            $"Cannot find a timeline item with corresponding id: {query.Id}",
-            result.Errors[0].Message);
+        Assert.Equal(errorMsg, result.Errors[0].Message);
 
         loggerMock.Verify(
-            l => l.LogError(
-                query,
-                It.IsAny<string>()),
+            l => l.LogError(query, errorMsg),
             Times.Once);
     }
 }

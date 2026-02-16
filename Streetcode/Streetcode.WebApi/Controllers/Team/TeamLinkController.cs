@@ -1,8 +1,5 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Streetcode.BLL.DTO.Team;
-using Streetcode.BLL.MediatR.Team.Create;
-using Streetcode.BLL.MediatR.Team.GetAll;
 using Streetcode.BLL.MediatR.Team.TeamMembersLinks.Create;
 using Streetcode.BLL.MediatR.Team.TeamMembersLinks.GetAll;
 

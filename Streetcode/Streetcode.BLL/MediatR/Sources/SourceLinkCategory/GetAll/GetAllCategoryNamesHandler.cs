@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
 using FluentResults;
 using MediatR;
-using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.DTO.Sources;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Sources.SourceLinkCategory.GetAll
 {
@@ -21,18 +22,20 @@ namespace Streetcode.BLL.MediatR.Sources.SourceLinkCategory.GetAll
             _logger = logger;
         }
 
-        public async Task<Result<IEnumerable<CategoryWithNameDTO>>> Handle(GetAllCategoryNamesQuery request, CancellationToken cancellationToken)
+        public async Task<Result<IEnumerable<CategoryWithNameDTO>>> Handle(
+            GetAllCategoryNamesQuery request,
+            CancellationToken cancellationToken)
         {
             var allCategories = await _repositoryWrapper.SourceCategoryRepository.GetAllAsync();
 
-            if (allCategories == null)
+            if (allCategories.Any())
             {
-                const string errorMsg = $"Categories is null";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(new Error(errorMsg));
+                return Result.Ok(_mapper.Map<IEnumerable<CategoryWithNameDTO>>(allCategories));
             }
 
-            return Result.Ok(_mapper.Map<IEnumerable<CategoryWithNameDTO>>(allCategories));
+            var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(DAL.Entities.Sources.SourceLinkCategory));
+            _logger.LogError(request, errorMsg);
+            return Result.Fail(new Error(errorMsg));
         }
     }
 }

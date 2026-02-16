@@ -1,11 +1,12 @@
 ﻿using AutoMapper;
 using FluentResults;
 using MediatR;
-using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.DTO.Team;
 using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.BLL.MediatR.Team.GetAll;
+using Streetcode.DAL.Entities.Team;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Team.Position.GetAll
 {
@@ -28,14 +29,14 @@ namespace Streetcode.BLL.MediatR.Team.Position.GetAll
                 .PositionRepository
                 .GetAllAsync();
 
-            if (positions is null)
+            if (positions.Any())
             {
-                const string errorMsg = $"Cannot find any positions";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(new Error(errorMsg));
+                return Result.Ok(_mapper.Map<IEnumerable<PositionDTO>>(positions));
             }
 
-            return Result.Ok(_mapper.Map<IEnumerable<PositionDTO>>(positions));
+            var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(Positions));
+            _logger.LogError(request, errorMsg);
+            return Result.Fail(new Error(errorMsg));
         }
     }
 }

@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using FluentResults;
 using MediatR;
-using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.DTO.Team;
 using Streetcode.BLL.Interfaces.Logging;
+using Streetcode.DAL.Entities.Team;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Team.TeamMembersLinks.GetAll
 {
@@ -27,14 +29,14 @@ namespace Streetcode.BLL.MediatR.Team.TeamMembersLinks.GetAll
                 .TeamLinkRepository
                 .GetAllAsync();
 
-            if (teamLinks is null)
+            if (teamLinks.Any())
             {
-                const string errorMsg = $"Cannot find any team links";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(new Error(errorMsg));
+                return Result.Ok(_mapper.Map<IEnumerable<TeamMemberLinkDTO>>(teamLinks));
             }
 
-            return Result.Ok(_mapper.Map<IEnumerable<TeamMemberLinkDTO>>(teamLinks));
+            var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(TeamMemberLink));
+            _logger.LogError(request, errorMsg);
+            return Result.Fail(new Error(errorMsg));
         }
     }
 }

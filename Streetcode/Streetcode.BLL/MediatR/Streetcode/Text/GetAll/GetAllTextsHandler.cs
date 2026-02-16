@@ -4,6 +4,8 @@ using MediatR;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Text.GetAll;
 
@@ -24,13 +26,13 @@ public class GetAllTextsHandler : IRequestHandler<GetAllTextsQuery, Result<IEnum
     {
         var texts = await _repositoryWrapper.TextRepository.GetAllAsync();
 
-        if (texts is null)
+        if (texts.Any())
         {
-            const string errorMsg = $"Cannot find any text";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            return Result.Ok(_mapper.Map<IEnumerable<TextDTO>>(texts));
         }
 
-        return Result.Ok(_mapper.Map<IEnumerable<TextDTO>>(texts));
+        var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(DAL.Entities.Streetcode.TextContent.Text));
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

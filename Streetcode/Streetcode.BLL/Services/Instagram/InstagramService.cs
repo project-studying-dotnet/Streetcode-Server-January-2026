@@ -23,7 +23,7 @@ namespace Streetcode.BLL.Services.Instagram
 
         public async Task<IEnumerable<InstagramPost>> GetPostsAsync()
         {
-            string apiUrl = $"https://graph.instagram.com/{_userId}/media?fields=id,caption,media_type,media_url,permalink,thumbnail_url&limit={2 * postLimit}&access_token={_accessToken}";
+            string apiUrl = $"https://graph.instagram.com/{_userId}/media?fields=Id,caption,media_type,media_url,permalink,thumbnail_url&limit={2 * postLimit}&access_token={_accessToken}";
 
             HttpResponseMessage response = await _httpClient.GetAsync(apiUrl);
             response.EnsureSuccessStatusCode();

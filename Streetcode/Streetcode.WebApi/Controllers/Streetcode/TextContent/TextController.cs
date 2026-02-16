@@ -1,6 +1,4 @@
-using FluentResults;
 using Microsoft.AspNetCore.Mvc;
-using Streetcode.BLL.DTO.Streetcode.TextContent;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
 using Streetcode.BLL.MediatR.Streetcode.Text.Create;
 using Streetcode.BLL.MediatR.Streetcode.Text.Delete;

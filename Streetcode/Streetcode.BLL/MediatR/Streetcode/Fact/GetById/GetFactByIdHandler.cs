@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Fact;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Fact.GetById;
 
@@ -25,15 +27,17 @@ public class GetFactByIdHandler : IRequestHandler<GetFactByIdQuery, Result<FactD
     {
         var fact = await _repositoryWrapper.FactRepository.GetFirstOrDefaultAsync(
             predicate: f => f.Id == request.Id,
-            include: q => q.Include(f => f.Image).ThenInclude(i => i.ImageDetails));
+            include: q => q
+                .Include(f => f.Image)
+                .ThenInclude(i => i.ImageDetails));
 
-        if (fact is null)
+        if (fact is not null)
         {
-            string errorMsg = $"Cannot find any fact with corresponding id: {request.Id}";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            return Result.Ok(_mapper.Map<FactDTO>(fact));
         }
 
-        return Result.Ok(_mapper.Map<FactDTO>(fact));
+        var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(DAL.Entities.Streetcode.TextContent.Fact), request.Id);
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

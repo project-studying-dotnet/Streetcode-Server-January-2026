@@ -15,6 +15,8 @@ using Streetcode.DAL.Entities.Streetcode;
 using Streetcode.DAL.Enums;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.DAL.Repositories.Interfaces.Partners;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using Xunit;
 
 namespace Streetcode.XUnitTest.MediatR.Partners;
@@ -265,7 +267,7 @@ public class GetAllPartnersHandlerTests
     {
         // Arrange
         var query = new GetAllPartnersQuery();
-        const string errorMsg = "Cannot find any partners";
+        var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(Partner));
 
         this.SetupGetAllPartners([]);
 

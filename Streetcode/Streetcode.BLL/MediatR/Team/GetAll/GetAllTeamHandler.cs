@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Team;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Team.GetAll
 {
@@ -23,18 +25,19 @@ namespace Streetcode.BLL.MediatR.Team.GetAll
 
         public async Task<Result<IEnumerable<TeamMemberDTO>>> Handle(GetAllTeamQuery request, CancellationToken cancellationToken)
         {
-            var team = await _repositoryWrapper
-                .TeamRepository
-                .GetAllAsync(include: x => x.Include(x => x.Positions).Include(x => x.TeamMemberLinks));
+            var teams = await _repositoryWrapper.TeamRepository
+                .GetAllAsync(include: x => x
+                    .Include(x => x.Positions)
+                    .Include(x => x.TeamMemberLinks));
 
-            if (team is null)
+            if (teams.Any())
             {
-                const string errorMsg = $"Cannot find any team";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(new Error(errorMsg));
+                return Result.Ok(_mapper.Map<IEnumerable<TeamMemberDTO>>(teams));
             }
 
-            return Result.Ok(_mapper.Map<IEnumerable<TeamMemberDTO>>(team));
+            var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(DAL.Entities.Team.TeamMember));
+            _logger.LogError(request, errorMsg);
+            return Result.Fail(new Error(errorMsg));
         }
     }
 }

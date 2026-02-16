@@ -6,6 +6,8 @@ using Streetcode.BLL.DTO.Media.Images;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Media.Image.GetById;
 
@@ -32,13 +34,13 @@ public class GetImageByIdHandler : IRequestHandler<GetImageByIdQuery, Result<Ima
 
         if (image is null)
         {
-            string errorMsg = $"Cannot find a image with corresponding id: {request.Id}";
+            var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(DAL.Entities.Media.Images.Image), request.Id);
             _logger.LogError(request, errorMsg);
             return Result.Fail(new Error(errorMsg));
         }
 
         var imageDto = _mapper.Map<ImageDTO>(image);
-        if(imageDto.BlobName != null)
+        if (imageDto.BlobName != null)
         {
             imageDto.Base64 = _blobService.FindFileInStorageAsBase64(image.BlobName);
         }

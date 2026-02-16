@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using FluentResults;
 using MediatR;
-using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.DTO.Media.Video;
 using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.DAL.Entities.AdditionalContent.Coordinates;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Media.Video.GetAll;
 
@@ -26,13 +26,13 @@ public class GetAllVideosHandler : IRequestHandler<GetAllVideosQuery, Result<IEn
     {
         var videos = await _repositoryWrapper.VideoRepository.GetAllAsync();
 
-        if (videos is null)
+        if (videos.Any())
         {
-            const string errorMsg = "Cannot find any videos";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            return Result.Ok(_mapper.Map<IEnumerable<VideoDTO>>(videos));
         }
 
-        return Result.Ok(_mapper.Map<IEnumerable<VideoDTO>>(videos));
+        var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(DAL.Entities.Media.Video));
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

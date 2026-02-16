@@ -1,11 +1,12 @@
 ﻿using AutoMapper;
 using FluentResults;
 using MediatR;
-using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.DTO.Media.Images;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Media.Image.GetAll;
 
@@ -28,9 +29,9 @@ public class GetAllImagesHandler : IRequestHandler<GetAllImagesQuery, Result<IEn
     {
         var images = await _repositoryWrapper.ImageRepository.GetAllAsync();
 
-        if (images is null)
+        if (!images.Any())
         {
-            const string errorMsg = $"Cannot find any image";
+            var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(DAL.Entities.Media.Images.Image));
             _logger.LogError(request, errorMsg);
             return Result.Fail(new Error(errorMsg));
         }

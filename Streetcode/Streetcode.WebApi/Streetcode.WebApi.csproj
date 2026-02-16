@@ -9,6 +9,17 @@
 	  <CodeAnalysisRuleSet>../settings.ruleset</CodeAnalysisRuleSet>
 
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Controllers\Analytics\**" />
+    <Compile Remove="Controllers\Newss\**" />
+    <Content Remove="Controllers\Analytics\**" />
+    <Content Remove="Controllers\Newss\**" />
+    <EmbeddedResource Remove="Controllers\Analytics\**" />
+    <EmbeddedResource Remove="Controllers\Newss\**" />
+    <None Remove="Controllers\Analytics\**" />
+    <None Remove="Controllers\Newss\**" />
+  </ItemGroup>
 	<ItemGroup>
      <InternalsVisibleTo Include="Streetcode.XIntegrationTest" />
 </ItemGroup>
@@ -32,6 +43,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.23" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.23" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />

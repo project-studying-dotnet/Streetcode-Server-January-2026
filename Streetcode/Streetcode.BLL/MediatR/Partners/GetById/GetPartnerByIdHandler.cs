@@ -4,7 +4,10 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Partners;
 using Streetcode.BLL.Interfaces.Logging;
+using Streetcode.DAL.Entities.Partners;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Partners.GetById;
 
@@ -35,7 +38,7 @@ public class GetPartnerByIdHandler : IRequestHandler<GetPartnerByIdQuery, Result
             return Result.Ok(_mapper.Map<PartnerDTO>(partner));
         }
 
-        var errorMsg = $"Cannot find any partner with corresponding id: {request.Id}";
+        var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(Partner), request.Id);
         _logger.LogError(request, errorMsg);
         return Result.Fail(new Error(errorMsg));
     }

@@ -1,7 +1,11 @@
 ﻿using FluentResults;
 using MediatR;
+using Streetcode.BLL.Interfaces.Cache;
 using Streetcode.BLL.Interfaces.Logging;
+using Streetcode.DAL.Entities.Streetcode;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Streetcode.DeleteSoft;
 
@@ -9,11 +13,13 @@ public class DeleteSoftStreetcodeHandler : IRequestHandler<DeleteSoftStreetcodeC
 {
     private readonly IRepositoryWrapper _repositoryWrapper;
     private readonly ILoggerService _logger;
+    private readonly ICacheService _cacheService;
 
-    public DeleteSoftStreetcodeHandler(IRepositoryWrapper repositoryWrapper, ILoggerService logger)
+    public DeleteSoftStreetcodeHandler(IRepositoryWrapper repositoryWrapper, ILoggerService logger, ICacheService cacheService)
     {
         _repositoryWrapper = repositoryWrapper;
         _logger = logger;
+        _cacheService = cacheService;
     }
 
     public async Task<Result<Unit>> Handle(DeleteSoftStreetcodeCommand request, CancellationToken cancellationToken)
@@ -23,9 +29,9 @@ public class DeleteSoftStreetcodeHandler : IRequestHandler<DeleteSoftStreetcodeC
 
         if (streetcode is null)
         {
-            string errorMsg = $"Cannot find a streetcode with corresponding categoryId: {request.Id}";
-            _logger.LogError(request, errorMsg);
-            throw new ArgumentNullException(errorMsg);
+            var errorNotFoundMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(StreetcodeContent), request.Id);
+            _logger.LogError(request, errorNotFoundMsg);
+            throw new ArgumentNullException(errorNotFoundMsg);
         }
 
         streetcode.Status = DAL.Enums.StreetcodeStatus.Deleted;
@@ -35,15 +41,15 @@ public class DeleteSoftStreetcodeHandler : IRequestHandler<DeleteSoftStreetcodeC
 
         var resultIsDeleteSucces = await _repositoryWrapper.SaveChangesAsync() > 0;
 
-        if(resultIsDeleteSucces)
+        if (resultIsDeleteSucces)
         {
+            await _cacheService.RemoveAsync($"Streetcode_{request.Id}".ToLower(), cancellationToken);
+
             return Result.Ok(Unit.Value);
         }
-        else
-        {
-            const string errorMsg = "Failed to change status of streetcode to deleted";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
-        }
+
+        var errorMsg = Messages.Error_FailedToSoftDeleteStreetcode;
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

@@ -4,6 +4,8 @@ using MediatR;
 using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.AdditionalContent.Subtitle.GetAll;
 
@@ -24,14 +26,13 @@ public class GetAllSubtitlesHandler : IRequestHandler<GetAllSubtitlesQuery, Resu
     {
         var subtitles = await _repositoryWrapper.SubtitleRepository.GetAllAsync();
 
-        if (subtitles is null)
+        if (subtitles.Any())
         {
-            const string errorMsg = $"Cannot find any subtitles";
-
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            return Result.Ok(_mapper.Map<IEnumerable<SubtitleDTO>>(subtitles));
         }
 
-        return Result.Ok(_mapper.Map<IEnumerable<SubtitleDTO>>(subtitles));
+        var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(DAL.Entities.AdditionalContent.Subtitle));
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

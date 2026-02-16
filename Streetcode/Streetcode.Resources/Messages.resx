@@ -1,0 +1,207 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Error_EntityWithIdNotFound" xml:space="preserve">
+    <value>{0} with Id: {1} not found</value>
+  </data>
+  <data name="Error_ConvertNullToEntity" xml:space="preserve">
+    <value>Cannot convert null to {0}</value>
+  </data>
+  <data name="Error_FailedToCreateEntity" xml:space="preserve">
+    <value>Failed to create {0}</value>
+  </data>
+  <data name="Error_FailedToDeleteEntity" xml:space="preserve">
+    <value>Failed to delete {0}</value>
+  </data>
+  <data name="Error_EntityWithStreetcodeIdNotFound" xml:space="preserve">
+    <value>{0}(s) with StreetcodeId: {0} not found</value>
+  </data>
+  <data name="Error_FailedToUpdateEntity" xml:space="preserve">
+    <value>Failed to update {0}</value>
+  </data>
+  <data name="Error_EntitiesNotFound" xml:space="preserve">
+    <value>No {0} found</value>
+  </data>
+  <data name="Error_TagWithTitleNotFound" xml:space="preserve">
+    <value>Tag with Title: {0} not found</value>
+  </data>
+  <data name="Error_FailedToSendEmail" xml:space="preserve">
+    <value>Failed to send email message</value>
+  </data>
+  <data name="Info_EntityDeleteSuccess" xml:space="preserve">
+    <value>{0} with Id: {1} deleted successfully</value>
+  </data>
+  <data name="Error_NewsWithUrlNotFound" xml:space="preserve">
+    <value>News with Url: {0} not found</value>
+  </data>
+  <data name="Error_PropertyMustBeGreaterThanZero" xml:space="preserve">
+    <value>{0} must be greater than 0</value>
+  </data>
+  <data name="ErrorStreetcodeRelationError" xml:space="preserve">
+    <value>Cannot find a relation between Streetcodes with corresponding Ids: ObserverId: {0} &amp; TargetId: {1}</value>
+  </data>
+  <data name="Error_StreetcodeWithTagIdNotFound" xml:space="preserve">
+    <value>Streetcode with TagId: {0} not found</value>
+  </data>
+  <data name="Error_WordDefinitionExists" xml:space="preserve">
+    <value>Слово з цим визначенням уже існує</value>
+  </data>
+  <data name="Error_RelatedTermNotFound" xml:space="preserve">
+    <value>Cannot find a related term by word: {0}</value>
+  </data>
+  <data name="Error_FailedToSoftDeleteStreetcode" xml:space="preserve">
+    <value>Failed to change status of streetcode to deleted</value>
+  </data>
+  <data name="Error_StreetcodeWithIndexNotFound" xml:space="preserve">
+    <value>Streetcode with Index {0} not found</value>
+  </data>
+  <data name="Error_StreetcodeWithTransliterationUrlNotFound" xml:space="preserve">
+    <value>Streetcode with Transliteration Url: {0} not found</value>
+  </data>
+  <data name="Error_CannotMapEntityToDto" xml:space="preserve">
+    <value>Cannot map {0} to {1}</value>
+  </data>
+  <data name="Error_PropertyIsRequired" xml:space="preserve">
+    <value>{0} is required</value>
+  </data>
+  <data name="Error_PropertyMustNotExceedCharacters" xml:space="preserve">
+    <value>{0} must not exceed {1} characters</value>
+  </data>
+  <data name="Error_AdditionalTextMustNotExceedCharacters" xml:space="preserve">
+    <value>If Additional Text is provided it must not exceed {0} characters</value>
+  </data>
+  <data name="Error_FoundResultMatchingNull" xml:space="preserve">
+    <value>Found result matching null</value>
+  </data>
+  <data name="Error_InvalidMonobankTokenException" xml:space="preserve">
+    <value>The provided token is not recognized by Monobank API</value>
+  </data>
+  <data name="Error_InvalidImageFormat" xml:space="preserve">
+    <value>Invalid Image format: {0}. Only {1} are allowed</value>
+  </data>
+  <data name="Error_FactsListEmpty" xml:space="preserve">
+    <value>Facts list cannot be empty</value>
+  </data>
+  <data name="Error_PropertyMustBeEqualOrGreaterThanZero" xml:space="preserve">
+    <value>{0} must be equal or grater than 0</value>
+  </data>
+  <data name="Error_CommandDataRequired" xml:space="preserve">
+    <value>{} data required</value>
+  </data>
+</root>

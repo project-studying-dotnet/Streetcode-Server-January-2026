@@ -1,4 +1,7 @@
-﻿namespace Streetcode.XUnitTest.MediatR.Fact.GetAll
+﻿using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+
+namespace Streetcode.XUnitTest.MediatR.Fact.GetAll
 {
     using System.Linq.Expressions;
     using AutoMapper;
@@ -150,8 +153,8 @@
         public async Task Handle_ReturnsFailedResult_WhenFactsDoNotExist()
         {
             // Arrange
-            string expectedErrorMsg = "Cannot find any fact";
-            this.SetupGetAll(null);
+            string expectedErrorMsg = Messages.Error_EntitiesNotFound.Format(nameof(DAL.Entities.Streetcode.TextContent.Fact));
+            this.SetupGetAll([]);
 
             // Act
             var result = await this.handler.Handle(new GetAllFactsQuery(), CancellationToken.None);

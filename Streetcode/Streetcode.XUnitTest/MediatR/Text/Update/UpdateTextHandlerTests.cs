@@ -2,25 +2,22 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+
 namespace Streetcode.XUnitTest.MediatR.Text.Update
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
-    using System.Text;
     using System.Threading.Tasks;
     using AutoMapper;
     using FluentAssertions;
-    using FluentResults;
-    using global::MediatR;
     using Microsoft.EntityFrameworkCore.Query;
     using Moq;
-    using Streetcode.BLL.DTO.Streetcode.TextContent;
     using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
     using Streetcode.BLL.Interfaces.Logging;
     using Streetcode.BLL.MediatR.Streetcode.Text.Update;
-    using Streetcode.BLL.MediatR.Streetcode.Text.Delete;
     using Streetcode.DAL.Entities.Streetcode.TextContent;
     using Streetcode.DAL.Repositories.Interfaces.Base;
     using Streetcode.DAL.Repositories.Interfaces.Streetcode.TextContent;
@@ -50,9 +47,9 @@ namespace Streetcode.XUnitTest.MediatR.Text.Update
         public async Task Handle_WhenTextNotFound_ShouldReturnFail()
         {
             // Arrange
-            var Id = 1;
-            var command = new UpdateTextCommand(new TextUpdateDTO { Id = Id });
-            string expectedErrorMsg = $"No text found with Id {Id}";
+            var id = 1;
+            var command = new UpdateTextCommand(new TextUpdateDTO { Id = id });
+            string expectedErrorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(Text), id);
 
             _mockRepoWrapper
                 .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(

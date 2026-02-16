@@ -6,6 +6,8 @@ using Streetcode.DAL.Repositories.Interfaces.Base;
 using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.DTO.Media.Art;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Media.Art.GetByStreetcodeId
 {
@@ -30,9 +32,21 @@ namespace Streetcode.BLL.MediatR.Media.Art.GetByStreetcodeId
 
         public async Task<Result<IEnumerable<ArtDTO>>> Handle(GetArtsByStreetcodeIdQuery request, CancellationToken cancellationToken)
         {
-            var arts = await _repositoryWrapper.ArtRepository.GetAllAsync(
-                predicate: sc => sc.StreetcodeArts.Any(s => s.StreetcodeId == request.StreetcodeId),
-                include: scl => scl.Include(sc => sc.Image) !);
+            var arts = await _repositoryWrapper.ArtRepository
+                .GetAllAsync(
+                    predicate: sc => sc.StreetcodeArts.Any(s => s.StreetcodeId == request.StreetcodeId),
+                    include: scl => scl
+                        .Include(sc => sc.Image) !);
+
+            if (!arts.Any())
+            {
+                var errorMsg = Messages.Error_EntityWithStreetcodeIdNotFound.Format(
+                        nameof(DAL.Entities.Media.Images.Art),
+                        request.StreetcodeId);
+
+                _logger.LogError(request, errorMsg);
+                return Result.Fail(new Error(errorMsg));
+            }
 
             var artsDto = _mapper.Map<IEnumerable<ArtDTO>>(arts);
 
