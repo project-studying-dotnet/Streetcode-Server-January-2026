@@ -7,13 +7,13 @@ using AutoMapper;
 using Moq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
-using Streetcode.BLL.DTO.Timeline;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.MediatR.Timeline.TimelineItem.GetAll;
 using Streetcode.DAL.Entities.Timeline;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.DAL.Repositories.Interfaces.Timeline;
 using Xunit;
+using Streetcode.BLL.DTO.Timeline.TimelineItem;
 
 public class GetAllTimelineItemsHandlerTests
 {
