@@ -120,14 +120,19 @@ public static class ServiceCollectionExtensions
         {
             x.UsingRabbitMq((context, cfg) =>
             {
-                var host = configuration["RabbitMQ:Host"] ?? "localhost";
-                var user = configuration["RabbitMQ:Username"] ?? "guest";
-                var pass = configuration["RabbitMQ:Password"] ?? "guest";
+                var rabbitSection = configuration.GetSection("RabbitMQ");
+
+                var host = rabbitSection["Host"]
+                    ?? throw new InvalidOperationException("RabbitMQ Host is missing");
+                var username = rabbitSection["Username"]
+                    ?? throw new InvalidOperationException("RabbitMQ Username is missing");
+                var password = rabbitSection["Password"]
+                    ?? throw new InvalidOperationException("RabbitMQ Password is missing");
 
                 cfg.Host(host, "/", h =>
                 {
-                    h.Username(user);
-                    h.Password(pass);
+                    h.Username(username);
+                    h.Password(password);
                 });
 
                 cfg.ConfigureEndpoints(context);

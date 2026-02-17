@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.Extensions.Configuration;
 using Streetcode.Auth.BLL.DTO.Auth;
 using Streetcode.Auth.BLL.DTO.Users;
+using Streetcode.Auth.BLL.Exceptions;
 using Streetcode.Auth.BLL.Interfaces;
 
 namespace Streetcode.Auth.BLL.MediatR.RefreshToken
@@ -39,7 +40,7 @@ namespace Streetcode.Auth.BLL.MediatR.RefreshToken
 
                 return Result.Ok((responseDto, newRefresh.Token));
             }
-            catch (Exception ex)
+            catch (UnauthorizedException ex)
             {
                 return Result.Fail(ex.Message);
             }
