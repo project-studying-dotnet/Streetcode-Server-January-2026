@@ -31,6 +31,10 @@ namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Create
             RuleFor(x => x.StreetcodeId)
                 .GreaterThan(0)
                 .WithMessage(Messages.Error_PropertyMustBeGreaterThanZero.Format(nameof(CreateTimelineItemDTO.StreetcodeId)));
+
+            RuleForEach(x => x.HistoricalContextIds)
+                .GreaterThan(0)
+                .WithMessage(Messages.Error_PropertyMustBeGreaterThanZero.Format(nameof(CreateTimelineItemDTO.HistoricalContextIds)));
         }
     }
 }
