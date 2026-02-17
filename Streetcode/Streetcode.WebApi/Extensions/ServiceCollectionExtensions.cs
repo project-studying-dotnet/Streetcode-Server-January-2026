@@ -133,8 +133,16 @@ public static class ServiceCollectionExtensions
         {
             opt.AddDefaultPolicy(policy =>
             {
-                policy.AllowAnyOrigin()
-                      .AllowAnyHeader()
+                if (corsConfig?.AllowedOrigins?.Any() == true && !corsConfig.AllowedOrigins.Contains("*"))
+                {
+                    policy.WithOrigins(corsConfig.AllowedOrigins.ToArray());
+                }
+                else
+                {
+                    policy.SetIsOriginAllowed(origin => true);
+                }
+
+                policy.AllowAnyHeader()
                       .AllowAnyMethod();
             });
         });

@@ -4,6 +4,7 @@
     using FluentAssertions;
     using Microsoft.Extensions.Configuration;
     using Moq;
+    using Streetcode.Auth.BLL.Exceptions;
     using Streetcode.Auth.BLL.Interfaces;
     using Streetcode.Auth.BLL.Mapping;
     using Streetcode.Auth.BLL.MediatR.RefreshToken;
@@ -100,7 +101,7 @@
 
             this.tokenServiceMock
                 .Setup(s => s.RotateRefreshTokenAsync(OldToken))
-                .ThrowsAsync(new Exception(errorMsg));
+                .ThrowsAsync(new UnauthorizedException(errorMsg));
 
             var command = new RefreshTokenCommand(OldToken);
 
