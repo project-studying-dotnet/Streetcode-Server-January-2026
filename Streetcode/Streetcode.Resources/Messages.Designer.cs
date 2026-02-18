@@ -330,5 +330,16 @@ namespace Streetcode.Resources {
                 return ResourceManager.GetString("Error_InvalidPropertyFormat", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a Historical Context Title Already Exists.
+        /// </summary>
+        public static string Error_HistoricalContextTitleAlreadyExists
+        {
+            get
+            {
+                return ResourceManager.GetString("HistoricalContextTitleAlreadyExists", resourceCulture);
+            }
+        }
     }
 }

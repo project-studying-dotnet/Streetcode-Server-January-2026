@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FluentResults;
+using MediatR;
+using Streetcode.BLL.DTO.Timeline.TimelineItem;
 
 namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Update
 {
-    internal class UpdateTimelineItemCommand
-    {
-    }
+    public record UpdateTimelineItemCommand(UpdateTimelineItemDTO TimelineItem) : IRequest<Result<TimelineItemDTO>>;
 }

@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FluentResults;
+using MediatR;
+using Streetcode.BLL.DTO.Timeline.HistoricalContext;
 
-namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Update
+namespace Streetcode.BLL.MediatR.Timeline.HistoricalContext.Update
 {
-    internal class UpdateTimelineItemCommand
-    {
-    }
+    public record UpdateHistoricalContextCommand(UpdateHistoricalContextDTO HistoricalContext) : IRequest<Result<HistoricalContextDTO>>;
 }

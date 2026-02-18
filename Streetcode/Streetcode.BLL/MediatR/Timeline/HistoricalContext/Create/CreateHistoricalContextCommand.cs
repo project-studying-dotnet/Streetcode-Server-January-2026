@@ -1,8 +1,8 @@
 ﻿using FluentResults;
 using MediatR;
-using Streetcode.BLL.DTO.Timeline.TimelineItem;
+using Streetcode.BLL.DTO.Timeline.HistoricalContext;
 
-namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Create
+namespace Streetcode.BLL.MediatR.Timeline.HistoricalContext.Create
 {
-    public record CreateTimelineItemCommand(CreateTimelineItemDTO TimelineItem) : IRequest<Result<TimelineItemDTO>>;
+    public record CreateHistoricalContextCommand(CreateHistoricalContextDTO HistoricalContext) : IRequest<Result<HistoricalContextDTO>>;
 }

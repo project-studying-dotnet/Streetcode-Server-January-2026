@@ -3,9 +3,9 @@ using Streetcode.Resources;
 
 namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Create
 {
-    public class CreateTimelineItemCommandValidator : AbstractValidator<CreateTimelineItemCommand>
+    public class CreateHistoricalContextCommandValidator : AbstractValidator<CreateHistoricalContextCommand>
     {
-        public CreateTimelineItemCommandValidator()
+        public CreateHistoricalContextCommandValidator()
         {
             RuleFor(x => x.TimelineItem)
                 .NotNull()

@@ -1,16 +1,16 @@
 ﻿using FluentValidation;
 using Streetcode.Resources;
 
-namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Create
+namespace Streetcode.BLL.MediatR.Timeline.HistoricalContext.Create
 {
-    public class CreateTimelineItemCommandValidator : AbstractValidator<CreateHistoricalContextCommand>
+    public class CreateHistoricalContextCommandValidator : AbstractValidator<CreateHistoricalContextCommand>
     {
-        public CreateTimelineItemCommandValidator()
+        public CreateHistoricalContextCommandValidator()
         {
-            RuleFor(x => x.TimelineItem)
+            RuleFor(x => x.HistoricalContext)
                 .NotNull()
                 .WithMessage(Messages.Error_CommandDataRequired)
-                .SetValidator(new TimelineItemCreateDTOValidator());
+                .SetValidator(new HistoricalContextCreateDTOValidator());
         }
     }
 }

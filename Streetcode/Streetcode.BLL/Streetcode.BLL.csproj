@@ -51,11 +51,6 @@
     <Folder Include="Mapping\Analytics\" />
     <Folder Include="MediatR\AdditionalContent\Tag\" />
     <Folder Include="DTO\Instagram\" />
-    <Folder Include="MediatR\Timeline\HistoricalContext\Create\" />
-    <Folder Include="MediatR\Timeline\HistoricalContext\Delete\" />
-    <Folder Include="MediatR\Timeline\HistoricalContext\Update\" />
-    <Folder Include="MediatR\Timeline\TimelineItem\Delete\" />
-    <Folder Include="MediatR\Timeline\TimelineItem\Update\" />
   </ItemGroup>
 
 </Project>

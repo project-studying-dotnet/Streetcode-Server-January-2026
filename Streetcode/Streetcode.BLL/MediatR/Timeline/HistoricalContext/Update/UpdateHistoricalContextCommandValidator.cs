@@ -1,12 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FluentValidation;
+using Streetcode.Resources;
 
-namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Update
+namespace Streetcode.BLL.MediatR.Timeline.HistoricalContext.Update
 {
-    internal class UpdateTimelineItemCommandValidator
+    public class UpdateHistoricalContextCommandValidator : AbstractValidator<UpdateHistoricalContextCommand>
     {
+        public UpdateHistoricalContextCommandValidator()
+        {
+            RuleFor(x => x.HistoricalContext)
+                .NotNull()
+                .WithMessage(Messages.Error_CommandDataRequired)
+                .SetValidator(new HistoricalContextDTOUpdateValidator());
+        }
     }
 }
