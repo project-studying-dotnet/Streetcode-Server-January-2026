@@ -47,7 +47,7 @@ namespace Streetcode.XUnitTest.MediatR.Fact.UpdateOrder
             var result = this.validator.TestValidate(model);
 
             // Assert
-            result.ShouldHaveValidationErrorFor($"x[{1}].TermId")
+            result.ShouldHaveValidationErrorFor($"x[{1}].Id")
                   .WithErrorMessage(Messages.Error_PropertyMustBeGreaterThanZero.Format(nameof(UpdateFactOrderDTO.Id)));
         }
 
