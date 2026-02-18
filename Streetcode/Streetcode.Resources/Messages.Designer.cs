@@ -249,11 +249,20 @@ namespace Streetcode.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot find a related term by word: {0}.
+        ///   Looks up a localized string similar to Cannot find RelatedTerm by Word: &quot;{0}&quot; and TermId: {1}.
         /// </summary>
         public static string Error_RelatedTermNotFound {
             get {
                 return ResourceManager.GetString("Error_RelatedTermNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No RelatedTerm found by TermId: {0}.
+        /// </summary>
+        public static string Error_RelatedTermsByTermIdNotFound {
+            get {
+                return ResourceManager.GetString("Error_RelatedTermsByTermIdNotFound", resourceCulture);
             }
         }
         
@@ -276,7 +285,7 @@ namespace Streetcode.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Streetcode with Transliteration Url: {0} not found.
+        ///   Looks up a localized string similar to Streetcode with Transliteration Url: &quot;{0}&quot; not found.
         /// </summary>
         public static string Error_StreetcodeWithTransliterationUrlNotFound {
             get {

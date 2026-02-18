@@ -11,7 +11,7 @@ namespace Streetcode.BLL.MediatR.Streetcode.Text.Update
 
             RuleFor(x => x.Id)
                 .GreaterThan(0)
-                .WithMessage("Text Id must be greater than zero");
+                .WithMessage("Text TermId must be greater than zero");
         }
     }
 }

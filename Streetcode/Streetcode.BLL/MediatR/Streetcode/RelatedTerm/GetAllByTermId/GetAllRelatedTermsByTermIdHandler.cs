@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using FluentResults;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Streetcode.TextContent;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
@@ -26,16 +25,14 @@ namespace Streetcode.BLL.MediatR.Streetcode.RelatedTerm.GetAllByTermId
         public async Task<Result<IEnumerable<RelatedTermDTO>>> Handle(GetAllRelatedTermsByTermIdQuery request, CancellationToken cancellationToken)
         {
             var relatedTerms = await _repository.RelatedTermRepository
-                .GetAllAsync(
-                    rt => rt.TermId == request.Id,
-                    rt => rt.Include(rt => rt.Term));
+                .GetAllAsync(rt => rt.TermId == request.TermId);
 
             if (relatedTerms.Any())
             {
                 return Result.Ok(_mapper.Map<IEnumerable<RelatedTermDTO>>(relatedTerms));
             }
 
-            var errorNotFoundMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(RelatedTerm), request.Id);
+            var errorNotFoundMsg = Messages.Error_RelatedTermsByTermIdNotFound.Format(request.TermId);
             _logger.LogError(request, errorNotFoundMsg);
             return new Error(errorNotFoundMsg);
         }

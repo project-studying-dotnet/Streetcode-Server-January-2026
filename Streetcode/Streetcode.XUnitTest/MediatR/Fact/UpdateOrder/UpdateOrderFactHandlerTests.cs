@@ -130,7 +130,7 @@
             this.factRepositoryMock.Verify(x => x.Update(It.Is<FactEntity>(f => f.Id == 99)), Times.Never);
 
             this.loggerMock.Verify(
-                x => x.LogWarning(It.Is<string>(s => s.Contains("Fact with Id 99 not found"))),
+                x => x.LogWarning(It.Is<string>(s => s.Contains("Fact with TermId 99 not found"))),
                 Times.Once);
         }
 

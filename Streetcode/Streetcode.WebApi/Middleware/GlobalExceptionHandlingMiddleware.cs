@@ -17,19 +17,17 @@ namespace Streetcode.WebApi.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
+            try
             {
-                try
-                {
-                    await _next(context);
-                }
-                catch (ValidationException ex)
-                {
-                    await HandleValidationAsync(context, ex);
-                }
-                catch (Exception ex)
-                {
-                    await HandleUnhandledAsync(context, ex);
-                }
+                await _next(context);
+            }
+            catch (ValidationException ex)
+            {
+                await HandleValidationAsync(context, ex);
+            }
+            catch (Exception ex)
+            {
+                await HandleUnhandledAsync(context, ex);
             }
         }
 
