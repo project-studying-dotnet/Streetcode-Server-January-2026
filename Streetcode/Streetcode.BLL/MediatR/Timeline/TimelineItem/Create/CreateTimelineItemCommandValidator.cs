@@ -5,7 +5,7 @@ namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Create
 {
     public class CreateTimelineItemCommandValidator : AbstractValidator<CreateTimelineItemCommand>
     {
-        public CreateTimelineItemCommandValidatoro()
+        public CreateTimelineItemCommandValidator()
         {
             RuleFor(x => x.TimelineItem)
                 .NotNull()
