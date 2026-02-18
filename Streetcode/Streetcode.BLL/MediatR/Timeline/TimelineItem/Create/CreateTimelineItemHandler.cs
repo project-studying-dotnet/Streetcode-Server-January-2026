@@ -11,20 +11,20 @@ using EntityTimelineItem = Streetcode.DAL.Entities.Timeline.TimelineItem;
 
 namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Create
 {
-    public class CreateHistoricalContextHandler : IRequestHandler<CreateHistoricalContextCommand, Result<TimelineItemDTO>>
+    public class CreateTimelineItemHandler : IRequestHandler<CreateTimelineItemCommand, Result<TimelineItemDTO>>
     {
         private readonly IMapper _mapper;
         private readonly ILoggerService _logger;
         private readonly IRepositoryWrapper _repositoryWrapper;
 
-        public CreateHistoricalContextHandler(IRepositoryWrapper repositoryWrapper, ILoggerService logger, IMapper mapper)
+        public CreateTimelineItemHandler(IRepositoryWrapper repositoryWrapper, ILoggerService logger, IMapper mapper)
         {
             _repositoryWrapper = repositoryWrapper;
             _logger = logger;
             _mapper = mapper;
         }
 
-        public async Task<Result<TimelineItemDTO>> Handle(CreateHistoricalContextCommand request, CancellationToken cancellationToken)
+        public async Task<Result<TimelineItemDTO>> Handle(CreateTimelineItemCommand request, CancellationToken cancellationToken)
         {
             var streetCodeExists = await _repositoryWrapper.StreetcodeRepository
                 .GetFirstOrDefaultAsync(s => s.Id == request.TimelineItem.StreetcodeId);

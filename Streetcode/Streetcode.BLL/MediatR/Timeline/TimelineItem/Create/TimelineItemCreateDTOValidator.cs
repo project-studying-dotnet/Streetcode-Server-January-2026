@@ -5,9 +5,9 @@ using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Create
 {
-    public class HistoricalContextCreateDTOValidator : AbstractValidator<CreateTimelineItemDTO>
+    public class TimelineItemCreateDTOValidator : AbstractValidator<CreateTimelineItemDTO>
     {
-        public HistoricalContextCreateDTOValidator()
+        public TimelineItemCreateDTOValidator()
         {
             RuleFor(x => x.Title)
                 .NotEmpty()

@@ -1,5 +1,5 @@
 using AutoMapper;
-using Streetcode.BLL.DTO.Timeline;
+using Streetcode.BLL.DTO.Timeline.HistoricalContext;
 using Streetcode.BLL.DTO.Timeline.TimelineItem;
 using Streetcode.DAL.Entities.Timeline;
 
@@ -18,5 +18,8 @@ public class TimelineItemProfile : Profile
                     Id = x.HistoricalContextId,
                     Title = x.HistoricalContext.Title
                 }).ToList()));
+
+        CreateMap<CreateTimelineItemDTO, TimelineItem>();
+        CreateMap<UpdateTimelineItemDTO, TimelineItem>();
     }
 }
