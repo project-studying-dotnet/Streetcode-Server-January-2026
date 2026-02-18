@@ -181,10 +181,7 @@ public static class ServiceCollectionExtensions
 
         services.AddHangfire(config =>
         {
-            config.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-                  .UseSimpleAssemblyNameTypeSerializer()
-                  .UseRecommendedSerializerSettings()
-                  .UseSqlServerStorage(connectionString);
+            config.UseSqlServerStorage(connectionString);
         });
 
         services.AddHangfireServer();
