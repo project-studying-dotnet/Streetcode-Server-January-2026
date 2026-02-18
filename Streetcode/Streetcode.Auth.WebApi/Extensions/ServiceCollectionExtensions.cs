@@ -18,6 +18,8 @@ using Streetcode.Auth.DAL.Repositories.Interfaces;
 using Streetcode.Auth.DAL.Repositories.Realizations;
 using Streetcode.Auth.WebApi.Services.Interfaces;
 using Streetcode.Auth.WebApi.Services.Realizations;
+using Hangfire;
+using Hangfire.SqlServer;
 
 namespace Streetcode.Auth.WebApi.Extensions;
 
@@ -171,5 +173,20 @@ public static class ServiceCollectionExtensions
                 }
             });
         });
+    }
+
+    public static void AddHangfireServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+        services.AddHangfire(config =>
+        {
+            config.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                  .UseSimpleAssemblyNameTypeSerializer()
+                  .UseRecommendedSerializerSettings()
+                  .UseSqlServerStorage(connectionString);
+        });
+
+        services.AddHangfireServer();
     }
 }
