@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Streetcode.BLL.MediatR.Media.StreetcodeArt.GetByStreetcodeId;
 
 namespace Streetcode.WebApi.Controllers.Media.Images;
@@ -6,6 +7,7 @@ namespace Streetcode.WebApi.Controllers.Media.Images;
 public class StreetcodeArtController : BaseApiController
 {
     [HttpGet("{streetcodeId:int}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetByStreetcodeId([FromRoute] int streetcodeId)
     {
         return HandleResult(await Mediator.Send(new GetStreetcodeArtByStreetcodeIdQuery(streetcodeId)));
