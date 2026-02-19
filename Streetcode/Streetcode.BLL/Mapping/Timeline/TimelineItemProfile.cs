@@ -19,7 +19,16 @@ public class TimelineItemProfile : Profile
                     Title = x.HistoricalContext.Title
                 }).ToList()));
 
-        CreateMap<CreateTimelineItemDTO, TimelineItem>();
-        CreateMap<UpdateTimelineItemDTO, TimelineItem>();
+        CreateMap<CreateTimelineItemDTO, TimelineItem>()
+            .ForMember(dest => dest.HistoricalContextTimelines, opt => opt.Ignore());
+
+        CreateMap<UpdateTimelineItemDTO, TimelineItem>()
+            .ForMember(dest => dest.HistoricalContextTimelines, opt => opt.Ignore())
+            .ForMember(dest => dest.Streetcode, opt => opt.Ignore());
+
+        CreateMap<CreateHistoricalContextDTO, HistoricalContext>();
+        CreateMap<UpdateHistoricalContextDTO, HistoricalContext>()
+            .ForMember(dest => dest.HistoricalContextTimelines, opt => opt.Ignore());
+        CreateMap<HistoricalContext, HistoricalContextDTO>();
     }
 }

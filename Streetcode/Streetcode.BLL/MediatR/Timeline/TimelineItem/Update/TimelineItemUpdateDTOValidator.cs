@@ -30,7 +30,7 @@ namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Update
 
             RuleFor(x => x.DateViewPattern)
                 .IsInEnum()
-                .WithMessage(Messages.Error_InvalidPropertyFormat.Format(nameof(CreateTimelineItemDTO.DateViewPattern)));
+                .WithMessage(string.Format(Messages.Error_EntitiesNotFound, nameof(CreateTimelineItemDTO.DateViewPattern)));
 
             RuleFor(x => x.StreetcodeId)
                 .GreaterThan(0)
