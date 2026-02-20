@@ -204,4 +204,7 @@
   <data name="Error_CommandDataRequired" xml:space="preserve">
     <value>{} data required</value>
   </data>
+  <data name="Error_HistoricalContextTitleAlreadyExists" xml:space="preserve">
+    <value>Historical Context Title Already Exists</value>
+  </data>
 </root>

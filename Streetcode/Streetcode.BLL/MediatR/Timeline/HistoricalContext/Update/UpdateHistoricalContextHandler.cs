@@ -5,6 +5,8 @@ using Streetcode.BLL.DTO.Timeline.HistoricalContext;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+using HistoricalContextEntity = Streetcode.DAL.Entities.Timeline.HistoricalContext;
 
 namespace Streetcode.BLL.MediatR.Timeline.HistoricalContext.Update
 {
@@ -28,7 +30,9 @@ namespace Streetcode.BLL.MediatR.Timeline.HistoricalContext.Update
 
             if (existingContext is null)
             {
-                var errorMsg = string.Format(Messages.Error_EntityWithIdNotFound, request.HistoricalContext.Id);
+                var errorMsg = Messages.Error_EntityWithIdNotFound.Format(
+                    typeof(HistoricalContextEntity),
+                    request.HistoricalContext.Id);
                 _logger.LogError(request, errorMsg);
                 return Result.Fail(errorMsg);
             }

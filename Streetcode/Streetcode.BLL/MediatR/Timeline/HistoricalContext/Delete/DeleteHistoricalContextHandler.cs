@@ -3,6 +3,8 @@ using MediatR;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+using HistoryContext = Streetcode.DAL.Entities.Timeline.HistoricalContext;
 
 namespace Streetcode.BLL.MediatR.Timeline.HistoricalContext.Delete
 {
@@ -24,7 +26,9 @@ namespace Streetcode.BLL.MediatR.Timeline.HistoricalContext.Delete
 
             if (historicalContext is null)
             {
-                var errorMsg = string.Format(Messages.Error_EntityWithIdNotFound, request.Id);
+                var errorMsg = Messages.Error_EntityWithIdNotFound.Format(
+                    nameof(HistoricalContext),
+                    request.Id);
                 _logger.LogError(request, errorMsg);
                 return Result.Fail(errorMsg);
             }
