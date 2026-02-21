@@ -9,7 +9,7 @@ namespace Streetcode.BLL.Mapping.Streetcode.Comments
         public CommentProfile()
         {
             CreateMap<Comment, CommentDTO>()
-                .ForMember(dest => dest.UserFullName, opt => opt.MapFrom(src => 
+                .ForMember(dest => dest.UserFullName, opt => opt.MapFrom(src =>
                     src.User != null ? $"{src.User.Name} {src.User.Surname}" : "Unknown User"))
                 .ReverseMap();
 
