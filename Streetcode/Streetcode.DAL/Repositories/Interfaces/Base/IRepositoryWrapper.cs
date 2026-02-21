@@ -7,6 +7,7 @@ using Streetcode.DAL.Repositories.Interfaces.Newss;
 using Streetcode.DAL.Repositories.Interfaces.Partners;
 using Streetcode.DAL.Repositories.Interfaces.Source;
 using Streetcode.DAL.Repositories.Interfaces.Streetcode;
+using Streetcode.DAL.Repositories.Interfaces.Streetcode.Comments;
 using Streetcode.DAL.Repositories.Interfaces.Streetcode.TextContent;
 using Streetcode.DAL.Repositories.Interfaces.Team;
 using Streetcode.DAL.Repositories.Interfaces.Timeline;
@@ -30,6 +31,7 @@ public interface IRepositoryWrapper
     IStreetcodeCategoryContentRepository StreetcodeCategoryContentRepository { get; }
     IRelatedFigureRepository RelatedFigureRepository { get; }
     IStreetcodeRepository StreetcodeRepository { get; }
+    ICommentRepository CommentRepository { get; }
     ISubtitleRepository SubtitleRepository { get; }
     IStatisticRecordRepository StatisticRecordRepository { get; }
     ITagRepository TagRepository { get; }
