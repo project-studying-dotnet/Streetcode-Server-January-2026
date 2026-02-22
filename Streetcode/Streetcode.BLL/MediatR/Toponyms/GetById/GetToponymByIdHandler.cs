@@ -3,7 +3,10 @@ using FluentResults;
 using MediatR;
 using Streetcode.BLL.DTO.Toponyms;
 using Streetcode.BLL.Interfaces.Logging;
+using Streetcode.DAL.Entities.Toponyms;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Toponyms.GetById;
 
@@ -25,13 +28,13 @@ public class GetToponymByIdHandler : IRequestHandler<GetToponymByIdQuery, Result
         var toponym = await _repositoryWrapper.ToponymRepository
             .GetFirstOrDefaultAsync(f => f.Id == request.Id);
 
-        if (toponym is null)
+        if (toponym is not null)
         {
-            string errorMsg = $"Cannot find any toponym with corresponding id: {request.Id}";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            return Result.Ok(_mapper.Map<ToponymDTO>(toponym));
         }
 
-        return Result.Ok(_mapper.Map<ToponymDTO>(toponym));
+        var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(Toponym), request.Id);
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

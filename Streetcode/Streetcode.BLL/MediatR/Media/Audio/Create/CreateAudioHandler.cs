@@ -5,6 +5,8 @@ using Streetcode.BLL.DTO.Media.Audio;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Media.Audio.Create;
 
@@ -29,7 +31,7 @@ public class CreateAudioHandler : IRequestHandler<CreateAudioCommand, Result<Aud
 
     public async Task<Result<AudioDTO>> Handle(CreateAudioCommand request, CancellationToken cancellationToken)
     {
-        string hashBlobStorageName = _blobService.SaveFileInStorage(
+        var hashBlobStorageName = _blobService.SaveFileInStorage(
             request.Audio.BaseFormat,
             request.Audio.Title,
             request.Audio.Extension);
@@ -44,15 +46,13 @@ public class CreateAudioHandler : IRequestHandler<CreateAudioCommand, Result<Aud
 
         var createdAudio = _mapper.Map<AudioDTO>(audio);
 
-        if(resultIsSuccess)
+        if (resultIsSuccess)
         {
             return Result.Ok(createdAudio);
         }
-        else
-        {
-            const string errorMsg = $"Failed to create an audio";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
-        }
+
+        var errorMsg = Messages.Error_FailedToCreateEntity.Format(nameof(DAL.Entities.Media.Audio));
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

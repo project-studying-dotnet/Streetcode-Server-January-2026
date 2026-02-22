@@ -3,6 +3,8 @@ using MediatR;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Media.Audio.Delete;
 
@@ -25,9 +27,9 @@ public class DeleteAudioHandler : IRequestHandler<DeleteAudioCommand, Result<Uni
 
         if (audio is null)
         {
-            string errorMsg = $"Cannot find an audio with corresponding categoryId: {request.Id}";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            var errorNotFoundMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(DAL.Entities.Media.Audio), request.Id);
+            _logger.LogError(request, errorNotFoundMsg);
+            return Result.Fail(new Error(errorNotFoundMsg));
         }
 
         _repositoryWrapper.AudioRepository.Delete(audio);
@@ -41,14 +43,13 @@ public class DeleteAudioHandler : IRequestHandler<DeleteAudioCommand, Result<Uni
 
         if (resultIsSuccess)
         {
-            _logger?.LogInformation($"DeleteAudioCommand handled successfully");
+            var successMsg = Messages.Info_EntityDeleteSuccess.Format(nameof(DAL.Entities.Media.Audio), request.Id);
+            _logger?.LogInformation(successMsg);
             return Result.Ok(Unit.Value);
         }
-        else
-        {
-            string errorMsg = $"Failed to delete an audio";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
-        }
+
+        var errorMsg = Messages.Error_FailedToDeleteEntity.Format(nameof(DAL.Entities.Media.Audio));
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

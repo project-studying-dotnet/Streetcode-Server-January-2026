@@ -5,6 +5,8 @@ using Streetcode.BLL.DTO.Partners;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Entities.Partners;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Partners.Create
 {
@@ -24,14 +26,14 @@ namespace Streetcode.BLL.MediatR.Partners.Create
         public async Task<Result<PartnerDTO>> Handle(CreatePartnerCommand request, CancellationToken cancellationToken)
         {
             // Move validation to a separate validator class if it becomes more complex
-            if (request.newPartner.LogoId < 1)
+            if (request.NewPartner.LogoId < 1)
             {
-                const string errorMsg = "LogoId is required and must be greater than zero.";
+                var errorMsg = Messages.Error_PropertyMustBeGreaterThanZero.Format(nameof(CreatePartnerDTO.LogoId));
                 _logger.LogError(request, errorMsg);
                 return Result.Fail(new Error(errorMsg));
             }
 
-            var newPartner = _mapper.Map<Partner>(request.newPartner);
+            var newPartner = _mapper.Map<Partner>(request.NewPartner);
             try
             {
                 await HandleRelations(newPartner, request);
@@ -43,7 +45,7 @@ namespace Streetcode.BLL.MediatR.Partners.Create
                     return Result.Ok(_mapper.Map<PartnerDTO>(newPartner));
                 }
 
-                const string errorMsg = "Failed to create a new Partner.";
+                var errorMsg = Messages.Error_FailedToCreateEntity.Format(nameof(Partner));
                 _logger.LogError(request, errorMsg);
                 return Result.Fail(new Error(errorMsg));
             }
@@ -56,9 +58,9 @@ namespace Streetcode.BLL.MediatR.Partners.Create
 
         private async Task HandleRelations(Partner newPartner, CreatePartnerCommand request)
         {
-            if (request.newPartner.Streetcodes is { Count: > 0 })
+            if (request.NewPartner.Streetcodes is { Count: > 0 })
             {
-                var streetcodeIds = request.newPartner.Streetcodes
+                var streetcodeIds = request.NewPartner.Streetcodes
                     .Select(s => s.Id)
                     .ToList();
 
@@ -73,7 +75,7 @@ namespace Streetcode.BLL.MediatR.Partners.Create
                 newPartner.Streetcodes = streetcodes.ToList();
             }
 
-            if (request.newPartner.PartnerSourceLinks is { Count: > 0 })
+            if (request.NewPartner.PartnerSourceLinks is { Count: > 0 })
             {
                 await _repositoryWrapper.PartnerSourceLinkRepository.CreateRangeAsync(newPartner.PartnerSourceLinks);
             }

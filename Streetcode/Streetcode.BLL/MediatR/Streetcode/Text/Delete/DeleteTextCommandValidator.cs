@@ -1,4 +1,6 @@
 ﻿using FluentValidation;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Text.Delete
 {
@@ -8,7 +10,7 @@ namespace Streetcode.BLL.MediatR.Streetcode.Text.Delete
         {
             RuleFor(x => x.Id)
                 .GreaterThan(0)
-                .WithMessage("Text Id must be greater than zero");
+                .WithMessage(Messages.Error_PropertyMustBeGreaterThanZero.Format(nameof(DeleteTextCommand.Id)));
         }
     }
 }

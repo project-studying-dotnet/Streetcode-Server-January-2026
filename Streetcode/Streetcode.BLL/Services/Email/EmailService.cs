@@ -63,7 +63,7 @@ namespace Streetcode.BLL.Services.Email
                 {
                     await client.DisconnectAsync(true);
                     client.Dispose();
-                 }
+                }
             }
         }
     }

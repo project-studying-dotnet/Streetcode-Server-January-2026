@@ -6,6 +6,8 @@ using Streetcode.BLL.DTO.Media.Images;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Media.Image.GetByStreetcodeId;
 
@@ -16,7 +18,11 @@ public class GetImageByStreetcodeIdHandler : IRequestHandler<GetImageByStreetcod
     private readonly IRepositoryWrapper _repositoryWrapper;
     private readonly ILoggerService _logger;
 
-    public GetImageByStreetcodeIdHandler(IRepositoryWrapper repositoryWrapper, IMapper mapper, IBlobService blobService, ILoggerService logger)
+    public GetImageByStreetcodeIdHandler(
+        IRepositoryWrapper repositoryWrapper,
+        IMapper mapper,
+        IBlobService blobService,
+        ILoggerService logger)
     {
         _repositoryWrapper = repositoryWrapper;
         _mapper = mapper;
@@ -28,12 +34,16 @@ public class GetImageByStreetcodeIdHandler : IRequestHandler<GetImageByStreetcod
     {
         var images = (await _repositoryWrapper.ImageRepository
             .GetAllAsync(
-            f => f.Streetcodes.Any(s => s.Id == request.StreetcodeId),
-            include: q => q.Include(img => img.ImageDetails))).OrderBy(img => img.ImageDetails?.Alt);
+                f => f.Streetcodes.Any(s => s.Id == request.StreetcodeId),
+                include: q => q.Include(img => img.ImageDetails)))
+            .OrderBy(img => img.ImageDetails?.Alt);
 
-        if (images is null || images.Count() == 0)
+        if (!images.Any())
         {
-            string errorMsg = $"Cannot find an image with the corresponding streetcode id: {request.StreetcodeId}";
+            var errorMsg = Messages.Error_EntityWithStreetcodeIdNotFound.Format(
+                nameof(DAL.Entities.Media.Images.Image),
+                request.StreetcodeId);
+
             _logger.LogError(request, errorMsg);
             return Result.Fail(new Error(errorMsg));
         }

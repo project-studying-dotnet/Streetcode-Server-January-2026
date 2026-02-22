@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using FluentResults;
 using MediatR;
-using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
-using Streetcode.BLL.DTO.Media.Images;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.DTO.Media.Art;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Media.Art.GetAll;
 
@@ -26,13 +26,13 @@ public class GetAllArtsHandler : IRequestHandler<GetAllArtsQuery, Result<IEnumer
     {
         var arts = await _repositoryWrapper.ArtRepository.GetAllAsync();
 
-        if (arts is null)
+        if (arts.Any())
         {
-            const string errorMsg = $"Cannot find any arts";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            return Result.Ok(_mapper.Map<IEnumerable<ArtDTO>>(arts));
         }
 
-        return Result.Ok(_mapper.Map<IEnumerable<ArtDTO>>(arts));
+        var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(DAL.Entities.Media.Images.Art));
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

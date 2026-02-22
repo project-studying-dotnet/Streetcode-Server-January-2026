@@ -2,12 +2,11 @@
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.DTO.Streetcode.RelatedFigure;
-using Streetcode.DAL.Entities.Streetcode;
-using Streetcode.DAL.Enums;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.RelatedFigure.GetByStreetcodeId;
 
@@ -28,31 +27,36 @@ public class GetRelatedFiguresByStreetcodeIdHandler : IRequestHandler<GetRelated
     {
         var relatedFigureIds = GetRelatedFigureIdsByStreetcodeId(request.StreetcodeId);
 
-        if (relatedFigureIds is null)
+        if (!relatedFigureIds.Any())
         {
-            string errorMsg = $"Cannot find any related figures by a streetcode id: {request.StreetcodeId}";
+            var errorMsg = Messages.Error_EntityWithStreetcodeIdNotFound.Format(
+                nameof(DAL.Entities.Streetcode.RelatedFigure),
+                request.StreetcodeId);
+
             _logger.LogError(request, errorMsg);
             return Result.Fail(new Error(errorMsg));
         }
 
         var relatedFigures = await _repositoryWrapper.StreetcodeRepository.GetAllAsync(
           predicate: sc => relatedFigureIds.Any(id => id == sc.Id) && sc.Status == DAL.Enums.StreetcodeStatus.Published,
-          include: scl => scl.Include(sc => sc.Images).ThenInclude(img => img.ImageDetails)
-                             .Include(sc => sc.Tags));
+          include: scl => scl
+              .Include(sc => sc.Images)
+              .ThenInclude(img => img.ImageDetails)
+              .Include(sc => sc.Tags));
 
-        if (relatedFigures is null)
+        if (!relatedFigures.Any())
         {
-            string errorMsg = $"Cannot find any related figures by a streetcode id: {request.StreetcodeId}";
+            var errorMsg = Messages.Error_EntityWithStreetcodeIdNotFound.Format(
+                nameof(DAL.Entities.Streetcode.RelatedFigure),
+                request.StreetcodeId);
+
             _logger.LogError(request, errorMsg);
             return Result.Fail(new Error(errorMsg));
         }
 
-        foreach(StreetcodeContent streetcode in relatedFigures)
+        foreach(var streetcode in relatedFigures)
         {
-            if(streetcode.Images != null)
-            {
-                streetcode.Images = streetcode.Images.OrderBy(img => img.ImageDetails?.Alt).ToList();
-            }
+            streetcode.Images = streetcode.Images.OrderBy(img => img.ImageDetails?.Alt).ToList();
         }
 
         return Result.Ok(_mapper.Map<IEnumerable<RelatedFigureDTO>>(relatedFigures));
@@ -70,8 +74,9 @@ public class GetRelatedFiguresByStreetcodeIdHandler : IRequestHandler<GetRelated
 
             return observerIds.Union(targetIds).Distinct();
         }
-        catch (ArgumentNullException)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, ex.Message);
             return null;
         }
     }

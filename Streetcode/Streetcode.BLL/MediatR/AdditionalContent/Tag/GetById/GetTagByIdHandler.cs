@@ -4,6 +4,8 @@ using MediatR;
 using Streetcode.BLL.DTO.AdditionalContent;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.AdditionalContent.Tag.GetById;
 
@@ -24,13 +26,16 @@ public class GetTagByIdHandler : IRequestHandler<GetTagByIdQuery, Result<TagDTO>
     {
         var tag = await _repositoryWrapper.TagRepository.GetFirstOrDefaultAsync(f => f.Id == request.Id);
 
-        if (tag is null)
+        if (tag is not null)
         {
-            string errorMsg = $"Cannot find a Tag with corresponding id: {request.Id}";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            return Result.Ok(_mapper.Map<TagDTO>(tag));
         }
 
-        return Result.Ok(_mapper.Map<TagDTO>(tag));
+        var errorMsg = Messages.Error_EntityWithIdNotFound.Format(
+            nameof(DAL.Entities.AdditionalContent.Tag),
+            request.Id);
+
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

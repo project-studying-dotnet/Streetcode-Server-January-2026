@@ -5,7 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Streetcode;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.MediatR.Streetcode.Streetcode.GetAllStreetcodesMainPage;
+using Streetcode.DAL.Entities.Streetcode;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Streetcode.GetAllMainPage
 {
@@ -27,14 +30,16 @@ namespace Streetcode.BLL.MediatR.Streetcode.Streetcode.GetAllMainPage
         {
             var streetcodes = await _repositoryWrapper.StreetcodeRepository.GetAllAsync(
                 predicate: sc => sc.Status == DAL.Enums.StreetcodeStatus.Published,
-                include: src => src.Include(item => item.Text).Include(item => item.Images));
+                include: src => src
+                    .Include(item => item.Text)
+                    .Include(item => item.Images));
 
-            if (streetcodes != null)
+            if (!streetcodes.Any())
             {
                 return Result.Ok(_mapper.Map<IEnumerable<StreetcodeMainPageDTO>>(streetcodes));
             }
 
-            const string errorMsg = "No streetcodes exist now";
+            var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(StreetcodeContent));
             _logger.LogError(request, errorMsg);
             return Result.Fail(errorMsg);
         }

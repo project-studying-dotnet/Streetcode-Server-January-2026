@@ -7,7 +7,7 @@ namespace Streetcode.BLL.Util
     {
         public bool Equals(PartnerSourceLink? x, PartnerSourceLink? y)
         {
-            if(x == null || y == null)
+            if (x == null || y == null)
             {
                 return false;
             }

@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Fact;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Fact.GetAll;
 
@@ -24,17 +26,18 @@ public class GetAllFactsHandler : IRequestHandler<GetAllFactsQuery, Result<IEnum
     public async Task<Result<IEnumerable<FactDTO>>> Handle(GetAllFactsQuery request, CancellationToken cancellationToken)
     {
         var facts = await _repositoryWrapper.FactRepository.GetAllAsync(
-            include: q => q.Include(f => f.Image).ThenInclude(i => i.ImageDetails));
+            include: q => q
+                .Include(f => f.Image)
+                .ThenInclude(i => i.ImageDetails));
 
-        if (facts is null)
+        if (facts.Any())
         {
-            const string errorMsg = $"Cannot find any fact";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            facts = facts.OrderByDescending(x => x.Order);
+            return Result.Ok(_mapper.Map<IEnumerable<FactDTO>>(facts));
         }
 
-        var sortedFacts = facts.OrderByDescending(f => f.Order);
-
-        return Result.Ok(_mapper.Map<IEnumerable<FactDTO>>(sortedFacts));
+        var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(DAL.Entities.Streetcode.TextContent.Fact));
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

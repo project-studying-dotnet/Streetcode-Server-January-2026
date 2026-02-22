@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
 using FluentResults;
 using MediatR;
-using NLog.Targets;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Entities.Streetcode;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.RelatedFigure.Create;
 
@@ -28,16 +29,16 @@ public class CreateRelatedFigureHandler : IRequestHandler<CreateRelatedFigureCom
 
         if (observerEntity is null)
         {
-            string errorMsg = $"No existing streetcode with id: {request.ObserverId}";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            var errorNotFoundMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(StreetcodeContent), request.ObserverId);
+            _logger.LogError(request, errorNotFoundMsg);
+            return Result.Fail(new Error(errorNotFoundMsg));
         }
 
         if (targetEntity is null)
         {
-            string errorMsg = $"No existing streetcode with id: {request.TargetId}";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            var errorNotFoundMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(StreetcodeContent), request.TargetId);
+            _logger.LogError(request, errorNotFoundMsg);
+            return Result.Fail(new Error(errorNotFoundMsg));
         }
 
         var relation = new DAL.Entities.Streetcode.RelatedFigure
@@ -46,18 +47,16 @@ public class CreateRelatedFigureHandler : IRequestHandler<CreateRelatedFigureCom
             TargetId = targetEntity.Id,
         };
 
-        _repositoryWrapper.RelatedFigureRepository.Create(relation);
+        await _repositoryWrapper.RelatedFigureRepository.CreateAsync(relation);
 
         var resultIsSuccess = await _repositoryWrapper.SaveChangesAsync() > 0;
-        if(resultIsSuccess)
+        if (resultIsSuccess)
         {
             return Result.Ok(Unit.Value);
         }
-        else
-        {
-            string errorMsg = "Failed to create a relation.";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
-        }
+
+        var errorMsg = Messages.Error_FailedToCreateEntity.Format(nameof(DAL.Entities.Streetcode.RelatedFigure));
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

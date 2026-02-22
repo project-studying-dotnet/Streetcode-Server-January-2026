@@ -6,6 +6,8 @@ using Streetcode.BLL.DTO.AdditionalContent.Tag;
 using Streetcode.BLL.DTO.Streetcode;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Streetcode.GetByTransliterationUrl
 {
@@ -30,15 +32,15 @@ namespace Streetcode.BLL.MediatR.Streetcode.Streetcode.GetByTransliterationUrl
 
             if (streetcode == null)
             {
-                string errorMsg = $"Cannot find streetcode by transliteration url: {request.url}";
+                var errorMsg = Messages.Error_StreetcodeWithTransliterationUrlNotFound.Format(request.url);
                 _logger.LogError(request, errorMsg);
                 return new Error(errorMsg);
             }
 
             var tagIndexed = await _repository.StreetcodeTagIndexRepository
-                                            .GetAllAsync(
-                                                t => t.StreetcodeId == streetcode.Id,
-                                                include: q => q.Include(ti => ti.Tag));
+                .GetAllAsync(
+                    t => t.StreetcodeId == streetcode.Id,
+                    q => q.Include(ti => ti.Tag));
 
             var streetcodeDTO = _mapper.Map<StreetcodeDTO>(streetcode);
             streetcodeDTO.Tags = _mapper.Map<List<StreetcodeTagDTO>>(tagIndexed);

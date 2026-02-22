@@ -1,13 +1,12 @@
 ﻿using AutoMapper;
 using FluentResults;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Media.Audio;
-using Streetcode.BLL.DTO.Transactions;
 using Streetcode.BLL.Interfaces.BlobStorage;
-using Streetcode.BLL.MediatR.ResultVariations;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Media.Audio.GetByStreetcodeId;
 
@@ -28,26 +27,23 @@ public class GetAudioByStreetcodeIdQueryHandler : IRequestHandler<GetAudioByStre
 
     public async Task<Result<AudioDTO>> Handle(GetAudioByStreetcodeIdQuery request, CancellationToken cancellationToken)
     {
-        var streetcode = await _repositoryWrapper.StreetcodeRepository.GetFirstOrDefaultAsync(
-            s => s.Id == request.StreetcodeId,
-            include: q => q.Include(s => s.Audio) !);
-        if (streetcode == null)
+        var audio = await _repositoryWrapper.AudioRepository
+            .GetFirstOrDefaultAsync(a => a.Streetcode.Id == request.StreetcodeId);
+
+        if (audio == null)
         {
-            string errorMsg = $"Cannot find an audio with the corresponding streetcode id: {request.StreetcodeId}";
+            var errorMsg = Messages.Error_EntityWithStreetcodeIdNotFound.Format(
+                nameof(DAL.Entities.Media.Audio),
+                request.StreetcodeId);
+
             _logger.LogError(request, errorMsg);
             return Result.Fail(new Error(errorMsg));
         }
 
-        NullResult<AudioDTO> result = new NullResult<AudioDTO>();
+        var audioDto = _mapper.Map<AudioDTO>(audio);
 
-        if (streetcode.Audio != null)
-        {
-            AudioDTO audioDto = _mapper.Map<AudioDTO>(streetcode.Audio);
-            audioDto = _mapper.Map<AudioDTO>(streetcode.Audio);
-            audioDto.Base64 = _blobService.FindFileInStorageAsBase64(audioDto.BlobName);
-            result.WithValue(audioDto);
-        }
+        audioDto.Base64 = _blobService.FindFileInStorageAsBase64(audioDto.BlobName);
 
-        return result;
+        return Result.Ok(audioDto);
     }
 }

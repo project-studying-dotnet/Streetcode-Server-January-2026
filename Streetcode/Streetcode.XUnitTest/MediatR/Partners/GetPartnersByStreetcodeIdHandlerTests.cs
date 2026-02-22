@@ -5,17 +5,16 @@ using Microsoft.EntityFrameworkCore.Query;
 using Moq;
 using Streetcode.BLL.DTO.AdditionalContent;
 using Streetcode.BLL.DTO.Partners;
-using Streetcode.BLL.DTO.Streetcode;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.Mapping.Partners;
 using Streetcode.BLL.Mapping.Streetcode;
 using Streetcode.BLL.MediatR.Partners.GetByStreetcodeId;
 using Streetcode.DAL.Entities.Partners;
-using Streetcode.DAL.Entities.Streetcode;
-using Streetcode.DAL.Entities.Timeline;
 using Streetcode.DAL.Enums;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.DAL.Repositories.Interfaces.Partners;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using Xunit;
 
 namespace Streetcode.XUnitTest.MediatR.Partners;
@@ -183,7 +182,7 @@ public class GetPartnersByStreetcodeIdHandlerTests
     {
         // Arrange
         const int streetcodeId = 1;
-        var errorMsg = $"Cannot find a partners by a streetcode id: {streetcodeId}";
+        var errorMsg = Messages.Error_EntityWithStreetcodeIdNotFound.Format(nameof(Partner), streetcodeId);
 
         this.partnersRepositoryMock
             .Setup(r => r.GetAllAsync(
