@@ -42,20 +42,29 @@ jobs:
           dotnet sonarscanner begin /k:"project-studying-dotnet_Streetcode-Server-January-2026" /o:"project-studying-dotnet" `
             /d:sonar.token="$env:SONAR_TOKEN" `
             /d:sonar.host.url="https://sonarcloud.io" `
-            /d:sonar.cs.opencover.reportsPaths="**/coverage.xml" `
+            /d:sonar.cs.opencover.reportsPaths="**/coverage-*.xml" `
             /d:sonar.exclusions="**/bin/**,**/obj/**,**/Migrations/**" `
             /d:sonar.coverage.exclusions="**/*Tests.cs,**/*Test.cs"
 
       - name: Build
         run: dotnet build ./Streetcode/Streetcode.sln --configuration Release --no-restore
 
-      - name: Test and Code Coverage
+      - name: Test Main API
         run: |
           dotnet test ./Streetcode/Streetcode.XUnitTest/Streetcode.XUnitTest.csproj `
             --configuration Release `
             --no-build `
             /p:CollectCoverage=true `
-            /p:CoverletOutput=./coverage/coverage.xml `
+            /p:CoverletOutput=./coverage/coverage-main.xml `
+            /p:CoverletOutputFormat=opencover
+
+      - name: Test Auth API
+        run: |
+          dotnet test ./Streetcode/Streetcode.Auth.XUnitTest/Streetcode.Auth.XUnitTest.csproj `
+            --configuration Release `
+            --no-build `
+            /p:CollectCoverage=true `
+            /p:CoverletOutput=./coverage/coverage-auth.xml `
             /p:CoverletOutputFormat=opencover
 
       - name: SonarScanner End
@@ -69,4 +78,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Code Coverage Report
-          path: "**/coverage.xml"
+          path: "**/coverage-*.xml"
