@@ -3,6 +3,7 @@
     using System.Linq.Expressions;
     using AutoMapper;
     using FluentAssertions;
+    using Microsoft.EntityFrameworkCore.Query;
     using Moq;
     using Streetcode.BLL.DTO.Streetcode.Comments;
     using Streetcode.BLL.Interfaces.Logging;
@@ -63,7 +64,7 @@
             this.commentRepositoryMock
                 .Setup(x => x.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<Comment, bool>>>(),
-                    null,
+                    It.IsAny<Func<IQueryable<Comment>, IIncludableQueryable<Comment, object>>>(),
                     It.IsAny<bool>()))
                 .ReturnsAsync(existingComment);
 
@@ -81,6 +82,40 @@
         }
 
         [Fact]
+        public async Task Handle_UpdatesDateAndText_WhenUpdating()
+        {
+            // Arrange
+            var updateDto = new UpdateCommentDTO { Id = 1, TextContent = "New Content" };
+            var userId = "user-123";
+            var command = new UpdateCommentCommand(updateDto, userId);
+
+            var existingComment = new Comment { Id = 1, UserId = userId, TextContent = "Old Content" };
+
+            this.commentRepositoryMock
+                .Setup(x => x.GetFirstOrDefaultAsync(
+                    It.IsAny<Expression<Func<Comment, bool>>>(),
+                    It.IsAny<Func<IQueryable<Comment>, IIncludableQueryable<Comment, object>>>(),
+                    It.IsAny<bool>()))
+                .ReturnsAsync(existingComment);
+
+            this.repositoryWrapperMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
+
+            Comment? capturedEntity = null;
+
+            this.commentRepositoryMock.Setup(x => x.Update(It.IsAny<Comment>()))
+                .Callback<Comment>(c => capturedEntity = c);
+
+            // Act
+            await this.handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            capturedEntity.Should().NotBeNull();
+            capturedEntity!.TextContent.Should().Be("New Content");
+            capturedEntity.UpdatedAt.Should().NotBeNull();
+            capturedEntity.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        }
+
+        [Fact]
         public async Task Handle_ReturnsFail_WhenCommentNotFound()
         {
             // Arrange
@@ -90,7 +125,7 @@
             this.commentRepositoryMock
                 .Setup(x => x.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<Comment, bool>>>(),
-                    null,
+                    It.IsAny<Func<IQueryable<Comment>, IIncludableQueryable<Comment, object>>>(),
                     It.IsAny<bool>()))
                 .ReturnsAsync((Comment?)null);
 
@@ -121,7 +156,7 @@
             this.commentRepositoryMock
                 .Setup(x => x.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<Comment, bool>>>(),
-                    null,
+                    It.IsAny<Func<IQueryable<Comment>, IIncludableQueryable<Comment, object>>>(),
                     It.IsAny<bool>()))
                 .ReturnsAsync(existingComment);
 
@@ -138,40 +173,6 @@
         }
 
         [Fact]
-        public async Task Handle_UpdatesDateAndText_WhenUpdating()
-        {
-            // Arrange
-            var updateDto = new UpdateCommentDTO { Id = 1, TextContent = "New Content" };
-            var userId = "user-123";
-            var command = new UpdateCommentCommand(updateDto, userId);
-
-            var existingComment = new Comment { Id = 1, UserId = userId, TextContent = "Old Content" };
-
-            this.commentRepositoryMock
-                .Setup(x => x.GetFirstOrDefaultAsync(
-                    It.IsAny<Expression<Func<Comment, bool>>>(),
-                    null,
-                    It.IsAny<bool>()))
-                .ReturnsAsync(existingComment);
-
-            this.repositoryWrapperMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
-
-            Comment? capturedEntity = null;
-
-            this.commentRepositoryMock.Setup(x => x.Update(It.IsAny<Comment>()))
-                .Callback<Comment>(c => capturedEntity = c);
-
-            // Act
-            await this.handler.Handle(command, CancellationToken.None);
-
-            // Assert
-            capturedEntity.Should().NotBeNull();
-            capturedEntity!.TextContent.Should().Be("New Content");
-            capturedEntity.UpdatedAt.Should().NotBeNull();
-            capturedEntity.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
-        }
-
-        [Fact]
         public async Task Handle_ReturnsFail_WhenSaveChangesFails()
         {
             // Arrange
@@ -184,7 +185,7 @@
             this.commentRepositoryMock
                 .Setup(x => x.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<Comment, bool>>>(),
-                    null,
+                    It.IsAny<Func<IQueryable<Comment>, IIncludableQueryable<Comment, object>>>(),
                     It.IsAny<bool>()))
                 .ReturnsAsync(existingComment);
 

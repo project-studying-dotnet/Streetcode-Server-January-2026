@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FluentResults;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Streetcode.Comments;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Entities.Streetcode.Comments;
@@ -26,7 +27,9 @@ namespace Streetcode.BLL.MediatR.Streetcode.Comments.Update
         public async Task<Result<CommentDTO>> Handle(UpdateCommentCommand command, CancellationToken cancellationToken)
         {
             var comment = await _repositoryWrapper.CommentRepository
-                .GetFirstOrDefaultAsync(x => x.Id == command.Comment.Id);
+                .GetFirstOrDefaultAsync(
+                    predicate: f => f.Id == command.Comment.Id,
+                    include: x => x.Include(c => c.User));
 
             if (comment == null)
             {

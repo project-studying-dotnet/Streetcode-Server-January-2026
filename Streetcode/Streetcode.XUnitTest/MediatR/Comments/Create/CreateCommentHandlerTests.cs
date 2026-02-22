@@ -1,5 +1,6 @@
 ﻿namespace Streetcode.XUnitTest.MediatR.Comments.Create
 {
+    using System.Linq.Expressions;
     using AutoMapper;
     using FluentAssertions;
     using Moq;
@@ -14,7 +15,6 @@
     using Streetcode.DAL.Repositories.Interfaces.Users;
     using Streetcode.Resources;
     using Streetcode.Shared.Extensions;
-    using System.Linq.Expressions;
     using Xunit;
 
     public class CreateCommentHandlerTests
