@@ -26,10 +26,10 @@ namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Create
 
         public async Task<Result<TimelineItemDTO>> Handle(CreateTimelineItemCommand request, CancellationToken cancellationToken)
         {
-            var streetCodeExists = await _repositoryWrapper.StreetcodeRepository
+            var streetCode = await _repositoryWrapper.StreetcodeRepository
                 .GetFirstOrDefaultAsync(s => s.Id == request.TimelineItem.StreetcodeId);
 
-            if (streetCodeExists is null)
+            if (streetCode is null)
             {
                 var errorNotFoundMsg = string.Format(Messages.Error_EntityWithIdNotFound, request.TimelineItem.StreetcodeId);
 

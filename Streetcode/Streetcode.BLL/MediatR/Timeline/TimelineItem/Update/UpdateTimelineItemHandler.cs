@@ -7,6 +7,7 @@ using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Entities.Timeline;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Update
 {
@@ -32,17 +33,17 @@ namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Update
 
             if (existingTimelineItem is null)
             {
-                var errorMsg = string.Format(Messages.Error_EntityWithIdNotFound, request.TimelineItem.Id);
+                var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(TimelineItem), request.TimelineItem.Id);
                 _logger.LogError(request, errorMsg);
                 return Result.Fail(errorMsg);
             }
 
-            var streetcodeExists = await _repositoryWrapper.StreetcodeRepository
+            var streetcode = await _repositoryWrapper.StreetcodeRepository
                 .GetFirstOrDefaultAsync(s => s.Id == request.TimelineItem.StreetcodeId);
 
-            if (streetcodeExists is null)
+            if (streetcode is null)
             {
-                var errorMsg = string.Format(Messages.Error_EntityWithIdNotFound, request.TimelineItem.StreetcodeId);
+                var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(Streetcode), request.TimelineItem.StreetcodeId);
                 _logger.LogError(request, errorMsg);
                 return Result.Fail(errorMsg);
             }
