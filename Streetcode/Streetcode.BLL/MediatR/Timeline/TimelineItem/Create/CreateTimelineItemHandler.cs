@@ -7,6 +7,7 @@ using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Entities.Timeline;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using EntityTimelineItem = Streetcode.DAL.Entities.Timeline.TimelineItem;
 
 namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Create
@@ -31,7 +32,7 @@ namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Create
 
             if (streetCode is null)
             {
-                var errorNotFoundMsg = string.Format(Messages.Error_EntityWithIdNotFound, request.TimelineItem.StreetcodeId);
+                var errorNotFoundMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(TimelineItem), request.TimelineItem.StreetcodeId);
 
                 _logger.LogError(request, errorNotFoundMsg);
                 return Result.Fail(errorNotFoundMsg);

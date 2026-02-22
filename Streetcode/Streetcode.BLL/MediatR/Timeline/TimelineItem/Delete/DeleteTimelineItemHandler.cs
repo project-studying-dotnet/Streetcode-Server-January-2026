@@ -3,6 +3,7 @@ using MediatR;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Delete
 {
@@ -24,7 +25,7 @@ namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Delete
 
             if (timelineItem is null)
             {
-                var errorMsg = string.Format(Messages.Error_EntityWithIdNotFound, request.Id);
+                var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(TimelineItem), request.Id);
                 _logger.LogError(request, errorMsg);
                 return Result.Fail(errorMsg);
             }

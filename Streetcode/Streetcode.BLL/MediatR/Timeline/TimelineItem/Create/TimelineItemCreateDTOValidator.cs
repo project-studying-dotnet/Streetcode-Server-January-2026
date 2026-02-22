@@ -26,7 +26,7 @@ namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Create
 
             RuleFor(x => x.DateViewPattern)
                 .IsInEnum()
-                .WithMessage(string.Format(Messages.Error_EntitiesNotFound, nameof(CreateTimelineItemDTO.DateViewPattern)));
+                .WithMessage(Messages.Error_EntitiesNotFound.Format(nameof(CreateTimelineItemDTO.DateViewPattern)));
 
             RuleFor(x => x.StreetcodeId)
                 .GreaterThan(0)

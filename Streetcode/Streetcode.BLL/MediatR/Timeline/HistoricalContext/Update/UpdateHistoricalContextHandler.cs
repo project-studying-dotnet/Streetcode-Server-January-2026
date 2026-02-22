@@ -31,7 +31,7 @@ namespace Streetcode.BLL.MediatR.Timeline.HistoricalContext.Update
             if (existingContext is null)
             {
                 var errorMsg = Messages.Error_EntityWithIdNotFound.Format(
-                    typeof(HistoricalContextEntity),
+                    nameof(HistoricalContextEntity),
                     request.HistoricalContext.Id);
                 _logger.LogError(request, errorMsg);
                 return Result.Fail(errorMsg);
