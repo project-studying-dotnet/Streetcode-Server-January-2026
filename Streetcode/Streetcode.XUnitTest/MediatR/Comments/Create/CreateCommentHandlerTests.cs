@@ -8,16 +8,20 @@
     using Streetcode.BLL.Mapping.Streetcode.Comments;
     using Streetcode.BLL.MediatR.Streetcode.Comments.Create;
     using Streetcode.DAL.Entities.Streetcode.Comments;
+    using Streetcode.DAL.Entities.Users;
     using Streetcode.DAL.Repositories.Interfaces.Base;
     using Streetcode.DAL.Repositories.Interfaces.Streetcode.Comments;
+    using Streetcode.DAL.Repositories.Interfaces.Users;
     using Streetcode.Resources;
     using Streetcode.Shared.Extensions;
+    using System.Linq.Expressions;
     using Xunit;
 
     public class CreateCommentHandlerTests
     {
         private readonly Mock<IRepositoryWrapper> repositoryWrapperMock;
         private readonly Mock<ICommentRepository> commentRepositoryMock;
+        private readonly Mock<IUserRepository> userRepositoryMock;
         private readonly Mock<ILoggerService> loggerMock;
         private readonly IMapper mapper;
         private readonly CreateCommentHandler handler;
@@ -26,10 +30,14 @@
         {
             this.repositoryWrapperMock = new Mock<IRepositoryWrapper>();
             this.commentRepositoryMock = new Mock<ICommentRepository>();
+            this.userRepositoryMock = new Mock<IUserRepository>();
             this.loggerMock = new Mock<ILoggerService>();
 
             this.repositoryWrapperMock.Setup(r => r.CommentRepository)
                 .Returns(this.commentRepositoryMock.Object);
+
+            this.repositoryWrapperMock.Setup(r => r.UserRepository)
+                .Returns(this.userRepositoryMock.Object);
 
             var configuration = new MapperConfiguration(cfg =>
             {
@@ -65,6 +73,13 @@
             this.repositoryWrapperMock.Setup(x => x.SaveChangesAsync())
                 .ReturnsAsync(1);
 
+            this.userRepositoryMock
+                .Setup(x => x.GetFirstOrDefaultAsync(
+                    It.IsAny<Expression<Func<User, bool>>>(),
+                    null,
+                    It.IsAny<bool>()))
+                .ReturnsAsync(new User());
+
             // Act
             var result = await this.handler.Handle(command, CancellationToken.None);
 
@@ -72,33 +87,44 @@
             result.IsSuccess.Should().BeTrue();
             result.Value.Should().NotBeNull();
             result.Value.TextContent.Should().Be(createDto.TextContent);
-            result.Value.UserId.Should().Be(userId);
 
             this.commentRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Comment>()), Times.Once);
             this.repositoryWrapperMock.Verify(x => x.SaveChangesAsync(), Times.Once);
         }
 
         [Fact]
-        public async Task Handle_SetsCorrectUserId_WhenRequestIsValid()
+        public async Task Handle_SetsCorrectUser_WhenRequestIsValid()
         {
             // Arrange
             var createDto = GetCreateCommentDTO();
             var userId = "test-user-id";
             var command = new CreateCommentCommand(createDto, userId);
 
-            Comment? capturedEntity = null;
+            var user = new User
+            {
+                Id = userId,
+                Name = "TestName",
+                Surname = "TestSurname",
+            };
 
             this.commentRepositoryMock.Setup(x => x.CreateAsync(It.IsAny<Comment>()))
-                .Callback<Comment>(c => capturedEntity = c);
+                .ReturnsAsync((Comment c) => c);
 
             this.repositoryWrapperMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
 
+            this.userRepositoryMock
+                .Setup(x => x.GetFirstOrDefaultAsync(
+                    It.IsAny<Expression<Func<User, bool>>>(),
+                    null,
+                    It.IsAny<bool>()))
+                .ReturnsAsync(user);
+
             // Act
-            await this.handler.Handle(command, CancellationToken.None);
+            var result = await this.handler.Handle(command, CancellationToken.None);
 
             // Assert
-            capturedEntity.Should().NotBeNull();
-            capturedEntity!.UserId.Should().Be(userId);
+            result.Value.UserId.Should().Be(userId);
+            result.Value.UserFullName.Should().Be("TestName TestSurname");
         }
 
         [Fact]

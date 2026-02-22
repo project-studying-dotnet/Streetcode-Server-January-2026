@@ -30,12 +30,17 @@ namespace Streetcode.BLL.MediatR.Streetcode.Comments.Create
             comment.UserId = command.UserId;
             comment.CreatedAt = DateTime.UtcNow;
 
-            var createdText = await _repositoryWrapper.CommentRepository.CreateAsync(comment);
+            var createdComment = await _repositoryWrapper.CommentRepository.CreateAsync(comment);
             var successSave = await _repositoryWrapper.SaveChangesAsync() > 0;
 
             if (successSave)
             {
-                return Result.Ok(_mapper.Map<CommentDTO>(createdText));
+                var user = await _repositoryWrapper.UserRepository
+                    .GetFirstOrDefaultAsync(u => u.Id == command.UserId);
+
+                createdComment.User = user;
+
+                return Result.Ok(_mapper.Map<CommentDTO>(createdComment));
             }
 
             var errorMsg = Messages.Error_FailedToCreateEntity.Format(nameof(Comment));
