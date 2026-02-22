@@ -5,18 +5,20 @@ using Moq;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.Mapping.Media.Images;
-using Streetcode.BLL.Mapping.Newss;
-using Streetcode.BLL.MediatR.Newss.GetById;
+using Streetcode.BLL.Mapping.News;
+using Streetcode.BLL.MediatR.News.GetById;
 using Streetcode.DAL.Entities.Media.Images;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using System.Linq.Expressions;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using Xunit;
 
 using NewsEntity = Streetcode.DAL.Entities.News.News;
 
 namespace Streetcode.XUnitTest.MediatR.News
 {
-    public class GetNewByIdHandlerTests
+    public class GetNewsByIdHandlerTests
     {
         private readonly Mock<IRepositoryWrapper> _repositoryWrapperMock;
         private readonly Mock<IBlobService> _blobServiceMock;
@@ -24,7 +26,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         private readonly IMapper _mapper;
         private readonly GetNewsByIdHandler _handler;
 
-        public GetNewByIdHandlerTests()
+        public GetNewsByIdHandlerTests()
         {
             _repositoryWrapperMock = new Mock<IRepositoryWrapper>();
             _blobServiceMock = new Mock<IBlobService>();
@@ -48,7 +50,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnFail_WhenNoNewsById()
         {
-            // arrange
+            // Arrange
             int id = 1;
 
             _repositoryWrapperMock.Setup(r => r.NewsRepository.GetFirstOrDefaultAsync(
@@ -60,18 +62,18 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new GetNewsByIdQuery(id);
 
-            // act
+            // Act
             var result = await _handler.Handle(request, CancellationToken.None);
 
-            // assert
+            // Assert
             result.IsFailed.Should().BeTrue();
-            result.Errors.Should().Contain(e => e.Message == $"No news by entered Id - {id}");
+            result.Errors.Should().ContainSingle(Messages.Error_EntityWithIdNotFound.Format(nameof(News), id));
         }
 
         [Fact]
         public async Task Handle_ShouldReturnNewsDto_WhenNewsExistById()
         {
-            // arrange
+            // Arrange
             int id = 1;
 
             var now = DateTime.Now;
@@ -93,17 +95,17 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new GetNewsByIdQuery(id);
 
-            // act
+            // Act
             var result = await _handler.Handle(request, CancellationToken.None);
 
-            // assert
+            // Assert
             result.IsSuccess.Should().BeTrue();
         }
 
         [Fact]
         public async Task Handle_ShouldReturnNewsDtoWithImage_WhenNewsExistByIdWithImage()
         {
-            // arrange
+            // Arrange
             int id = 1;
             var fakeBase = "fabe_base_64";
 
@@ -131,10 +133,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new GetNewsByIdQuery(id);
 
-            // act
+            // Act
             var result = await _handler.Handle(request, CancellationToken.None);
 
-            // assert
+            // Assert
             result.IsSuccess.Should().BeTrue();
             result.Value.Image.Base64.Should().Be(fakeBase);
         }

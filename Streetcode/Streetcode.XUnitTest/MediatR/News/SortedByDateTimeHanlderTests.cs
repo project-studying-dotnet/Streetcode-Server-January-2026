@@ -5,11 +5,13 @@ using Moq;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.Mapping.Media.Images;
-using Streetcode.BLL.Mapping.Newss;
-using Streetcode.BLL.MediatR.Newss.SortedByDateTime;
+using Streetcode.BLL.Mapping.News;
+using Streetcode.BLL.MediatR.News.SortedByDateTime;
 using Streetcode.DAL.Entities.Media.Images;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using System.Linq.Expressions;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using Xunit;
 using NewsEntity = Streetcode.DAL.Entities.News.News;
 
@@ -47,27 +49,28 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnFail_WhenNoNewsInDb()
         {
-            // arrange
+            // Arrange
             _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetAllAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
                 It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
                 false))
-                .ReturnsAsync((IEnumerable<NewsEntity>)null!);
+                .ReturnsAsync([]);
 
             var request = new SortedByDateTimeQuery();
 
-            // act
+            // Act
             var res = await _handler.Handle(request, CancellationToken.None);
 
-            // assert
+            // Assert
             res.IsFailed.Should().BeTrue();
-            res.Errors.Should().ContainSingle(e => e.Message == "There are no news in the database");
+            res.Errors.Should().ContainSingle(Messages.Error_EntitiesNotFound.Format(
+                nameof(DAL.Entities.News.News)));
         }
 
         [Fact]
         public async Task Handle_ShouldReturnSortedNewsDtosWithImage_WhenNewsExists()
         {
-            // arrange
+            // Arrange
             var oldDate = DateTime.Now.AddYears(-2);
             var midDate = DateTime.Now.AddYears(-1);
             var newDate = DateTime.Now;
@@ -93,10 +96,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new SortedByDateTimeQuery();
 
-            // act
+            // Act
             var res = await _handler.Handle(request, CancellationToken.None);
 
-            // assert
+            // Assert
             res.IsSuccess.Should().BeTrue();
             res.Value.FirstOrDefault().Image.Base64.Should().Be(expectedBase64);
             _blobServiceMock.Verify(
@@ -108,7 +111,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnSortedNewsDtosWithOutImage_WhenNewsExists()
         {
-            // arrange
+            // Arrange
             var oldDate = DateTime.Now.AddYears(-2);
             var midDate = DateTime.Now.AddYears(-1);
             var newDate = DateTime.Now;
@@ -129,10 +132,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new SortedByDateTimeQuery();
 
-            // act
+            // Act
             var res = await _handler.Handle(request, CancellationToken.None);
 
-            // assert
+            // Assert
             res.IsSuccess.Should().BeTrue();
             _blobServiceMock.Verify(
                 bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()),

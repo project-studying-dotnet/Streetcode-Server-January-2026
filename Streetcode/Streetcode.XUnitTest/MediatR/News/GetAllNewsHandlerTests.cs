@@ -5,11 +5,13 @@ using Moq;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.Mapping.Media.Images;
-using Streetcode.BLL.Mapping.Newss;
-using Streetcode.BLL.MediatR.Newss.GetAll;
+using Streetcode.BLL.Mapping.News;
+using Streetcode.BLL.MediatR.News.GetAll;
 using Streetcode.DAL.Entities.Media.Images;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using System.Linq.Expressions;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using Xunit;
 using NewsEntity = Streetcode.DAL.Entities.News.News;
 
@@ -47,28 +49,29 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnFail_WhenNoNewsInDb()
         {
-            // arrange
+            // Arrange
             _repositoryWrapperMock.Setup(r => r.NewsRepository.GetAllAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
                 It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
                 false
             ))
-            .ReturnsAsync((IEnumerable<NewsEntity>)null!);
+            .ReturnsAsync([]);
 
             var request = new GetAllNewsQuery();
 
-            // act
+            // Act
             var result = await _handler.Handle(request, CancellationToken.None);
 
-            // assert
+            // Assert
             result.IsFailed.Should().BeTrue();
-            result.Errors.Should().Contain(e => e.Message == "There are no news in the database");
+            result.Errors.Should().ContainSingle(Messages.Error_EntitiesNotFound.Format(
+                nameof(DAL.Entities.News.News)));
         }
 
         [Fact]
         public async Task Handle_ShouldReturnNewsDto_WhenNewsFound()
         {
-            // arrange
+            // Arrange
             var now = DateTime.Now;
 
             var news = new List<NewsEntity>
@@ -91,17 +94,17 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new GetAllNewsQuery();
 
-            // act
+            // Act
             var result = await _handler.Handle(request, CancellationToken.None);
 
-            // assert
+            // Assert
             result.IsSuccess.Should().BeTrue();
         }
 
         [Fact]
         public async Task Handle_ShouldReturnNewsDtoWithImage_WhenNewsFoundWithImage()
         {
-            // arrange
+            // Arrange
             var now = DateTime.Now;
             var fakeBase = "fabe_base_64";
 
@@ -130,10 +133,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new GetAllNewsQuery();
 
-            // act
+            // Act
             var result = await _handler.Handle(request, CancellationToken.None);
 
-            // assert
+            // Assert
             result.IsSuccess.Should().BeTrue();
             result.Value.FirstOrDefault().Image.Base64.Should().Be(fakeBase);
         }

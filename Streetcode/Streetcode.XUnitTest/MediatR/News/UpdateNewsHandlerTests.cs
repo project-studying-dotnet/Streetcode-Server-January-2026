@@ -6,11 +6,13 @@ using Streetcode.BLL.DTO.News;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.Mapping.Media.Images;
-using Streetcode.BLL.Mapping.Newss;
-using Streetcode.BLL.MediatR.Newss.Update;
+using Streetcode.BLL.Mapping.News;
+using Streetcode.BLL.MediatR.News.Update;
 using Streetcode.DAL.Entities.Media.Images;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using System.Linq.Expressions;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using Xunit;
 using NewsEntity = Streetcode.DAL.Entities.News.News;
 
@@ -48,21 +50,22 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnFail_WhenNoNews()
         {
-            // arrange
+            // Arrange
             var req = new UpdateNewsCommand(null);
 
-            // act
+            // Act
             var res = await _handler.Handle(req, CancellationToken.None);
 
-            // assert
+            // Assert
             res.IsFailed.Should().BeTrue();
-            res.Errors.Should().ContainSingle(e => e.Message == "Cannot convert null to news");
+            res.Errors.Should().ContainSingle(Messages.Error_ConvertNullToEntity.Format(
+                nameof(DAL.Entities.News.News)));
         }
 
         [Fact]
         public async Task Handle_ShouldReturnFail_WhenCouldntUpdateNews()
         {
-            // arrange
+            // Arrange
             var newsDto = new NewsDTO
             {
                 Id = 1,
@@ -83,22 +86,23 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var req = new UpdateNewsCommand(newsDto);
 
-            // act
+            // Act
             var res = await _handler.Handle(req, CancellationToken.None);
 
-            // assert
+            // Assert
             res.IsFailed.Should().BeTrue();
             _repositoryWrapperMock.Verify(
                 repo => repo.NewsRepository.Update(It.IsAny<NewsEntity>()),
                 Times.Once());
 
-            res.Errors.Should().ContainSingle(e => e.Message == "Failed to update news");
+            res.Errors.Should().ContainSingle(Messages.Error_FailedToUpdateEntity.Format(
+                nameof(DAL.Entities.News.News)));
         }
 
         [Fact]
         public async Task Handle_ShouldReturnNewsDtoWithImage_WhenNewsAndImageExist()
         {
-            // arrange
+            // Arrange
             var fakeBase = "fake_base64";
 
             var newsDto = new NewsDTO
@@ -119,11 +123,11 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var req = new UpdateNewsCommand(newsDto);
 
-            // act
+            // Act
             var res = await _handler.Handle(req, CancellationToken.None);
 
 
-            // assert
+            // Assert
             res.IsSuccess.Should().BeTrue();
             _repositoryWrapperMock.Verify(
                 repo => repo.NewsRepository.Update(It.IsAny<NewsEntity>()),
@@ -135,7 +139,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldDeleteOldImage_WhenNewImageIsNull_AndOldImageExists()
         {
-            // arrange
+            // Arrange
             var newsDto = new NewsDTO
             {
                 Id = 1,
@@ -157,10 +161,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var req = new UpdateNewsCommand(newsDto);
 
-            // act
+            // Act
             var res = await _handler.Handle(req, CancellationToken.None);
 
-            // assert
+            // Assert
             res.IsSuccess.Should().BeTrue();
 
             _repositoryWrapperMock.Verify(

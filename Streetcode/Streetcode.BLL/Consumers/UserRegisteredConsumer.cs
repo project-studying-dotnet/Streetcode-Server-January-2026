@@ -2,7 +2,6 @@
 using Streetcode.DAL.Entities.Users;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.Shared.DTO.Events;
-using Streetcode.Shared.Enums;
 
 namespace Streetcode.BLL.Consumers
 {

@@ -4,9 +4,11 @@ using Moq;
 using Streetcode.BLL.DTO.News;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.Mapping.Media.Images;
-using Streetcode.BLL.Mapping.Newss;
-using Streetcode.BLL.MediatR.Newss.Create;
+using Streetcode.BLL.Mapping.News;
+using Streetcode.BLL.MediatR.News.Create;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using Xunit;
 
 using NewsEntity = Streetcode.DAL.Entities.News.News;
@@ -42,7 +44,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnCreatedNewsDTO_WhenValidRequest()
         {
-            // arrange
+            // Arrange
             var newsDto = new NewsDTO
             {
                 Title = "Test Title",
@@ -53,16 +55,17 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var command = new CreateNewsCommand(newsDto);
 
-            _repositoryWrapperMock.Setup(r => r.NewsRepository.Create(
-                It.IsAny<NewsEntity>())).Returns<NewsEntity>(x => x);
+            _repositoryWrapperMock
+                .Setup(r => r.NewsRepository.CreateAsync(It.IsAny<NewsEntity>()))
+                .ReturnsAsync((NewsEntity x) => x);
 
             _repositoryWrapperMock.Setup(r => r.SaveChangesAsync())
                 .ReturnsAsync(1);
 
-            // act
+            // Act
             var res = await _handler.Handle(command, default);
 
-            // assert
+            // Assert
             res.IsSuccess.Should().BeTrue();
             res.Value.Should().BeEquivalentTo(newsDto);
         }
@@ -70,7 +73,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnFailCreating_WhenNewsDtoIsInvalidFormat()
         {
-            // arrange
+            // Arrange
             var newsDto = new NewsDTO
             {
                 Title = "",
@@ -87,27 +90,27 @@ namespace Streetcode.XUnitTest.MediatR.News
             _repositoryWrapperMock.Setup(r => r.SaveChangesAsync())
                 .ReturnsAsync(0);
 
-            // act
+            // Act
             var res = await _handler.Handle(command, default);
 
-            // assert
-            Assert.True(res.IsFailed);
-            Assert.Equal("Failed to create a news", res.Errors.First().Message);
+            // Assert
+            res.IsFailed.Should().BeTrue();
+            res.Errors.Should().ContainSingle(Messages.Error_FailedToCreateEntity.Format(nameof(DAL.Entities.News.News)));
         }
 
         [Fact]
         public async Task Handle_ShouldReturnFailConverting_WhenNewsDtoIsNull()
         {
-            // arrange
+            // Arrange
             NewsDTO newsDto = null;
             var command = new CreateNewsCommand(newsDto);
 
-            // act
+            // Act
             var res = await _handler.Handle(command, default);
 
-            // assert
-            Assert.True(res.IsFailed);
-            Assert.Equal("Cannot convert null to news", res.Errors.First().Message);
+            // Assert
+            res.IsFailed.Should().BeTrue();
+            res.Errors.Should().ContainSingle(Messages.Error_ConvertNullToEntity.Format(nameof(DAL.Entities.News.News)));
         }
     }
 }

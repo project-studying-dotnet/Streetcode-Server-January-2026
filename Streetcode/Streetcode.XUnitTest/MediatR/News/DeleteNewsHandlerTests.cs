@@ -1,10 +1,12 @@
 ﻿using FluentAssertions;
 using Moq;
 using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.BLL.MediatR.Newss.Delete;
+using Streetcode.BLL.MediatR.News.Delete;
 using Streetcode.DAL.Entities.Media.Images;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using System.Linq.Expressions;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using Xunit;
 
 using NewsEntity = Streetcode.DAL.Entities.News.News;
@@ -29,7 +31,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnFail_WhenNewsNotFound()
         {
-            // arrange
+            // Arrange
             int id = 1;
             _repositoryWrapperMock.Setup(r => r.NewsRepository.GetFirstOrDefaultAsync(
                 It.IsAny<Expression<Func<NewsEntity, bool>>>(),
@@ -39,20 +41,20 @@ namespace Streetcode.XUnitTest.MediatR.News
                 .ReturnsAsync((NewsEntity)null);
             var command = new DeleteNewsCommand(id);
 
-            // act
+            // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
-
-            // assert
+            // Assert
             result.IsFailed.Should().BeTrue();
-            result.Errors.Should().ContainSingle(e => e.Message
-                .Contains($"No news found by entered Id - {id}"));
+            result.Errors.Should().ContainSingle(Messages.Error_EntityWithIdNotFound.Format(
+                nameof(DAL.Entities.News.News),
+                id));
         }
 
         [Fact]
         public async Task Handle_ShouldReturnFail_WhenNewsNotDeleted()
         {
-            // arrange
+            // Arrange
             int id = 1;
 
             var news = new NewsEntity
@@ -75,18 +77,19 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var command = new DeleteNewsCommand(id);
 
-            // act
+            // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
-            // assert
+            // Assert
             result.IsFailed.Should().BeTrue();
-            result.Errors.Should().ContainSingle(e => e.Message.Contains("Failed to delete news"));
+            result.Errors.Should().ContainSingle(Messages.Error_FailedToDeleteEntity.Format(
+                nameof(DAL.Entities.News.News)));
         }
 
         [Fact]
         public async Task Handle_ShouldReturnUnit_WhenNewsSuccesfullyDeleted()
         {
-            // arrange
+            // Arrange
             int id = 1;
 
             var news = new NewsEntity
@@ -109,10 +112,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var command = new DeleteNewsCommand(id);
 
-            // act
+            // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
-            // assert
+            // Assert
             _repositoryWrapperMock.Verify(
                 r => r.NewsRepository.Delete(news),
                 Times.Once);
@@ -122,7 +125,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnUnit_WhenNewsSuccesfullyDeletedWithImage()
         {
-            // arrange
+            // Arrange
             int id = 1;
 
             var news = new NewsEntity
@@ -148,10 +151,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var command = new DeleteNewsCommand(id);
 
-            // act
+            // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
-            // assert
+            // Assert
             _repositoryWrapperMock.Verify(
                 r => r.NewsRepository.Delete(news),
                 Times.Once);
