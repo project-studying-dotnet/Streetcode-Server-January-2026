@@ -35,7 +35,7 @@
 
             var configuration = new MapperConfiguration(cfg =>
             {
-                cfg.AddProfile(new HistoricalContextProfile());
+                cfg.AddProfile(new TimelineItemProfile());
             });
 
             this.mapper = new Mapper(configuration);
