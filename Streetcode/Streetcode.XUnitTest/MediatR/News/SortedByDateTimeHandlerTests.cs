@@ -17,7 +17,7 @@ using NewsEntity = Streetcode.DAL.Entities.News.News;
 
 namespace Streetcode.XUnitTest.MediatR.News
 {
-    public class SortedByDateTimeHanlderTests
+    public class SortedByDateTimeHandlerTests
     {
         private readonly Mock<IRepositoryWrapper> _repositoryWrapperMock;
         private readonly Mock<IBlobService> _blobServiceMock;
@@ -25,7 +25,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         private readonly IMapper _mapper;
         private readonly SortedByDateTimeHandler _handler;
 
-        public SortedByDateTimeHanlderTests()
+        public SortedByDateTimeHandlerTests()
         {
             _blobServiceMock = new Mock<IBlobService>();
             _loggerMock = new Mock<ILoggerService>();
