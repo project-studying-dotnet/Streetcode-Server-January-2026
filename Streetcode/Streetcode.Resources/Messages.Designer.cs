@@ -187,6 +187,15 @@ namespace Streetcode.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Historical Context Title Already Exists.
+        /// </summary>
+        public static string Error_HistoricalContextTitleAlreadyExists {
+            get {
+                return ResourceManager.GetString("Error_HistoricalContextTitleAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid Image format: {0}. Only {1} are allowed.
         /// </summary>
         public static string Error_InvalidImageFormat {
