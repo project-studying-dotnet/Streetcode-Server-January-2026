@@ -23,7 +23,7 @@ public class CommentController : BaseApiController
     [Authorize]
     public async Task<IActionResult> Create([FromBody] CreateCommentDTO createCommentDTO)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userId = GetCurrentUserId();
 
         if (string.IsNullOrEmpty(userId))
         {
@@ -37,7 +37,7 @@ public class CommentController : BaseApiController
     [Authorize]
     public async Task<IActionResult> Update([FromBody] UpdateCommentDTO updateCommentDTO)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userId = GetCurrentUserId();
 
         if (string.IsNullOrEmpty(userId))
         {
@@ -51,7 +51,7 @@ public class CommentController : BaseApiController
     [Authorize]
     public async Task<IActionResult> Delete([FromRoute] int id)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userId = GetCurrentUserId();
 
         if (string.IsNullOrEmpty(userId))
         {
@@ -59,5 +59,10 @@ public class CommentController : BaseApiController
         }
 
         return HandleResult(await Mediator.Send(new DeleteCommentCommand(id, userId)));
+    }
+
+    private string? GetCurrentUserId()
+    {
+        return User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
     }
 }
