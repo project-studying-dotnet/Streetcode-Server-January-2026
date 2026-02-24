@@ -12,7 +12,7 @@ using Streetcode.DAL.Persistence;
 namespace Streetcode.DAL.Persistence.Migrations
 {
     [DbContext(typeof(StreetcodeDbContext))]
-    [Migration("20260220201138_AddCommentEntity")]
+    [Migration("20260224164249_AddCommentEntity")]
     partial class AddCommentEntity
     {
         /// <inheritdoc />

@@ -19,8 +19,9 @@ namespace Streetcode.Auth.WebApi.Extensions
                 var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
                 var configuration = services.GetRequiredService<IConfiguration>();
                 var publishEndpoint = services.GetRequiredService<IPublishEndpoint>();
+                var environment = services.GetRequiredService<IWebHostEnvironment>();
 
-                await SeedDataAsync(userManager, roleManager, configuration, publishEndpoint);
+                await SeedDataAsync(userManager, roleManager, configuration, publishEndpoint, environment);
             }
             catch (Exception ex)
             {

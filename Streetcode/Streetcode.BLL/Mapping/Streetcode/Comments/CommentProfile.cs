@@ -10,11 +10,14 @@ namespace Streetcode.BLL.Mapping.Streetcode.Comments
         {
             CreateMap<Comment, CommentDTO>()
                 .ForMember(dest => dest.UserFullName, opt => opt.MapFrom(src =>
-                    src.User != null ? $"{src.User.Name} {src.User.Surname}" : "Unknown User"))
-                .ReverseMap();
+                    src.User != null ? $"{src.User.Name} {src.User.Surname}" : "Unknown User"));
 
             CreateMap<CreateCommentDTO, Comment>();
-            CreateMap<UpdateCommentDTO, Comment>();
+            CreateMap<UpdateCommentDTO, Comment>()
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                .ForMember(dest => dest.StreetcodeId, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.User, opt => opt.Ignore());
         }
     }
 }

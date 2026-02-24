@@ -13,7 +13,7 @@ namespace Streetcode.DAL.Entities.Streetcode.Comments
 
         [Required]
         [MaxLength(250)]
-        public string? TextContent { get; set; }
+        public string TextContent { get; set; }
 
         [Required]
         public DateTime CreatedAt { get; set; }

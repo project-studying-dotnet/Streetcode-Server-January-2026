@@ -1413,7 +1413,8 @@ namespace Streetcode.WebApi.Extensions
                         Name = "Test",
                         Surname = "User",
                         Email = "test@example.com",
-                        PhoneNumber = "+380123456789"
+                        PhoneNumber = "+380123456789",
+                        Role = Shared.Enums.UserRole.User
                     });
 
                     await dbContext.SaveChangesAsync();
