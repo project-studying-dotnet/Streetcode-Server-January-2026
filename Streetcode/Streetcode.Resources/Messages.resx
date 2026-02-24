@@ -210,4 +210,7 @@
   <data name="Error_MissingUserId" xml:space="preserve">
     <value>User ID is missing or invalid</value>
   </data>
+  <data name="Error_HistoricalContextTitleAlreadyExists" xml:space="preserve">
+    <value>Historical Context Title Already Exists</value>
+  </data>
 </root>
