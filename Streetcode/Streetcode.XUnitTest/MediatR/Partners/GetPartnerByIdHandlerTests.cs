@@ -12,6 +12,8 @@ using Streetcode.DAL.Entities.Partners;
 using Streetcode.DAL.Enums;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.DAL.Repositories.Interfaces.Partners;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using Xunit;
 
 namespace Streetcode.XUnitTest.MediatR.Partners;
@@ -141,7 +143,7 @@ public class GetPartnerByIdHandlerTests
         // Arrange
         const int partnerId = 0;
         var query = new GetPartnerByIdQuery(partnerId);
-        var errorMsg = $"Cannot find any partner with corresponding id: {partnerId}";
+        var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(Partner), partnerId);
 
         this.partnersRepositoryMock
             .Setup(r => r.GetSingleOrDefaultAsync(

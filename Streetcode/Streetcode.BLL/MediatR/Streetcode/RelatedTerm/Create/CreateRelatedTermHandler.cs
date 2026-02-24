@@ -4,8 +4,8 @@ using MediatR;
 using Streetcode.BLL.DTO.Streetcode.TextContent;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
-
-using Entity = Streetcode.DAL.Entities.Streetcode.TextContent.RelatedTerm;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.RelatedTerm.Create
 {
@@ -28,45 +28,36 @@ namespace Streetcode.BLL.MediatR.Streetcode.RelatedTerm.Create
 
             if (relatedTerm is null)
             {
-                const string errorMsg = "Cannot create new related word for a term!";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(new Error(errorMsg));
+                var errorConvertMsg =
+                    Messages.Error_ConvertNullToEntity.Format(nameof(DAL.Entities.Streetcode.TextContent.RelatedTerm));
+
+                _logger.LogError(request, errorConvertMsg);
+                return Result.Fail(new Error(errorConvertMsg));
             }
 
             var existingTerms = await _repository.RelatedTermRepository
-                .GetAllAsync(
-                predicate: rt => rt.TermId == request.RelatedTerm.TermId && rt.Word == request.RelatedTerm.Word);
+                .GetAllAsync(rt => rt.TermId == request.RelatedTerm.TermId && rt.Word == request.RelatedTerm.Word);
 
-            if (existingTerms is null || existingTerms.Any())
+            if (existingTerms.Any())
             {
-                const string errorMsg = "Слово з цим визначенням уже існує";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(new Error(errorMsg));
+                var errorWordDefinitionMsg = Messages.Error_WordDefinitionExists;
+                _logger.LogError(request, errorWordDefinitionMsg);
+                return Result.Fail(new Error(errorWordDefinitionMsg));
             }
 
-            var createdRelatedTerm = _repository.RelatedTermRepository.Create(relatedTerm);
+            var createdRelatedTerm = await _repository.RelatedTermRepository.CreateAsync(relatedTerm);
 
             var isSuccessResult = await _repository.SaveChangesAsync() > 0;
 
-            if(!isSuccessResult)
+            if (isSuccessResult)
             {
-                const string errorMsg = "Cannot save changes in the database after related word creation!";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(new Error(errorMsg));
+                return _mapper.Map<RelatedTermDTO>(createdRelatedTerm);
             }
 
-            var createdRelatedTermDTO = _mapper.Map<RelatedTermDTO>(createdRelatedTerm);
-
-            if(createdRelatedTermDTO != null)
-            {
-                return Result.Ok(createdRelatedTermDTO);
-            }
-            else
-            {
-                const string errorMsg = "Cannot map entity!";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(new Error(errorMsg));
-            }
+            var errorMsg = Messages.Error_FailedToCreateEntity
+                .Format(nameof(DAL.Entities.Streetcode.TextContent.RelatedTerm));
+            _logger.LogError(request, errorMsg);
+            return Result.Fail(new Error(errorMsg));
         }
     }
 }

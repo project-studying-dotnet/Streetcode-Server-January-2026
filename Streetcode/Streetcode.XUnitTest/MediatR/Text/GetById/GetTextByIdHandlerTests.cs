@@ -3,6 +3,8 @@
 // </copyright>
 
 using Microsoft.EntityFrameworkCore.Query;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.XUnitTest.MediatR.Text.GetById
 {
@@ -71,7 +73,7 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetById
         {
             // Arrange
             var query = new GetTextByIdQuery(id);
-            string errorMsg = $"Cannot find any text with corresponding id: {id}";
+            string errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(Text), id);
 
             this.mockRepoWrapper
                 .Setup(r => r.TextRepository.GetFirstOrDefaultAsync(

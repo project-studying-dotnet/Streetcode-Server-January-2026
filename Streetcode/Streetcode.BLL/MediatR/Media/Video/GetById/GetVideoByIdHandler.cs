@@ -4,6 +4,8 @@ using MediatR;
 using Streetcode.BLL.DTO.Media.Video;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Media.Video.GetById;
 
@@ -24,13 +26,13 @@ public class GetVideoByIdHandler : IRequestHandler<GetVideoByIdQuery, Result<Vid
     {
         var video = await _repositoryWrapper.VideoRepository.GetFirstOrDefaultAsync(f => f.Id == request.Id);
 
-        if (video is null)
+        if (video is not null)
         {
-            string errorMsg = $"Cannot find a video with corresponding id: {request.Id}";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            return Result.Ok(_mapper.Map<VideoDTO>(video));
         }
 
-        return Result.Ok(_mapper.Map<VideoDTO>(video));
+        var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(DAL.Entities.Media.Video), request.Id);
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

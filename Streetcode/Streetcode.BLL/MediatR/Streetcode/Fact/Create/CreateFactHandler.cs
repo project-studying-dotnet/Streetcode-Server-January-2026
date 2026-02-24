@@ -5,6 +5,8 @@ using Streetcode.BLL.DTO.Streetcode.TextContent.Fact;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Entities.Media.Images;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Fact.Create
 {
@@ -27,29 +29,20 @@ namespace Streetcode.BLL.MediatR.Streetcode.Fact.Create
 
         public async Task<Result<FactDTO>> Handle(CreateFactCommand request, CancellationToken cancellationToken)
         {
-            var streetcodeResult = await _repositoryWrapper.StreetcodeRepository
-                .GetFirstOrDefaultAsync(s => s.Id == request.Fact.StreetcodeId);
-
-            if (streetcodeResult is null)
-            {
-                const string errorMsg = "Streetcode with the specified id was not found";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(errorMsg);
-            }
-
             var imageResult = await _repositoryWrapper.ImageRepository
                 .GetFirstOrDefaultAsync(img => img.Id == request.Fact.ImageId);
 
             if (imageResult is null)
             {
-                string errorMsg = "Image with the specified id was not found";
-                _logger.LogError(request, errorMsg);
-                return Result.Fail(errorMsg);
+                var errorImageNotFoundMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(Image), request.Fact.ImageId);
+                _logger.LogError(request, errorImageNotFoundMsg);
+                return Result.Fail(errorImageNotFoundMsg);
             }
 
             if (imageResult.MimeType != null && !AllowedImageTypes.Contains(imageResult.MimeType))
             {
-                string errorMsg = $"Invalid image format: {imageResult.MimeType}. Only jpeg, png, jpg or webp are allowed";
+                var allowedTypes = string.Join(",", AllowedImageTypes);
+                var errorMsg = Messages.Error_InvalidImageFormat.Format(imageResult.MimeType, allowedTypes);
                 _logger.LogError(request, errorMsg);
                 return Result.Fail(errorMsg);
             }

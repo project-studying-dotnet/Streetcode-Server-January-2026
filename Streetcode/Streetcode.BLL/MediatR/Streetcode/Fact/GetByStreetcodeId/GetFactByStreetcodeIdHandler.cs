@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Fact;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Fact.GetByStreetcodeId;
 
@@ -27,8 +29,17 @@ public class GetFactByStreetcodeIdHandler : IRequestHandler<GetFactByStreetcodeI
             predicate: f => f.StreetcodeId == request.StreetcodeId,
             include: q => q.Include(f => f.Image).ThenInclude(i => i.ImageDetails));
 
-        var sortedFacts = facts.OrderByDescending(f => f.Order);
+        if (facts.Any())
+        {
+            var sortedFacts = facts.OrderByDescending(f => f.Order);
+            return Result.Ok(_mapper.Map<IEnumerable<FactDTO>>(sortedFacts));
+        }
 
-        return Result.Ok(_mapper.Map<IEnumerable<FactDTO>>(sortedFacts));
+        var errorMsg = Messages.Error_EntityWithStreetcodeIdNotFound.Format(
+            nameof(DAL.Entities.Streetcode.TextContent.Fact),
+            request.StreetcodeId);
+
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

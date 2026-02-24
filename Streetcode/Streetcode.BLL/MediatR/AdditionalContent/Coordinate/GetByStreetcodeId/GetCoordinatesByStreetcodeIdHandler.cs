@@ -3,7 +3,10 @@ using FluentResults;
 using MediatR;
 using Streetcode.BLL.DTO.AdditionalContent.Coordinates.Types;
 using Streetcode.BLL.Interfaces.Logging;
+using Streetcode.DAL.Entities.AdditionalContent.Coordinates.Types;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.AdditionalContent.Coordinate.GetByStreetcodeId;
 
@@ -22,12 +25,6 @@ public class GetCoordinatesByStreetcodeIdHandler : IRequestHandler<GetCoordinate
 
     public async Task<Result<IEnumerable<StreetcodeCoordinateDTO>>> Handle(GetCoordinatesByStreetcodeIdQuery request, CancellationToken cancellationToken)
     {
-        if ((await _repositoryWrapper.StreetcodeRepository.GetFirstOrDefaultAsync(s => s.Id == request.StreetcodeId)) is null)
-        {
-            return Result.Fail(
-                new Error($"Cannot find a coordinates by a streetcode id: {request.StreetcodeId}, because such streetcode doesn`t exist"));
-        }
-
         var coordinates = await _repositoryWrapper.StreetcodeCoordinateRepository
             .GetAllAsync(predicate: c => c.StreetcodeId == request.StreetcodeId);
 
@@ -36,7 +33,7 @@ public class GetCoordinatesByStreetcodeIdHandler : IRequestHandler<GetCoordinate
             return Result.Ok(_mapper.Map<IEnumerable<StreetcodeCoordinateDTO>>(coordinates));
         }
 
-        var errorMsg = $"Cannot find a coordinates by a streetcode id: {request.StreetcodeId}";
+        var errorMsg = Messages.Error_EntityWithStreetcodeIdNotFound.Format(nameof(StreetcodeCoordinate), request.StreetcodeId);
         _logger.LogError(request, errorMsg);
         return Result.Fail(new Error(errorMsg));
     }

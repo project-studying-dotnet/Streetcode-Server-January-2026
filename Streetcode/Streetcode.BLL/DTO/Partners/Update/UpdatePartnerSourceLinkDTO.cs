@@ -1,6 +1,4 @@
-﻿using Streetcode.DAL.Enums;
-
-namespace Streetcode.BLL.DTO.Partners.Update
+﻿namespace Streetcode.BLL.DTO.Partners.Update
 {
   public class UpdatePartnerSourceLinkDTO
   {

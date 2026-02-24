@@ -1,4 +1,7 @@
-﻿namespace Streetcode.XUnitTest.MediatR.Fact.GetByStreetcodeId
+﻿using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+
+namespace Streetcode.XUnitTest.MediatR.Fact.GetByStreetcodeId
 {
     using System.Linq.Expressions;
     using AutoMapper;
@@ -151,22 +154,27 @@
         }
 
         [Fact]
-        public async Task Handle_ReturnsEmpty_WhenFactsDoNotExist()
+        public async Task Handle_ReturnsFailedResult_WhenFactsDoNotExist()
         {
             // Arrange
             int streetcodeId = 1;
+            string expectedErrorMsg = Messages.Error_EntityWithStreetcodeIdNotFound.Format(
+                nameof(DAL.Entities.Streetcode.TextContent.Fact),
+                streetcodeId);
+
             this.SetupGetByStreetcodeId(new List<FactEntity>());
 
             // Act
             var result = await this.handler.Handle(new GetFactByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
 
             // Assert
-            Assert.True(result.IsSuccess);
-            Assert.Empty(result.Value);
+            Assert.True(result.IsFailed);
+            Assert.Single(result.Errors);
+            Assert.Equal(expectedErrorMsg, result.Errors.First().Message);
 
             this.loggerMock.Verify(
-                x => x.LogError(It.IsAny<object>(), It.IsAny<string>()),
-                Times.Never);
+                x => x.LogError(It.IsAny<object>(), expectedErrorMsg),
+                Times.Once);
         }
     }
 }

@@ -1,31 +1,32 @@
 using System.Text;
+using FluentValidation;
 using Hangfire;
+using MassTransit;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Streetcode.BLL.Interfaces.BlobStorage;
+using Streetcode.BLL.Interfaces.Cache;
+using Streetcode.BLL.Interfaces.Email;
+using Streetcode.BLL.Interfaces.Instagram;
 using Streetcode.BLL.Interfaces.Logging;
+using Streetcode.BLL.Interfaces.Payment;
+using Streetcode.BLL.Interfaces.Text;
+using Streetcode.BLL.MediatR.PipelineBehavior;
+using Streetcode.BLL.Services.BlobStorageService;
+using Streetcode.BLL.Services.Cache;
+using Streetcode.BLL.Services.Email;
+using Streetcode.BLL.Services.Instagram;
 using Streetcode.BLL.Services.Logging;
+using Streetcode.BLL.Services.Payment;
+using Streetcode.BLL.Services.Text;
+using Streetcode.DAL.Entities.AdditionalContent.Email;
 using Streetcode.DAL.Persistence;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.DAL.Repositories.Realizations.Base;
-using Streetcode.BLL.Interfaces.Email;
-using Streetcode.BLL.Services.Email;
-using Streetcode.DAL.Entities.AdditionalContent.Email;
-using Streetcode.BLL.Interfaces.BlobStorage;
-using Streetcode.BLL.Services.BlobStorageService;
-using Streetcode.BLL.Interfaces.Users;
-using Microsoft.FeatureManagement;
-using Streetcode.BLL.Interfaces.Payment;
-using Streetcode.BLL.Services.Payment;
-using Streetcode.BLL.Interfaces.Instagram;
-using Streetcode.BLL.Services.Instagram;
-using Streetcode.BLL.Interfaces.Text;
-using Streetcode.BLL.Services.Text;
-using Serilog.Events;
-using FluentValidation;
-using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
 namespace Streetcode.WebApi.Extensions;
 
@@ -36,16 +37,17 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
     }
 
-    public static void AddCustomServices(this IServiceCollection services)
+    public static void AddCustomServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddRepositoryServices();
         services.AddFeatureManagement();
         var currentAssemblies = AppDomain.CurrentDomain.GetAssemblies();
         services.AddAutoMapper(currentAssemblies);
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(currentAssemblies));
+        services.AddProblemDetails();
 
         services.AddValidatorsFromAssemblies(currentAssemblies);
-        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(BLL.MediatR.ValidatorBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidatorBehavior<,>));
 
         services.AddScoped<IBlobService, BlobService>();
         services.AddScoped<ILoggerService, LoggerService>();
@@ -53,6 +55,55 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IInstagramService, InstagramService>();
         services.AddScoped<ITextService, AddTermsToTextService>();
+
+        services.AddMassTransit(x =>
+        {
+            x.AddConsumers(currentAssemblies);
+
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                var rabbitSection = configuration.GetSection("RabbitMQ");
+
+                var host = rabbitSection["Host"]
+                    ?? throw new InvalidOperationException("RabbitMQ Host is missing");
+                var username = rabbitSection["Username"]
+                    ?? throw new InvalidOperationException("RabbitMQ Username is missing");
+                var password = rabbitSection["Password"]
+                    ?? throw new InvalidOperationException("RabbitMQ Password is missing");
+
+                cfg.Host(host, "/", h =>
+                {
+                    h.Username(username);
+                    h.Password(password);
+                });
+                cfg.ConfigureEndpoints(context);
+            });
+        });
+    }
+
+    public static void AddJwtAuthentication(this IServiceCollection services, ConfigurationManager configuration)
+    {
+        var jwtSettings = configuration.GetSection("Jwt");
+        var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtSettings["Issuer"],
+                ValidAudience = jwtSettings["Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(key)
+            };
+        });
     }
 
     public static void AddApplicationServices(this IServiceCollection services, ConfigurationManager configuration)
@@ -82,8 +133,16 @@ public static class ServiceCollectionExtensions
         {
             opt.AddDefaultPolicy(policy =>
             {
-                policy.AllowAnyOrigin()
-                      .AllowAnyHeader()
+                if (corsConfig?.AllowedOrigins?.Any() == true && !corsConfig.AllowedOrigins.Contains("*"))
+                {
+                    policy.WithOrigins(corsConfig.AllowedOrigins.ToArray());
+                }
+                else
+                {
+                    policy.SetIsOriginAllowed(origin => true);
+                }
+
+                policy.AllowAnyHeader()
                       .AllowAnyMethod();
             });
         });
@@ -106,7 +165,54 @@ public static class ServiceCollectionExtensions
         {
             opt.SwaggerDoc("v1", new OpenApiInfo { Title = "MyApi", Version = "v1" });
             opt.CustomSchemaIds(x => x.FullName);
+            opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                In = ParameterLocation.Header,
+                Description = "Please enter a valid token",
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                BearerFormat = "JWT",
+                Scheme = "Bearer"
+            });
+
+            opt.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    new string[] { }
+                }
+            });
         });
+    }
+
+    public static IServiceCollection AddRedisCacheServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        var redisConnection = configuration.GetConnectionString("Redis");
+
+        if (!string.IsNullOrEmpty(redisConnection))
+        {
+            Console.WriteLine($"[CACHE] Redis connection string found: {redisConnection}");
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = redisConnection;
+                options.InstanceName = "Streetcode_";
+            });
+            services.AddScoped<ICacheService, RedisCacheService>();
+            Console.WriteLine("[CACHE] Using RedisCacheService");
+        }
+        else
+        {
+            services.AddScoped<ICacheService, NoCacheService>();
+        }
+
+        return services;
     }
 
     public class CorsConfiguration
@@ -115,5 +221,12 @@ public static class ServiceCollectionExtensions
         public List<string> AllowedHeaders { get; set; }
         public List<string> AllowedMethods { get; set; }
         public int PreflightMaxAge { get; set; }
+    }
+
+    public class JwtOptions
+    {
+        public string Key { get; set; }
+        public string Issuer { get; set; }
+        public string Audience { get; set; }
     }
 }

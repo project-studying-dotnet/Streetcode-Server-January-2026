@@ -5,8 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Sources;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.DAL.Entities.AdditionalContent.Coordinates;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Sources.SourceLink.GetCategoryById;
 
@@ -32,8 +33,7 @@ public class GetCategoryByIdHandler : IRequestHandler<GetCategoryByIdQuery, Resu
     public async Task<Result<SourceLinkCategoryDTO>> Handle(GetCategoryByIdQuery request, CancellationToken cancellationToken)
     {
         var srcCategories = await _repositoryWrapper
-            .SourceCategoryRepository
-            .GetFirstOrDefaultAsync(
+            .SourceCategoryRepository.GetFirstOrDefaultAsync(
                 predicate: sc => sc.Id == request.Id,
                 include: scl => scl
                     .Include(sc => sc.StreetcodeCategoryContents)
@@ -41,7 +41,10 @@ public class GetCategoryByIdHandler : IRequestHandler<GetCategoryByIdQuery, Resu
 
         if (srcCategories is null)
         {
-            string errorMsg = $"Cannot find any srcCategory by the corresponding id: {request.Id}";
+            var errorMsg = Messages.Error_EntityWithIdNotFound.Format(
+                nameof(DAL.Entities.Sources.SourceLinkCategory),
+                request.Id);
+
             _logger.LogError(request, errorMsg);
             return Result.Fail(new Error(errorMsg));
         }

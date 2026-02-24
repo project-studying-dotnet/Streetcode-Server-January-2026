@@ -3,8 +3,9 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.BLL.MediatR.Media.Audio.Delete;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Media.Image.Delete;
 
@@ -30,9 +31,12 @@ public class DeleteImageHandler : IRequestHandler<DeleteImageCommand, Result<Uni
 
         if (image is null)
         {
-            string errorMsg = $"Cannot find an image with corresponding categoryId: {request.Id}";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            var errorNotFoundMsg = Messages.Error_EntityWithIdNotFound.Format(
+                nameof(DAL.Entities.Media.Images.Image),
+                request.Id);
+
+            _logger.LogError(request, errorNotFoundMsg);
+            return Result.Fail(new Error(errorNotFoundMsg));
         }
 
         _repositoryWrapper.ImageRepository.Delete(image);
@@ -44,15 +48,13 @@ public class DeleteImageHandler : IRequestHandler<DeleteImageCommand, Result<Uni
             _blobService.DeleteFileInStorage(image.BlobName);
         }
 
-        if(resultIsSuccess)
+        if (resultIsSuccess)
         {
             return Result.Ok(Unit.Value);
         }
-        else
-        {
-            const string errorMsg = $"Failed to delete an image";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
-        }
+
+        var errorMsg = Messages.Error_FailedToDeleteEntity.Format(nameof(DAL.Entities.Media.Images.Image));
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

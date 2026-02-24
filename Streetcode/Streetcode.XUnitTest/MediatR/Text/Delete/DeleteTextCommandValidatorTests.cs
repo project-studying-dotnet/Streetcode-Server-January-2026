@@ -1,4 +1,7 @@
 ﻿
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
+
 namespace Streetcode.XUnitTest.MediatR.Text.Delete
 {
     using FluentValidation.TestHelper;
@@ -29,7 +32,8 @@ namespace Streetcode.XUnitTest.MediatR.Text.Delete
 
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.Id)
-                  .WithErrorMessage("Text Id must be greater than zero");
+                  .WithErrorMessage(Messages.Error_PropertyMustBeGreaterThanZero.Format(
+                      nameof(DAL.Entities.Streetcode.TextContent.Text.Id)));
         }
 
 
@@ -38,13 +42,6 @@ namespace Streetcode.XUnitTest.MediatR.Text.Delete
         {
             // Arrange
             int id = 1;
-            var validDto = new TextCreateDTO
-            {
-                StreetcodeId = 1,
-                Title = "Valid Title",
-                TextContent = "Some valid content",
-                AdditionalText = null,
-            };
             var command = new DeleteTextCommand(id);
 
             // Act

@@ -3,7 +3,10 @@ using FluentResults;
 using MediatR;
 using Streetcode.BLL.DTO.Partners;
 using Streetcode.BLL.Interfaces.Logging;
+using Streetcode.DAL.Entities.Partners;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Partners.GetAllPartnersShort
 {
@@ -29,7 +32,7 @@ namespace Streetcode.BLL.MediatR.Partners.GetAllPartnersShort
                 return Result.Ok(_mapper.Map<IEnumerable<PartnerShortDTO>>(partners));
             }
 
-            const string errorMsg = $"Cannot find any partners";
+            var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(Partner));
             _logger.LogError(request, errorMsg);
             return Result.Fail(new Error(errorMsg));
         }

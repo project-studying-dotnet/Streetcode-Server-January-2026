@@ -2,11 +2,12 @@
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.DTO.Sources;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Sources.SourceLink.GetCategoriesByStreetcodeId;
 
@@ -17,7 +18,11 @@ public class GetCategoriesByStreetcodeIdHandler : IRequestHandler<GetCategoriesB
     private readonly IBlobService _blobService;
     private readonly ILoggerService _logger;
 
-    public GetCategoriesByStreetcodeIdHandler(IRepositoryWrapper repositoryWrapper, IMapper mapper, IBlobService blobService, ILoggerService logger)
+    public GetCategoriesByStreetcodeIdHandler(
+        IRepositoryWrapper repositoryWrapper,
+        IMapper mapper,
+        IBlobService blobService,
+        ILoggerService logger)
     {
         _repositoryWrapper = repositoryWrapper;
         _mapper = mapper;
@@ -25,7 +30,9 @@ public class GetCategoriesByStreetcodeIdHandler : IRequestHandler<GetCategoriesB
         _logger = logger;
     }
 
-    public async Task<Result<IEnumerable<SourceLinkCategoryDTO>>> Handle(GetCategoriesByStreetcodeIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<SourceLinkCategoryDTO>>> Handle(
+        GetCategoriesByStreetcodeIdQuery request,
+        CancellationToken cancellationToken)
     {
         var srcCategories = await _repositoryWrapper
             .SourceCategoryRepository
@@ -33,9 +40,12 @@ public class GetCategoriesByStreetcodeIdHandler : IRequestHandler<GetCategoriesB
                 predicate: sc => sc.Streetcodes.Any(s => s.Id == request.StreetcodeId),
                 include: scl => scl.Include(sc => sc.Image) !);
 
-        if (srcCategories is null)
+        if (!srcCategories.Any())
         {
-            string errorMsg = $"Cant find any source category with the streetcode id {request.StreetcodeId}";
+            var errorMsg = Messages.Error_EntityWithStreetcodeIdNotFound.Format(
+                nameof(DAL.Entities.Sources.SourceLinkCategory),
+                request.StreetcodeId);
+
             _logger.LogError(request, errorMsg);
             return Result.Fail(new Error(errorMsg));
         }

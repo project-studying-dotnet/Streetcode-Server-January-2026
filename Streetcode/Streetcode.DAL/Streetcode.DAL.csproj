@@ -43,5 +43,9 @@
     <Folder Include="Persistence\Migrations\" />
     <Folder Include="Persistence\ScriptsMigration\" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Streetcode.Shared\Streetcode.Shared.csproj" />
+  </ItemGroup>
 
 </Project>

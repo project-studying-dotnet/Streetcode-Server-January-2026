@@ -1,6 +1,5 @@
-using FluentResults;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Streetcode.BLL.DTO.Streetcode.TextContent;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
 using Streetcode.BLL.MediatR.Streetcode.Text.Create;
 using Streetcode.BLL.MediatR.Streetcode.Text.Delete;
@@ -9,48 +8,56 @@ using Streetcode.BLL.MediatR.Streetcode.Text.GetById;
 using Streetcode.BLL.MediatR.Streetcode.Text.GetByStreetcodeId;
 using Streetcode.BLL.MediatR.Streetcode.Text.GetParsed;
 using Streetcode.BLL.MediatR.Streetcode.Text.Update;
+using Streetcode.Shared.Enums;
 
 namespace Streetcode.WebApi.Controllers.Streetcode.TextContent;
 
 public class TextController : BaseApiController
 {
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll()
     {
         return HandleResult(await Mediator.Send(new GetAllTextsQuery()));
     }
 
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetById([FromRoute] int id)
     {
         return HandleResult(await Mediator.Send(new GetTextByIdQuery(id)));
     }
 
     [HttpGet("{streetcodeId:int}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetByStreetcodeId([FromRoute] int streetcodeId)
     {
         return HandleResult(await Mediator.Send(new GetTextByStreetcodeIdQuery(streetcodeId)));
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetParsedText([FromQuery] string text)
     {
         return HandleResult(await Mediator.Send(new GetParsedTextForAdminPreviewCommand(text)));
     }
 
     [HttpPost]
+    [Authorize(Roles = nameof(UserRole.Administrator))]
     public async Task<IActionResult> CreateText([FromBody] TextCreateDTO textCreateDTO)
     {
         return HandleResult(await Mediator.Send(new CreateTextCommand(textCreateDTO)));
     }
 
     [HttpPut]
+    [Authorize(Roles = nameof(UserRole.Administrator))]
     public async Task<IActionResult> UpdateText([FromBody] TextUpdateDTO textUpdateDTO)
     {
         return HandleResult(await Mediator.Send(new UpdateTextCommand(textUpdateDTO)));
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = nameof(UserRole.Administrator))]
     public async Task<IActionResult> DeleteText([FromRoute] int id)
     {
         return HandleResult(await Mediator.Send(new DeleteTextCommand(id)));

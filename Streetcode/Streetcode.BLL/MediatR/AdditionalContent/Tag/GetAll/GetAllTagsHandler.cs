@@ -2,10 +2,10 @@ using AutoMapper;
 using FluentResults;
 using MediatR;
 using Streetcode.BLL.DTO.AdditionalContent;
-using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
-using Streetcode.BLL.DTO.AdditionalContent.Tag;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.AdditionalContent.Tag.GetAll;
 
@@ -26,13 +26,13 @@ public class GetAllTagsHandler : IRequestHandler<GetAllTagsQuery, Result<IEnumer
     {
         var tags = await _repositoryWrapper.TagRepository.GetAllAsync();
 
-        if (tags is null)
+        if (tags.Any())
         {
-            const string errorMsg = $"Cannot find any tags";
-            _logger.LogError(request, errorMsg);
-            return Result.Fail(new Error(errorMsg));
+            return Result.Ok(_mapper.Map<IEnumerable<TagDTO>>(tags));
         }
 
-        return Result.Ok(_mapper.Map<IEnumerable<TagDTO>>(tags));
+        var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(DAL.Entities.AdditionalContent.Tag));
+        _logger.LogError(request, errorMsg);
+        return Result.Fail(new Error(errorMsg));
     }
 }

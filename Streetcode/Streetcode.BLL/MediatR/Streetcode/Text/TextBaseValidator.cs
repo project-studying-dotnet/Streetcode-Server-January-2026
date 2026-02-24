@@ -1,6 +1,7 @@
-﻿using System.Linq.Expressions;
-using FluentValidation;
+﻿using FluentValidation;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Text
 {
@@ -10,24 +11,24 @@ namespace Streetcode.BLL.MediatR.Streetcode.Text
         {
             RuleFor(x => x.StreetcodeId)
                 .GreaterThan(0)
-                .WithMessage("StreetcodeId must be greater than zero");
+                .WithMessage(Messages.Error_PropertyMustBeGreaterThanZero.Format(nameof(ITextBase.StreetcodeId)));
 
             RuleFor(x => x.Title)
                 .NotEmpty()
-                .WithMessage("Title is required")
+                .WithMessage(Messages.Error_PropertyIsRequired.Format(nameof(ITextBase.Title)))
                 .MaximumLength(300)
-                .WithMessage("Title must not exceed 300 characters");
+                .WithMessage(Messages.Error_PropertyMustNotExceedCharacters.Format(nameof(ITextBase.Title), 300));
 
             RuleFor(x => x.TextContent)
                 .NotEmpty()
-                .WithMessage("TextContent is required")
+                .WithMessage(Messages.Error_PropertyIsRequired.Format(nameof(ITextBase.TextContent)))
                 .MaximumLength(1500)
-                .WithMessage("TextContent must not exceed 1500 characters");
+                .WithMessage(Messages.Error_PropertyMustNotExceedCharacters.Format(nameof(ITextBase.TextContent), 1500));
 
             RuleFor(x => x.AdditionalText)
                 .MaximumLength(500)
                 .When(x => !string.IsNullOrEmpty(x.AdditionalText))
-                .WithMessage("If AdditionalText is provided, it must not exceed 500 characters");
+                .WithMessage(Messages.Error_AdditionalTextMustNotExceedCharacters.Format(500));
         }
     }
 }

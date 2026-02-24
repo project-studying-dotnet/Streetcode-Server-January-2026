@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.4.33122.133
+VisualStudioVersion = 17.14.36717.8 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Streetcode.WebApi", "Streetcode.WebApi\Streetcode.WebApi.csproj", "{CAA32FB4-F481-4748-BFCE-33B0DBF433E8}"
 EndProject
@@ -21,6 +21,24 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Streetcode.Auth", "Streetcode.Auth", "{F69E76E4-84F5-4D70-A52B-E588CCEE716B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streetcode.Auth.DAL", "Streetcode.Auth.DAL\Streetcode.Auth.DAL.csproj", "{11CF45F8-1295-4850-A992-C4D75E723878}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streetcode.Auth.BLL", "Streetcode.Auth.BLL\Streetcode.Auth.BLL.csproj", "{7FCB14D3-7C7A-4BF0-B6D8-9063956C46E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streetcode.Auth.WebApi", "Streetcode.Auth.WebApi\Streetcode.Auth.WebApi.csproj", "{D89E738A-A455-4D17-9C9D-581AE177E5AC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildingBlocks", "BuildingBlocks", "{7F5CBCE1-AD14-4C06-8939-B595C1B25B47}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streetcode.Shared", "Streetcode.Shared\Streetcode.Shared.csproj", "{00D85447-2B32-4B68-A4C2-1B467C42FD16}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streetcode.Auth.XUnitTest", "Streetcode.Auth.XUnitTest\Streetcode.Auth.XUnitTest.csproj", "{DF36FE52-8788-4490-8406-62132A7E6756}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streetcode.Resources", "Streetcode.Resources\Streetcode.Resources.csproj", "{42EC9582-F9D7-9F18-42AB-C0D335E17C5C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -54,9 +72,41 @@ Global
 		{525A61D2-EA8D-40B1-B47A-5C8B3F9FD629}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{525A61D2-EA8D-40B1-B47A-5C8B3F9FD629}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{525A61D2-EA8D-40B1-B47A-5C8B3F9FD629}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11CF45F8-1295-4850-A992-C4D75E723878}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11CF45F8-1295-4850-A992-C4D75E723878}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11CF45F8-1295-4850-A992-C4D75E723878}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11CF45F8-1295-4850-A992-C4D75E723878}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FCB14D3-7C7A-4BF0-B6D8-9063956C46E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FCB14D3-7C7A-4BF0-B6D8-9063956C46E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FCB14D3-7C7A-4BF0-B6D8-9063956C46E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FCB14D3-7C7A-4BF0-B6D8-9063956C46E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D89E738A-A455-4D17-9C9D-581AE177E5AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D89E738A-A455-4D17-9C9D-581AE177E5AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D89E738A-A455-4D17-9C9D-581AE177E5AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D89E738A-A455-4D17-9C9D-581AE177E5AC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00D85447-2B32-4B68-A4C2-1B467C42FD16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00D85447-2B32-4B68-A4C2-1B467C42FD16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00D85447-2B32-4B68-A4C2-1B467C42FD16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00D85447-2B32-4B68-A4C2-1B467C42FD16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF36FE52-8788-4490-8406-62132A7E6756}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF36FE52-8788-4490-8406-62132A7E6756}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF36FE52-8788-4490-8406-62132A7E6756}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF36FE52-8788-4490-8406-62132A7E6756}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42EC9582-F9D7-9F18-42AB-C0D335E17C5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42EC9582-F9D7-9F18-42AB-C0D335E17C5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42EC9582-F9D7-9F18-42AB-C0D335E17C5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42EC9582-F9D7-9F18-42AB-C0D335E17C5C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F69E76E4-84F5-4D70-A52B-E588CCEE716B} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{11CF45F8-1295-4850-A992-C4D75E723878} = {F69E76E4-84F5-4D70-A52B-E588CCEE716B}
+		{7FCB14D3-7C7A-4BF0-B6D8-9063956C46E8} = {F69E76E4-84F5-4D70-A52B-E588CCEE716B}
+		{D89E738A-A455-4D17-9C9D-581AE177E5AC} = {F69E76E4-84F5-4D70-A52B-E588CCEE716B}
+		{00D85447-2B32-4B68-A4C2-1B467C42FD16} = {7F5CBCE1-AD14-4C06-8939-B595C1B25B47}
+		{DF36FE52-8788-4490-8406-62132A7E6756} = {F69E76E4-84F5-4D70-A52B-E588CCEE716B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7D3D1FEF-DB8F-4A51-AD6E-0EE327AB534A}

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FluentResults;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Toponyms;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.DAL.Entities.Toponyms;
@@ -24,10 +25,9 @@ public class GetAllToponymsHandler : IRequestHandler<GetAllToponymsQuery,
 
     public async Task<Result<GetAllToponymsResponseDTO>> Handle(GetAllToponymsQuery query, CancellationToken cancellationToken)
     {
-        var filterRequest = query.request;
+        var filterRequest = query.Request;
 
-        var toponyms = _repositoryWrapper.ToponymRepository
-             .FindAll();
+        var toponyms = _repositoryWrapper.ToponymRepository.FindAll();
 
         if (filterRequest.Title is not null)
         {
@@ -36,7 +36,7 @@ public class GetAllToponymsHandler : IRequestHandler<GetAllToponymsQuery,
 
         // int pagesAmount = ApplyPagination(ref toponyms, filterRequest.Amount, filterRequest.Page);
 
-        var toponymDtos = _mapper.Map<IEnumerable<ToponymDTO>>(toponyms.AsEnumerable());
+        var toponymDtos = _mapper.Map<IEnumerable<ToponymDTO>>(await toponyms.ToListAsync(cancellationToken));
 
         var response = new GetAllToponymsResponseDTO
         {
@@ -62,12 +62,12 @@ public class GetAllToponymsHandler : IRequestHandler<GetAllToponymsQuery,
     // private int ApplyPagination(
     //    ref IQueryable<Toponym> toponyms,
     //    int amount,
-    //    int page)
+    //    int Page)
     // {
     //    var totalPages = (int)Math.Ceiling(toponyms.Count() / (double)amount);
 
     // toponyms = toponyms
-    //        .Skip((page - 1) * amount)
+    //        .Skip((Page - 1) * amount)
     //        .Take(amount);
 
     // return totalPages;
