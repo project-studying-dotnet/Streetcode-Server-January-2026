@@ -1,5 +1,6 @@
 ﻿namespace Streetcode.XUnitTest.MediatR.Timeline.TimelineItem.Create
 {
+    using System.Linq.Expressions;
     using AutoMapper;
     using FluentAssertions;
     using Microsoft.EntityFrameworkCore.Query;
@@ -13,11 +14,10 @@
     using Streetcode.DAL.Repositories.Interfaces.Streetcode;
     using Streetcode.DAL.Repositories.Interfaces.Timeline;
     using Streetcode.Resources;
-    using System.Linq.Expressions;
     using Xunit;
     using HistoricalContextEntity = Streetcode.DAL.Entities.Timeline.HistoricalContext;
-    using TimelineItemEntity = Streetcode.DAL.Entities.Timeline.TimelineItem;
     using StreetcodeEntity = Streetcode.DAL.Entities.Streetcode.StreetcodeContent;
+    using TimelineItemEntity = Streetcode.DAL.Entities.Timeline.TimelineItem;
 
     public class CreateTimelineItemHandlerTests
     {
@@ -148,6 +148,12 @@
         [Fact]
         public async Task ShouldReturnOk_WhenAllDataIsValid()
         {
+            var historicalContext = new HistoricalContextEntity
+            {
+                Id = 1,
+                Title = "Test Historical Context",
+            };
+
             var createDTO = new CreateTimelineItemDTO
             {
                 StreetcodeId = 1,
@@ -179,6 +185,12 @@
                 });
 
             this.timelineRepository
+                .Setup(r => r.CreateAsync(It.IsAny<TimelineItemEntity>()))
+                .ReturnsAsync(new TimelineItemEntity { Id = 10, Title = createDTO.Title });
+
+            this.SetupSaveChangesMock(1);
+
+            this.timelineRepository
                 .Setup(r => r.GetFirstOrDefaultAsync(
                     It.IsAny<Expression<Func<TimelineItemEntity, bool>>>(),
                     It.IsAny<Func<IQueryable<TimelineItemEntity>,
@@ -188,7 +200,13 @@
                 {
                     Id = 10,
                     Title = createDTO.Title,
-                    HistoricalContextTimelines = new List<HistoricalContextTimeline>(),
+                    HistoricalContextTimelines = new List<HistoricalContextTimeline>
+                    {
+                        new () {
+                        HistoricalContextId = 1,
+                        HistoricalContext = historicalContext,
+                        },
+                    },
                 });
 
             // Act

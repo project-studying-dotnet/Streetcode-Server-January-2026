@@ -46,9 +46,4 @@
 		<ProjectReference Include="..\Streetcode.DAL\Streetcode.DAL.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="MediatR\Timeline\TimelineItem\Delete\" />
-	  <Folder Include="MediatR\Timeline\TimelineItem\Update\" />
-	</ItemGroup>
-
 </Project>
