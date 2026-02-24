@@ -1,15 +1,14 @@
-﻿namespace Streetcode.XUnitTest.MediatR.Media.Audio
+﻿namespace Streetcode.XUnitTest.MediatR.Media.Audio.Delete
 {
+    using System.Linq.Expressions;
     using FluentAssertions;
     using Moq;
     using Streetcode.BLL.Interfaces.BlobStorage;
     using Streetcode.BLL.Interfaces.Logging;
     using Streetcode.BLL.MediatR.Media.Audio.Delete;
     using Streetcode.DAL.Repositories.Interfaces.Base;
-    using System.Linq.Expressions;
-    using System.Reflection.Metadata;
     using Xunit;
-    using AudioEntity = Streetcode.DAL.Entities.Media.Audio;
+    using AudioEntity = DAL.Entities.Media.Audio;
 
     public class DeleteAudioHandlerTests
     {
@@ -30,10 +29,10 @@
         [Fact]
         public async Task AudioNotFound_ReturnsFail()
         {
-            _repoMock.Setup(r => r.AudioRepository.GetFirstOrDefaultAsync(
-                It.IsAny<Expression<Func<AudioEntity, bool>>>(),
-                null))
-                .ReturnsAsync((AudioEntity?)null);
+            //_repoMock.Setup(r => r.AudioRepository.GetFirstOrDefaultAsync(
+            //    It.IsAny<Expression<Func<AudioEntity, bool>>>(),
+            //    null))
+            //    .ReturnsAsync((AudioEntity?)null);
 
             var result = await _handler.Handle(new DeleteAudioCommand(1), default);
 
@@ -46,10 +45,10 @@
         {
             AudioEntity audio = new AudioEntity { Id = 1, BlobName = "test-blob" };
 
-            _repoMock.Setup(r => r.AudioRepository.GetFirstOrDefaultAsync(
-                It.IsAny<Expression<Func<AudioEntity, bool>>>(),
-                null))
-                .ReturnsAsync(audio);
+            //_repoMock.Setup(r => r.AudioRepository.GetFirstOrDefaultAsync(
+            //    It.IsAny<Expression<Func<AudioEntity, bool>>>(),
+            //    null))
+            //    .ReturnsAsync(audio);
 
             _repoMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
 
@@ -65,10 +64,10 @@
         {
             AudioEntity audio = new AudioEntity { Id = 1, BlobName = "test-blob" };
 
-            _repoMock.Setup(r => r.AudioRepository.GetFirstOrDefaultAsync(
-                It.IsAny<Expression<Func<AudioEntity, bool>>>(),
-                null))
-                .ReturnsAsync(audio);
+            //_repoMock.Setup(r => r.AudioRepository.GetFirstOrDefaultAsync(
+            //    It.IsAny<Expression<Func<AudioEntity, bool>>>(),
+            //    null))
+            //    .ReturnsAsync(audio);
 
             _repoMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(0);
 

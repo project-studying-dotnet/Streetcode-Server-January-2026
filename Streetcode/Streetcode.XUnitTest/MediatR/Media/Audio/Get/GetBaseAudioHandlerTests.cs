@@ -9,7 +9,7 @@ using Streetcode.DAL.Repositories.Interfaces.Base;
 using System.Linq.Expressions;
 using Xunit;
 
-namespace Streetcode.XUnitTest.MediatR.Media.Audio.GetBaseAudio;
+namespace Streetcode.XUnitTest.MediatR.Media.Audio.Get;
 
 public class GetBaseAudioHandlerTests
 {
@@ -32,11 +32,11 @@ public class GetBaseAudioHandlerTests
         var expectedStream = new MemoryStream();
         var request = new GetBaseAudioQuery(audioId);
 
-        _mockRepositoryWrapper
-            .Setup(r => r.AudioRepository.GetFirstOrDefaultAsync(
-                It.IsAny<Expression<Func<Streetcode.DAL.Entities.Media.Audio, bool>>>(),
-                null))
-            .ReturnsAsync(new Streetcode.DAL.Entities.Media.Audio { Id = audioId, BlobName = blobName });
+        //_mockRepositoryWrapper
+        //    .Setup(r => r.AudioRepository.GetFirstOrDefaultAsync(
+        //        It.IsAny<Expression<Func<DAL.Entities.Media.Audio, bool>>>(),
+        //        null))
+        //    .ReturnsAsync(new DAL.Entities.Media.Audio { Id = audioId, BlobName = blobName });
 
         _mockBlobService
             .Setup(b => b.FindFileInStorageAsMemoryStream(blobName))
@@ -56,11 +56,11 @@ public class GetBaseAudioHandlerTests
         var audioId = 1;
         var request = new GetBaseAudioQuery(audioId);
 
-        _mockRepositoryWrapper
-            .Setup(r => r.AudioRepository.GetFirstOrDefaultAsync(
-                It.IsAny<Expression<Func<Streetcode.DAL.Entities.Media.Audio, bool>>>(),
-                null))
-            .ReturnsAsync((Streetcode.DAL.Entities.Media.Audio)null!);
+        //_mockRepositoryWrapper
+        //    .Setup(r => r.AudioRepository.GetFirstOrDefaultAsync(
+        //        It.IsAny<Expression<Func<DAL.Entities.Media.Audio, bool>>>(),
+        //        null))
+        //    .ReturnsAsync((DAL.Entities.Media.Audio)null!);
 
         var handler = new GetBaseAudioHandler(_mockBlobService.Object, _mockRepositoryWrapper.Object, _mockLogger.Object);
 

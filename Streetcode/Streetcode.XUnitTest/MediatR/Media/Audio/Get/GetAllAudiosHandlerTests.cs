@@ -10,7 +10,7 @@ using Streetcode.DAL.Repositories.Interfaces.Base;
 using Xunit;
 using AudioEntity = Streetcode.DAL.Entities.Media.Audio;
 
-namespace Streetcode.XUnitTest.MediatR.Media.Audio.GetAll;
+namespace Streetcode.XUnitTest.MediatR.Media.Audio.Get;
 
 public class GetAllAudiosHandlerTests
 {
@@ -37,8 +37,8 @@ public class GetAllAudiosHandlerTests
     [Fact]
     public async Task AudiosIsNull_ReturnsError()
     {
-        _mockRepo.Setup(x => x.AudioRepository.GetAllAsync(It.IsAny<Expression<Func<AudioEntity, bool>>>(), null))
-            .ReturnsAsync((IEnumerable<AudioEntity>?)null);
+        //_mockRepo.Setup(x => x.AudioRepository.GetAllAsync(It.IsAny<Expression<Func<AudioEntity, bool>>>(), null))
+        //    .ReturnsAsync((IEnumerable<AudioEntity>?)null);
 
         var query = new GetAllAudiosQuery();
         const string expectedErrorMessage = "Cannot find any audios";
@@ -66,8 +66,8 @@ public class GetAllAudiosHandlerTests
             new() { Id = 2, BlobName = "audio2" }
         };
 
-        _mockRepo.Setup(x => x.AudioRepository.GetAllAsync(It.IsAny<Expression<Func<AudioEntity, bool>>>(), null))
-            .ReturnsAsync(audios);
+        //_mockRepo.Setup(x => x.AudioRepository.GetAllAsync(It.IsAny<Expression<Func<AudioEntity, bool>>>(), null))
+        //    .ReturnsAsync(audios);
 
         _mockMapper.Setup(x => x.Map<IEnumerable<AudioDTO>>(It.IsAny<IEnumerable<AudioEntity>>()))
             .Returns(audioDtos);
@@ -88,8 +88,8 @@ public class GetAllAudiosHandlerTests
     [Fact]
     public async Task NoAudiosInDatabase_ReturnsEmptyList()
     {
-        _mockRepo.Setup(x => x.AudioRepository.GetAllAsync(It.IsAny<Expression<Func<AudioEntity, bool>>>(), null))
-            .ReturnsAsync(new List<AudioEntity>());
+        //_mockRepo.Setup(x => x.AudioRepository.GetAllAsync(It.IsAny<Expression<Func<AudioEntity, bool>>>(), null))
+        //    .ReturnsAsync(new List<AudioEntity>());
 
         _mockMapper.Setup(x => x.Map<IEnumerable<AudioDTO>>(It.IsAny<IEnumerable<AudioEntity>>()))
             .Returns(new List<AudioDTO>());

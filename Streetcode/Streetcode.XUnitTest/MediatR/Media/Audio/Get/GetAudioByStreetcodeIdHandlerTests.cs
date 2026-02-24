@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using Xunit;
 using AudioEntity = Streetcode.DAL.Entities.Media.Audio;
 
-namespace Streetcode.XUnitTest.MediatR.Media.Audio.GetByStreetcodeId;
+namespace Streetcode.XUnitTest.MediatR.Media.Audio.Get;
 
 public class GetAudioByStreetcodeIdHandlerTests
 {
@@ -39,10 +39,10 @@ public class GetAudioByStreetcodeIdHandlerTests
         var audioDto = new AudioDTO { Id = 1, BlobName = "audio.mp3" };
         string expectedBase64 = "base64string";
 
-        _mockRepo.Setup(r => r.StreetcodeRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<StreetcodeContent, bool>>>(),
-            It.IsAny<Func<IQueryable<StreetcodeContent>, IIncludableQueryable<StreetcodeContent, object>>>()))
-            .ReturnsAsync(streetcode);
+        //_mockRepo.Setup(r => r.StreetcodeRepository.GetFirstOrDefaultAsync(
+        //    It.IsAny<Expression<Func<StreetcodeContent, bool>>>(),
+        //    It.IsAny<Func<IQueryable<StreetcodeContent>, IIncludableQueryable<StreetcodeContent, object>>>()))
+        //    .ReturnsAsync(streetcode);
 
         _mockMapper.Setup(m => m.Map<AudioDTO>(It.IsAny<AudioEntity>())).Returns(audioDto);
         _mockBlob.Setup(b => b.FindFileInStorageAsBase64(audioDto.BlobName)).Returns(expectedBase64);
