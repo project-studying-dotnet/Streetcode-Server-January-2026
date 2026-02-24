@@ -57,12 +57,11 @@ namespace Streetcode.Auth.DAL.Repositories.Realizations
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteExpiredAsync()
+        public async Task<int> DeleteExpiredAsync()
         {
-            await _context.RefreshTokens
+            return await _context.RefreshTokens
                 .Where(t => t.Expires < DateTime.UtcNow)
                 .ExecuteDeleteAsync();
-            await _context.SaveChangesAsync();
         }
     }
 }
