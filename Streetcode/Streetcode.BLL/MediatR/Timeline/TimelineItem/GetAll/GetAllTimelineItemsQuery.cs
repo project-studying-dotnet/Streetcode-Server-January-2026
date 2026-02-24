@@ -1,6 +1,6 @@
 ﻿using FluentResults;
 using MediatR;
-using Streetcode.BLL.DTO.Timeline;
+using Streetcode.BLL.DTO.Timeline.TimelineItem;
 
 namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.GetAll;
 

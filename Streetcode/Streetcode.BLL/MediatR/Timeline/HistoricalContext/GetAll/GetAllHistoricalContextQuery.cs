@@ -1,6 +1,6 @@
 ﻿using FluentResults;
 using MediatR;
-using Streetcode.BLL.DTO.Timeline;
+using Streetcode.BLL.DTO.Timeline.HistoricalContext;
 
 namespace Streetcode.BLL.MediatR.Timeline.HistoricalContext.GetAll
 {
