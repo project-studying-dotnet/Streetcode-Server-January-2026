@@ -5,7 +5,7 @@ using Streetcode.Resources;
 using Streetcode.Shared.Extensions;
 using Xunit;
 
-namespace Streetcode.XUnitTest.MediatR.RelatedTerm.Create;
+namespace Streetcode.XUnitTest.MediatR.RelatedTerm.Update;
 
 public class UpdateRelatedTermDTOValidatorTests
 {
