@@ -1,59 +1,103 @@
-﻿using AutoMapper;
+﻿using System.Linq.Expressions;
+using AutoMapper;
+using FluentAssertions;
 using Moq;
 using Streetcode.BLL.DTO.Media.Audio;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
+using Streetcode.BLL.Mapping.Media;
 using Streetcode.BLL.MediatR.Media.Audio.GetByStreetcodeId;
-using Streetcode.DAL.Entities.Media;
-using Streetcode.DAL.Entities.Streetcode;
 using Streetcode.DAL.Repositories.Interfaces.Base;
-using System.Linq.Expressions;
-using Microsoft.EntityFrameworkCore.Query;
+using Streetcode.Resources;
 using Xunit;
 using AudioEntity = Streetcode.DAL.Entities.Media.Audio;
 
-namespace Streetcode.XUnitTest.MediatR.Media.Audio.Get;
-
-public class GetAudioByStreetcodeIdHandlerTests
+namespace Streetcode.XUnitTest.MediatR.Media.Audio.Get 
 {
-    private readonly Mock<IRepositoryWrapper> _mockRepo;
-    private readonly Mock<IMapper> _mockMapper;
-    private readonly Mock<IBlobService> _mockBlob;
-    private readonly Mock<ILoggerService> _mockLogger;
 
-    public GetAudioByStreetcodeIdHandlerTests()
+    public class GetAudioByStreetcodeIdHandlerTests
     {
-        _mockRepo = new Mock<IRepositoryWrapper>();
-        _mockMapper = new Mock<IMapper>();
-        _mockBlob = new Mock<IBlobService>();
-        _mockLogger = new Mock<ILoggerService>();
-    }
+        private readonly Mock<IRepositoryWrapper> mockRepositoryWrapper;
+        private readonly Mock<IBlobService> mockBlobService;
+        private readonly Mock<ILoggerService> mockLogger;
+        private readonly IMapper mapper;
+        private readonly GetAudioByStreetcodeIdQueryHandler handler;
 
-    [Fact]
-    public async Task ExistingAudio_ReturnsSuccessWithBase64()
-    {
-        int streetcodeId = 1;
+        public GetAudioByStreetcodeIdHandlerTests()
+        {
+            this.mockRepositoryWrapper = new Mock<IRepositoryWrapper>();
+            this.mockBlobService = new Mock<IBlobService>();
+            this.mockLogger = new Mock<ILoggerService>();
 
-        var audio = new AudioEntity { Id = 1, BlobName = "audio.mp3" };
-        var streetcode = new StreetcodeContent { Id = streetcodeId, Audio = audio };
-        var audioDto = new AudioDTO { Id = 1, BlobName = "audio.mp3" };
-        string expectedBase64 = "base64string";
+            var configuration = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile<AudioProfile>();
+            });
+            this.mapper = new Mapper(configuration);
 
-        //_mockRepo.Setup(r => r.StreetcodeRepository.GetFirstOrDefaultAsync(
-        //    It.IsAny<Expression<Func<StreetcodeContent, bool>>>(),
-        //    It.IsAny<Func<IQueryable<StreetcodeContent>, IIncludableQueryable<StreetcodeContent, object>>>()))
-        //    .ReturnsAsync(streetcode);
+            this.handler = new GetAudioByStreetcodeIdQueryHandler(
+                this.mockRepositoryWrapper.Object,
+                this.mapper,
+                this.mockBlobService.Object,
+                this.mockLogger.Object);
+        }
 
-        _mockMapper.Setup(m => m.Map<AudioDTO>(It.IsAny<AudioEntity>())).Returns(audioDto);
-        _mockBlob.Setup(b => b.FindFileInStorageAsBase64(audioDto.BlobName)).Returns(expectedBase64);
+        [Fact]
+        public async Task Handle_AudioNotFound_ReturnsFailResult()
+        {
+            // Arrange
+            int streetcodeId = 1;
+            var query = new GetAudioByStreetcodeIdQuery(streetcodeId);
 
-        var handler = new GetAudioByStreetcodeIdQueryHandler(_mockRepo.Object, _mockMapper.Object, _mockBlob.Object, _mockLogger.Object);
-        var query = new GetAudioByStreetcodeIdQuery(streetcodeId);
+            this.mockRepositoryWrapper
+                .Setup(r => r.AudioRepository.GetFirstOrDefaultAsync(
+                    It.IsAny<Expression<Func<AudioEntity, bool>>>(),
+                    It.IsAny<Func<IQueryable<AudioEntity>, Microsoft.EntityFrameworkCore.Query.IIncludableQueryable<AudioEntity, object>>>(),
+                    It.IsAny<bool>()))
+                .ReturnsAsync((AudioEntity?)null);
 
-        var result = await handler.Handle(query, CancellationToken.None);
+            var expectedErrorMsg = string.Format(Messages.Error_EntityWithStreetcodeIdNotFound, nameof(AudioEntity), streetcodeId);
 
-        Assert.True(result.IsSuccess);
-        Assert.Equal(expectedBase64, result.Value.Base64);
-        _mockBlob.Verify(b => b.FindFileInStorageAsBase64(It.IsAny<string>()), Times.Once);
+            // Act
+            var result = await this.handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            result.IsFailed.Should().BeTrue();
+            result.Errors.First().Message.Should().Be(expectedErrorMsg);
+        }
+
+        [Fact]
+        public async Task Handle_AudioExists_ReturnsOkResultWithBase64()
+        {
+            // Arrange
+            int streetcodeId = 1;
+            var query = new GetAudioByStreetcodeIdQuery(streetcodeId);
+            var audioEntity = new AudioEntity
+            {
+                Id = 10,
+                BlobName = "streetcode-audio.mp3",
+            };
+            string expectedBase64 = "base64-audio-content";
+
+            this.mockRepositoryWrapper
+                .Setup(r => r.AudioRepository.GetFirstOrDefaultAsync(
+                    It.IsAny<Expression<Func<AudioEntity, bool>>>(),
+                    It.IsAny<Func<IQueryable<AudioEntity>, Microsoft.EntityFrameworkCore.Query.IIncludableQueryable<AudioEntity, object>>>(),
+                    It.IsAny<bool>()))
+                .ReturnsAsync(audioEntity);
+
+            this.mockBlobService
+                .Setup(b => b.FindFileInStorageAsBase64(audioEntity.BlobName))
+                .Returns(expectedBase64);
+
+            // Act
+            var result = await this.handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().NotBeNull();
+            result.Value.Base64.Should().Be(expectedBase64);
+            result.Value.BlobName.Should().Be(audioEntity.BlobName);
+        }
     }
 }

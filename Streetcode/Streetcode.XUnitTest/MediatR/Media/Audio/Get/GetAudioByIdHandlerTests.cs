@@ -1,44 +1,57 @@
 ﻿namespace Streetcode.XUnitTest.MediatR.Media.Audio.Get
 {
-    using System.Linq.Expressions;
+    using AutoMapper;
     using FluentAssertions;
     using Moq;
     using Streetcode.BLL.Interfaces.BlobStorage;
     using Streetcode.BLL.Interfaces.Logging;
-    using Streetcode.BLL.MediatR.Media.Audio.GetBaseAudio;
+    using Streetcode.BLL.Mapping.Media;
+    using Streetcode.BLL.MediatR.Media.Audio.GetById;
     using Streetcode.DAL.Repositories.Interfaces.Base;
     using Streetcode.Resources;
+    using System.Linq.Expressions;
     using Xunit;
     using AudioEntity = Streetcode.DAL.Entities.Media.Audio;
 
-    public class GetBaseAudioHandlerTests
+    public class GetAudioByIdHandlerTests
     {
         private readonly Mock<IRepositoryWrapper> mockRepositoryWrapper;
         private readonly Mock<IBlobService> mockBlobService;
         private readonly Mock<ILoggerService> mockLogger;
-        private readonly GetBaseAudioHandler handler;
+        private readonly IMapper mapper;
+        private readonly GetAudioByIdHandler handler;
 
-        public GetBaseAudioHandlerTests()
+        public GetAudioByIdHandlerTests()
         {
             this.mockRepositoryWrapper = new Mock<IRepositoryWrapper>();
             this.mockBlobService = new Mock<IBlobService>();
             this.mockLogger = new Mock<ILoggerService>();
 
-            this.handler = new GetBaseAudioHandler(
-                this.mockBlobService.Object,
+            var configuration = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile<AudioProfile>();
+            });
+            this.mapper = new Mapper(configuration);
+
+            this.handler = new GetAudioByIdHandler(
                 this.mockRepositoryWrapper.Object,
+                this.mapper,
+                this.mockBlobService.Object,
                 this.mockLogger.Object);
         }
 
         [Fact]
-        public async Task Handle_AudioExists_ReturnsMemoryStream()
+        public async Task Handle_AudioExists_ReturnsOkResultWithAudioDTO()
         {
             // Arrange
             int testId = 1;
-            var audioEntity = new AudioEntity { Id = testId, BlobName = "test-audio.mp3" };
-            var query = new GetBaseAudioQuery(testId);
-
-            var memoryStream = new MemoryStream(new byte[] { 1, 2, 3 });
+            var audioEntity = new AudioEntity
+            {
+                Id = testId,
+                BlobName = "audio-id-1.mp3",
+            };
+            var query = new GetAudioByIdQuery(testId);
+            string expectedBase64 = "base64-encoded-audio";
 
             this.mockRepositoryWrapper
                 .Setup(r => r.AudioRepository.GetFirstOrDefaultAsync(
@@ -48,23 +61,25 @@
                 .ReturnsAsync(audioEntity);
 
             this.mockBlobService
-                .Setup(b => b.FindFileInStorageAsMemoryStream(audioEntity.BlobName))
-                .Returns(memoryStream);
+                .Setup(b => b.FindFileInStorageAsBase64(audioEntity.BlobName))
+                .Returns(expectedBase64);
 
             // Act
             var result = await this.handler.Handle(query, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            result.Value.Should().BeSameAs(memoryStream);
+            result.Value.Should().NotBeNull();
+            result.Value.Id.Should().Be(testId);
+            result.Value.Base64.Should().Be(expectedBase64);
         }
 
         [Fact]
-        public async Task Handle_AudioNotFound_ReturnsFailResult()
+        public async Task Handle_AudioDoesNotExist_ReturnsFailResult()
         {
             // Arrange
             int testId = 1;
-            var query = new GetBaseAudioQuery(testId);
+            var query = new GetAudioByIdQuery(testId);
 
             this.mockRepositoryWrapper
                 .Setup(r => r.AudioRepository.GetFirstOrDefaultAsync(
