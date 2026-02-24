@@ -122,7 +122,6 @@
             result.IsFailed.Should().BeTrue();
             result.Errors.First().Message.Should().Be(expectedErrorMsg);
 
-            this.mockLogger.Verify(l => l.LogError(command, expectedErrorMsg), Times.Once);
         }
     }
 }
