@@ -204,6 +204,15 @@
   <data name="Error_CommandDataRequired" xml:space="preserve">
     <value>{} data required</value>
   </data>
+  <data name="Error_UserNotCommentOwner" xml:space="preserve">
+    <value>You do not have permission to edit or delete this comment</value>
+  </data>
+  <data name="Error_MissingUserId" xml:space="preserve">
+    <value>User ID is missing or invalid</value>
+  </data>
+  <data name="Error_HistoricalContextTitleAlreadyExists" xml:space="preserve">
+    <value>Historical Context Title Already Exists</value>
+  </data>
   <data name="Error_MediaBlobNotFound" xml:space="preserve">
     <value>{0} blob with BlobName: "{1}" not found</value>
   </data>

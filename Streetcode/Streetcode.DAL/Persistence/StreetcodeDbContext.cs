@@ -11,6 +11,7 @@ using Streetcode.DAL.Entities.News;
 using Streetcode.DAL.Entities.Partners;
 using Streetcode.DAL.Entities.Sources;
 using Streetcode.DAL.Entities.Streetcode;
+using Streetcode.DAL.Entities.Streetcode.Comments;
 using Streetcode.DAL.Entities.Streetcode.TextContent;
 using Streetcode.DAL.Entities.Streetcode.Types;
 using Streetcode.DAL.Entities.Team;
@@ -59,6 +60,7 @@ public class StreetcodeDbContext : DbContext
     public DbSet<StreetcodeCategoryContent> StreetcodeCategoryContent { get; set; }
     public DbSet<StreetcodeArt> StreetcodeArts { get; set; }
     public DbSet<User> Users { get; set; }
+    public DbSet<Comment> Comments { get; set; }
     public DbSet<StreetcodeTagIndex> StreetcodeTagIndices { get; set; }
     public DbSet<TeamMember> TeamMembers { get; set; }
     public DbSet<TeamMemberLink> TeamMemberLinks { get; set; }
@@ -295,6 +297,11 @@ public class StreetcodeDbContext : DbContext
                     .WithOne(t => t.Streetcode)
                     .HasForeignKey(t => t.StreetcodeId)
                     .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasMany(d => d.Comments)
+                    .WithOne(t => t.Streetcode)
+                    .HasForeignKey(t => t.StreetcodeId)
+                    .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<RelatedTerm>()
@@ -307,5 +314,11 @@ public class StreetcodeDbContext : DbContext
             .HasValue<Coordinate>("coordinate_base")
             .HasValue<StreetcodeCoordinate>("coordinate_streetcode")
             .HasValue<ToponymCoordinate>("coordinate_toponym");
+
+        modelBuilder.Entity<User>()
+           .HasMany(d => d.Comments)
+           .WithOne(t => t.User)
+           .HasForeignKey(t => t.UserId)
+           .OnDelete(DeleteBehavior.Cascade);
     }
 }

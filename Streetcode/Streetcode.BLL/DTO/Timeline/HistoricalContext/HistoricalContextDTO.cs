@@ -1,4 +1,4 @@
-namespace Streetcode.BLL.DTO.Timeline;
+namespace Streetcode.BLL.DTO.Timeline.HistoricalContext;
 
 public class HistoricalContextDTO
 {

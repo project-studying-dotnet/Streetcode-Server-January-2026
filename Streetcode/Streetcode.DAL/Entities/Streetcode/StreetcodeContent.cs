@@ -8,6 +8,7 @@ using Streetcode.DAL.Entities.Media;
 using Streetcode.DAL.Entities.Media.Images;
 using Streetcode.DAL.Entities.Partners;
 using Streetcode.DAL.Entities.Sources;
+using Streetcode.DAL.Entities.Streetcode.Comments;
 using Streetcode.DAL.Entities.Streetcode.TextContent;
 using Streetcode.DAL.Entities.Timeline;
 using Streetcode.DAL.Entities.Toponyms;
@@ -97,4 +98,6 @@ public class StreetcodeContent
     public List<StreetcodeArt> StreetcodeArts { get; set; } = new ();
 
     public List<StreetcodeCategoryContent> StreetcodeCategoryContents { get; set; } = new();
+
+    public List<Comment> Comments { get; set; } = new();
 }

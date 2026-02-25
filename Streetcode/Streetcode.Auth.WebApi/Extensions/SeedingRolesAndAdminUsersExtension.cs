@@ -19,8 +19,9 @@ namespace Streetcode.Auth.WebApi.Extensions
                 var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
                 var configuration = services.GetRequiredService<IConfiguration>();
                 var publishEndpoint = services.GetRequiredService<IPublishEndpoint>();
+                var environment = services.GetRequiredService<IWebHostEnvironment>();
 
-                await SeedDataAsync(userManager, roleManager, configuration, publishEndpoint);
+                await SeedDataAsync(userManager, roleManager, configuration, publishEndpoint, environment);
             }
             catch (Exception ex)
             {
@@ -33,7 +34,8 @@ namespace Streetcode.Auth.WebApi.Extensions
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
             IConfiguration configuration,
-            IPublishEndpoint publishEndpoint)
+            IPublishEndpoint publishEndpoint,
+            IWebHostEnvironment env)
         {
             foreach (var roleName in Enum.GetNames(typeof(UserRole)))
             {
@@ -75,6 +77,34 @@ namespace Streetcode.Auth.WebApi.Extensions
                         PhoneNumber = adminUser.PhoneNumber,
                         Role = UserRole.Administrator
                     });
+                }
+            }
+
+            if (env.IsDevelopment())
+            {
+                string testUserId = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
+                string testUserEmail = "test@example.com";
+                string testUserPassword = "Password123_";
+
+                if (await userManager.FindByIdAsync(testUserId) == null)
+                {
+                    var testUser = new ApplicationUser
+                    {
+                        Id = testUserId,
+                        Email = testUserEmail,
+                        Name = "Test",
+                        Surname = "User",
+                        UserName = "testuser",
+                        EmailConfirmed = true,
+                        PhoneNumber = "+380123456789"
+                    };
+
+                    var result = await userManager.CreateAsync(testUser, testUserPassword);
+
+                    if (result.Succeeded)
+                    {
+                        await userManager.AddToRoleAsync(testUser, nameof(UserRole.User));
+                    }
                 }
             }
         }
