@@ -45,7 +45,7 @@ public class NewsController : BaseApiController
 
     [HttpGet("sortedByDateTime")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetNewsAndLinksByUrl()
+    public async Task<IActionResult> GetSortedByDateTime()
     {
         return HandleResult(await Mediator.Send(new SortedByDateTimeQuery()));
     }

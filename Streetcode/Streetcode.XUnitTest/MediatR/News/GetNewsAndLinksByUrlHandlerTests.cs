@@ -204,9 +204,9 @@ namespace Streetcode.XUnitTest.MediatR.News
             var allNews = new List<NewsEntity>
             {
                 new NewsEntity { Id = 1, Title = "test1", URL = "prev-url" },
-                new NewsEntity { Id = targetId, Title = "test", URL = url,},
-                new NewsEntity { Id = 3, Title = "test3", URL = "next-url",},
-                new NewsEntity { Id = 4, Title = "test2", URL = "test-url",},
+                new NewsEntity { Id = targetId, Title = "test", URL = url, },
+                new NewsEntity { Id = 3, Title = "test3", URL = "next-url", },
+                new NewsEntity { Id = 4, Title = "test2", URL = "test-url", },
             };
 
             var targetNewsEntity = allNews[1];
