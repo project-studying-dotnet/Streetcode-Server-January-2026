@@ -14,4 +14,8 @@
     <Folder Include="Controllers\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Streetcode.Email.BLL\Streetcode.Email.BLL.csproj" />
+  </ItemGroup>
+
 </Project>

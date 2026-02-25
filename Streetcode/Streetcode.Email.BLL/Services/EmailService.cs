@@ -12,9 +12,9 @@ namespace Streetcode.Email.BLL.Services
     {
         private readonly EmailConfiguration _emailConfig;
 
-        public EmailService(IOptions<EmailConfiguration> emailConfig)
+        public EmailService(IOptions<EmailConfiguration> options)
         {
-            _emailConfig = emailConfig;
+            _emailConfig = options.Value;
         }
 
         public async Task SendEmailAsync(FeedbackDTO feedback)
