@@ -5,7 +5,6 @@ using Streetcode.Shared.Extensions;
 namespace Streetcode.XUnitTest.MediatR.Text.Delete
 {
     using FluentValidation.TestHelper;
-    using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
     using Streetcode.BLL.MediatR.Streetcode.Text.Delete;
     using Xunit;
 
