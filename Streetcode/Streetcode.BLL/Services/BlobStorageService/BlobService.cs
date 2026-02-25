@@ -1,88 +1,92 @@
-﻿using System.Security.Cryptography;
-using System.Text;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Shared.Services;
 
 namespace Streetcode.BLL.Services.BlobStorageService;
 
 public class BlobService : IBlobService
 {
-    private readonly BlobEnvironmentVariables _envirovment;
     private readonly string _keyCrypt;
     private readonly string _blobPath;
     private readonly IRepositoryWrapper _repositoryWrapper;
 
     public BlobService(IOptions<BlobEnvironmentVariables> environment, IRepositoryWrapper? repositoryWrapper = null)
     {
-        _envirovment = environment.Value;
-        _keyCrypt = _envirovment.BlobStoreKey;
-        _blobPath = _envirovment.BlobStorePath;
+        _keyCrypt = environment.Value.BlobStoreKey;
+        _blobPath = environment.Value.BlobStorePath;
         _repositoryWrapper = repositoryWrapper;
     }
 
-    public MemoryStream FindFileInStorageAsMemoryStream(string name)
+    public Task<MemoryStream?> FindFileInStorageAsMemoryStream(string name)
     {
-        string[] splitedName = name.Split('.');
+        var decodedBytes = GetDecryptedFile(name);
 
-        byte[] decodedBytes = DecryptFile(splitedName[0], splitedName[1]);
+        if (decodedBytes == null)
+        {
+            return Task.FromResult<MemoryStream>(null!);
+        }
 
         var image = new MemoryStream(decodedBytes);
 
-        return image;
+        return Task.FromResult(image);
     }
 
-    public string FindFileInStorageAsBase64(string name)
+    public Task<string?> FindFileInStorageAsBase64(string name)
     {
-        string[] splitedName = name.Split('.');
+        var decodedBytes = GetDecryptedFile(name);
 
-        byte[] decodedBytes = DecryptFile(splitedName[0], splitedName[1]);
+        if (decodedBytes == null)
+        {
+            return Task.FromResult<string?>(null!);
+        }
 
         string base64 = Convert.ToBase64String(decodedBytes);
 
-        return base64;
+        return Task.FromResult(base64);
     }
 
-    public string SaveFileInStorage(string base64, string name, string extension)
+    public Task<string> SaveFileInStorage(string base64, string name, string extension)
     {
         byte[] imageBytes = Convert.FromBase64String(base64);
-        string createdFileName = $"{DateTime.Now}{name}"
-            .Replace(" ", "_")
-            .Replace(".", "_")
-            .Replace(":", "_");
+        string createdFileName = FileService.PrepareFileStorageName(name);
 
-        string hashBlobStorageName = HashFunction(createdFileName);
+        string hashBlobStorageName = FileService.HashFunction(createdFileName);
 
         Directory.CreateDirectory(_blobPath);
-        EncryptFile(imageBytes, extension, hashBlobStorageName);
+        byte[] encryptedData = FileService.EncryptFile(imageBytes, _keyCrypt);
+        File.WriteAllBytes($"{_blobPath}{hashBlobStorageName}.{extension}", encryptedData);
 
-        return hashBlobStorageName;
+        return Task.FromResult(hashBlobStorageName);
     }
 
-    public void SaveFileInStorageBase64(string base64, string name, string extension)
+    public Task SaveFileInStorageBase64(string base64, string name, string extension)
     {
         byte[] imageBytes = Convert.FromBase64String(base64);
         Directory.CreateDirectory(_blobPath);
-        EncryptFile(imageBytes, extension, name);
+        FileService.EncryptFile(imageBytes, _keyCrypt);
+        File.WriteAllBytes($"{_blobPath}{name}.{extension}", imageBytes);
+        return Task.CompletedTask;
     }
 
-    public void DeleteFileInStorage(string name)
+    public Task DeleteFileInStorage(string name)
     {
         File.Delete($"{_blobPath}{name}");
+        return Task.CompletedTask;
     }
 
-    public string UpdateFileInStorage(
+    public async Task<string> UpdateFileInStorage(
         string previousBlobName,
         string base64Format,
         string newBlobName,
         string extension)
     {
-        DeleteFileInStorage(previousBlobName);
+        await DeleteFileInStorage(previousBlobName);
 
-        string hashBlobStorageName = SaveFileInStorage(
-        base64Format,
-        newBlobName,
-        extension);
+        string hashBlobStorageName = await SaveFileInStorage(
+            base64Format,
+            newBlobName,
+            extension);
 
         return hashBlobStorageName;
     }
@@ -114,60 +118,14 @@ public class BlobService : IBlobService
         return paths.Select(p => Path.GetFileName(p));
     }
 
-    private string HashFunction(string createdFileName)
+    private byte[] GetDecryptedFile(string name)
     {
-        using (var hash = SHA256.Create())
+        if (!File.Exists($"{_blobPath}{name}"))
         {
-            Encoding enc = Encoding.UTF8;
-            byte[] result = hash.ComputeHash(enc.GetBytes(createdFileName));
-            return Convert.ToBase64String(result).Replace('/', '_');
-        }
-    }
-
-    private void EncryptFile(byte[] imageBytes, string type, string name)
-    {
-        byte[] keyBytes = Encoding.UTF8.GetBytes(_keyCrypt);
-
-        byte[] iv = new byte[16];
-        using (var rng = new RNGCryptoServiceProvider())
-        {
-            rng.GetBytes(iv);
+            return null!;
         }
 
-        byte[] encryptedBytes;
-        using (Aes aes = Aes.Create())
-        {
-            aes.KeySize = 256;
-            aes.Key = keyBytes;
-            aes.IV = iv;
-            ICryptoTransform encryptor = aes.CreateEncryptor();
-            encryptedBytes = encryptor.TransformFinalBlock(imageBytes, 0, imageBytes.Length);
-        }
-
-        byte[] encryptedData = new byte[encryptedBytes.Length + iv.Length];
-        Buffer.BlockCopy(iv, 0, encryptedData, 0, iv.Length);
-        Buffer.BlockCopy(encryptedBytes, 0, encryptedData, iv.Length, encryptedBytes.Length);
-        File.WriteAllBytes($"{_blobPath}{name}.{type}", encryptedData);
-    }
-
-    private byte[] DecryptFile(string fileName, string type)
-    {
-        byte[] encryptedData = File.ReadAllBytes($"{_blobPath}{fileName}.{type}");
-        byte[] keyBytes = Encoding.UTF8.GetBytes(_keyCrypt);
-
-        byte[] iv = new byte[16];
-        Buffer.BlockCopy(encryptedData, 0, iv, 0, iv.Length);
-
-        byte[] decryptedBytes;
-        using (Aes aes = Aes.Create())
-        {
-            aes.KeySize = 256;
-            aes.Key = keyBytes;
-            aes.IV = iv;
-            ICryptoTransform decryptor = aes.CreateDecryptor();
-            decryptedBytes = decryptor.TransformFinalBlock(encryptedData, iv.Length, encryptedData.Length - iv.Length);
-        }
-
-        return decryptedBytes;
+        byte[] encryptedData = File.ReadAllBytes($"{_blobPath}{name}");
+        return FileService.DecryptFile(encryptedData, _keyCrypt);
     }
 }

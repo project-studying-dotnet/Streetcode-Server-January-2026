@@ -31,7 +31,7 @@ public class CreateImageHandler : IRequestHandler<CreateImageCommand, Result<Ima
 
     public async Task<Result<ImageDTO>> Handle(CreateImageCommand request, CancellationToken cancellationToken)
     {
-        string hashBlobStorageName = _blobService.SaveFileInStorage(
+        string hashBlobStorageName = await _blobService.SaveFileInStorage(
             request.Image.BaseFormat,
             request.Image.Title,
             request.Image.Extension);
@@ -42,18 +42,27 @@ public class CreateImageHandler : IRequestHandler<CreateImageCommand, Result<Ima
 
         await _repositoryWrapper.ImageRepository.CreateAsync(image);
         var resultIsSuccess = await _repositoryWrapper.SaveChangesAsync() > 0;
+        if (!resultIsSuccess)
+        {
+            var errorMsg = Messages.Error_FailedToCreateEntity.Format(nameof(DAL.Entities.Media.Images.Image));
+            _logger.LogError(request, errorMsg);
+            return Result.Fail(new Error(errorMsg));
+        }
 
         var createdImage = _mapper.Map<ImageDTO>(image);
 
-        createdImage.Base64 = _blobService.FindFileInStorageAsBase64(createdImage.BlobName);
-
-        if (resultIsSuccess)
+        var imageBase64 = await _blobService.FindFileInStorageAsBase64(createdImage.BlobName);
+        if (imageBase64 is not null)
         {
+            createdImage.Base64 = imageBase64;
             return Result.Ok(createdImage);
         }
 
-        var errorMsg = Messages.Error_FailedToCreateEntity.Format(nameof(DAL.Entities.Media.Images.Image));
-        _logger.LogError(request, errorMsg);
-        return Result.Fail(new Error(errorMsg));
+        var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(
+            nameof(DAL.Entities.Media.Images.Image),
+            createdImage.BlobName);
+
+        _logger.LogError(request, errorNotFoundMsg);
+        return Result.Fail(new Error(errorNotFoundMsg));
     }
 }

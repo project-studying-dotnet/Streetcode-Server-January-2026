@@ -27,7 +27,18 @@ public class GetBaseAudioHandler : IRequestHandler<GetBaseAudioQuery, Result<Mem
 
         if (audio is not null)
         {
-            return _blobStorage.FindFileInStorageAsMemoryStream(audio.BlobName);
+            var audioMemoryStream = await _blobStorage.FindFileInStorageAsMemoryStream(audio.BlobName);
+            if (audioMemoryStream is not null)
+            {
+                return Result.Ok(audioMemoryStream);
+            }
+
+            var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(
+                nameof(DAL.Entities.Media.Audio),
+                audio.BlobName);
+
+            _logger.LogError(request, errorNotFoundMsg);
+            return Result.Fail(new Error(errorNotFoundMsg));
         }
 
         var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(DAL.Entities.Media.Audio), request.Id);

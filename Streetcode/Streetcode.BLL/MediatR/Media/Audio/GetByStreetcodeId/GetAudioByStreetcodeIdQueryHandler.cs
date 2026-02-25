@@ -42,8 +42,18 @@ public class GetAudioByStreetcodeIdQueryHandler : IRequestHandler<GetAudioByStre
 
         var audioDto = _mapper.Map<AudioDTO>(audio);
 
-        audioDto.Base64 = _blobService.FindFileInStorageAsBase64(audioDto.BlobName);
+        var audioBase64 = await _blobService.FindFileInStorageAsBase64(audioDto.BlobName);
+        if (audioBase64 is not null)
+        {
+            audioDto.Base64 = audioBase64;
+            return Result.Ok(audioDto);
+        }
 
-        return Result.Ok(audioDto);
+        var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(
+            nameof(DAL.Entities.Media.Audio),
+            audioDto.BlobName);
+
+        _logger.LogError(request, errorNotFoundMsg);
+        return Result.Fail(new Error(errorNotFoundMsg));
     }
 }

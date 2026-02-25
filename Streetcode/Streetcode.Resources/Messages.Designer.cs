@@ -204,6 +204,15 @@ namespace Streetcode.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} blob with BlobName: &quot;{1}&quot; not found.
+        /// </summary>
+        public static string Error_MediaBlobNotFound {
+            get {
+                return ResourceManager.GetString("Error_MediaBlobNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to News with Url: {0} not found.
         /// </summary>
         public static string Error_NewsWithUrlNotFound {

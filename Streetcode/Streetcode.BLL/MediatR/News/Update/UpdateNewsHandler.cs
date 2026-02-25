@@ -14,13 +14,13 @@ namespace Streetcode.BLL.MediatR.News.Update
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IMapper _mapper;
-        private readonly IBlobService _blobSevice;
+        private readonly IBlobService _blobService;
         private readonly ILoggerService _logger;
         public UpdateNewsHandler(IRepositoryWrapper repositoryWrapper, IMapper mapper, IBlobService blobService, ILoggerService logger)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
-            _blobSevice = blobService;
+            _blobService = blobService;
             _logger = logger;
         }
 
@@ -38,16 +38,25 @@ namespace Streetcode.BLL.MediatR.News.Update
 
             if (news.Image is not null)
             {
-                response.Image.Base64 = _blobSevice.FindFileInStorageAsBase64(response.Image.BlobName);
-            }
-            else
-            {
-                var img = await _repositoryWrapper.ImageRepository
-                    .GetFirstOrDefaultAsync(x => x.Id == response.ImageId);
-                if (img != null)
+                var imageBase64 = await _blobService.FindFileInStorageAsBase64(response.Image.BlobName);
+                if (imageBase64 is not null)
                 {
-                    _repositoryWrapper.ImageRepository.Delete(img);
+                    response.Image.Base64 = imageBase64;
                 }
+
+                var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(
+                    nameof(DAL.Entities.Media.Images.Image),
+                    response.Image.BlobName);
+
+                _logger.LogError(request, errorNotFoundMsg);
+                return Result.Fail(new Error(errorNotFoundMsg));
+            }
+
+            var img = await _repositoryWrapper.ImageRepository
+                .GetFirstOrDefaultAsync(x => x.Id == response.ImageId);
+            if (img != null)
+            {
+                _repositoryWrapper.ImageRepository.Delete(img);
             }
 
             _repositoryWrapper.NewsRepository.Update(news);

@@ -11,7 +11,7 @@ builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddSwaggerServices();
 builder.Services.AddRedisCacheServices(builder.Configuration);
-builder.Services.AddCustomServices(builder.Configuration);
+builder.Services.AddCustomServices(builder.Configuration, builder.Environment);
 builder.Services.ConfigureBlob(builder);
 builder.Services.ConfigurePayment(builder);
 builder.Services.ConfigureInstagram(builder);
@@ -48,7 +48,7 @@ if (app.Environment.EnvironmentName != "Local")
     wp => wp.ParseZipFileFromWebAsync(bypassSslValidation), TimeSpan.FromMinutes(1));
     RecurringJob.AddOrUpdate<WebParsingUtils>(
         wp => wp.ParseZipFileFromWebAsync(bypassSslValidation), Cron.Monthly);
-    RecurringJob.AddOrUpdate<BlobService>(
+    RecurringJob.AddOrUpdate<AzureBlobService>(
         b => b.CleanBlobStorage(), Cron.Monthly);
 }
 

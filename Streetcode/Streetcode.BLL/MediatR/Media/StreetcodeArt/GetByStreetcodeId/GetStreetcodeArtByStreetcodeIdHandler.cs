@@ -53,7 +53,18 @@ namespace Streetcode.BLL.MediatR.Media.StreetcodeArt.GetByStreetcodeId
 
             foreach (var artDto in artsDto)
             {
-                artDto.Art.Image.Base64 = _blobService.FindFileInStorageAsBase64(artDto.Art.Image.BlobName);
+                var imageBase64 = await _blobService.FindFileInStorageAsBase64(artDto.Art.Image.BlobName);
+                if (imageBase64 is not null)
+                {
+                    artDto.Art.Image.Base64 = imageBase64;
+                }
+
+                var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(
+                    nameof(DAL.Entities.Media.Images.Image),
+                    artDto.Art.Image.BlobName);
+
+                _logger.LogError(request, errorNotFoundMsg);
+                return Result.Fail(new Error(errorNotFoundMsg));
             }
 
             return Result.Ok(artsDto);

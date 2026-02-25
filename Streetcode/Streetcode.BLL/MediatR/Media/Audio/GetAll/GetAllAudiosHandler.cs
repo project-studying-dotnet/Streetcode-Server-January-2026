@@ -39,7 +39,18 @@ public class GetAllAudiosHandler : IRequestHandler<GetAllAudiosQuery, Result<IEn
         var audioDtos = _mapper.Map<IEnumerable<AudioDTO>>(audios);
         foreach (var audio in audioDtos)
         {
-            audio.Base64 = _blobService.FindFileInStorageAsBase64(audio.BlobName);
+            var audioBase64 = await _blobService.FindFileInStorageAsBase64(audio.BlobName);
+            if (audioBase64 is not null)
+            {
+                audio.Base64 = audioBase64;
+            }
+
+            var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(
+                nameof(DAL.Entities.Media.Audio),
+                audio.BlobName);
+
+            _logger.LogError(request, errorNotFoundMsg);
+            return Result.Fail(new Error(errorNotFoundMsg));
         }
 
         return Result.Ok(audioDtos);

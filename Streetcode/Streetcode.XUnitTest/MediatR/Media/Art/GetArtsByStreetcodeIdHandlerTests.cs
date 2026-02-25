@@ -143,6 +143,27 @@ namespace Streetcode.XUnitTest.MediatR.Media.Art
                 result.Errors[0].Message);
         }
 
+        [Fact]
+        public async Task Handle_ReturnsFail_WhenBlobNotExists()
+        {
+            // Arrange
+            var streetcodeId = 1;
+            List<Art> arts = GetArtsList();
+
+            this.SetupArts(arts);
+            this.SetupBlobService(null);
+
+            // Act
+            var result = await this.handler
+                .Handle(new GetArtsByStreetcodeIdQuery(streetcodeId), CancellationToken.None);
+
+            // Assert
+            Assert.True(result.IsFailed);
+            Assert.Equal(
+                Messages.Error_MediaBlobNotFound.Format(nameof(Image), arts[0].Image.BlobName),
+                result.Errors[0].Message);
+        }
+
         private void SetupArts(List<Art>? arts)
         {
             var artRepository = new Mock<IArtRepository>();
@@ -158,8 +179,9 @@ namespace Streetcode.XUnitTest.MediatR.Media.Art
 
         private void SetupBlobService(string base64String)
         {
-            this.blobServiceMock.Setup(b => b.FindFileInStorageAsBase64(It.IsAny<string>()))
-                .Returns(base64String);
+            this.blobServiceMock
+                .Setup(b => b.FindFileInStorageAsBase64(It.IsAny<string>()))
+                .ReturnsAsync(base64String);
         }
 
         private static List<Art> GetArtsList()

@@ -27,6 +27,7 @@ using Streetcode.DAL.Entities.AdditionalContent.Email;
 using Streetcode.DAL.Persistence;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.DAL.Repositories.Realizations.Base;
+using Microsoft.Extensions.Azure;
 
 namespace Streetcode.WebApi.Extensions;
 
@@ -37,7 +38,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
     }
 
-    public static void AddCustomServices(this IServiceCollection services, IConfiguration configuration)
+    public static void AddCustomServices(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
     {
         services.AddRepositoryServices();
         services.AddFeatureManagement();
@@ -49,7 +53,20 @@ public static class ServiceCollectionExtensions
         services.AddValidatorsFromAssemblies(currentAssemblies);
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidatorBehavior<,>));
 
-        services.AddScoped<IBlobService, BlobService>();
+        if (environment.IsEnvironment("Local"))
+        {
+            services.AddScoped<IBlobService, BlobService>();
+        }
+        else
+        {
+            services.AddScoped<IBlobService, AzureBlobService>();
+            services.AddAzureClients(clientBuilder =>
+            {
+                var connectionString = configuration.GetSection("AzureBlobStorage")["ConnectionString"];
+                clientBuilder.AddBlobServiceClient(connectionString);
+            });
+        }
+
         services.AddScoped<ILoggerService, LoggerService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IPaymentService, PaymentService>();

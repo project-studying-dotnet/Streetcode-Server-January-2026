@@ -27,7 +27,18 @@ public class GetBaseImageHandler : IRequestHandler<GetBaseImageQuery, Result<Mem
 
         if (image is not null)
         {
-            return _blobStorage.FindFileInStorageAsMemoryStream(image.BlobName);
+            var imageMemoryStream = await _blobStorage.FindFileInStorageAsMemoryStream(image.BlobName);
+            if (imageMemoryStream is not null)
+            {
+                return Result.Ok(imageMemoryStream);
+            }
+
+            var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(
+                nameof(DAL.Entities.Media.Images.Image),
+                image.BlobName);
+
+            _logger.LogError(request, errorNotFoundMsg);
+            return Result.Fail(new Error(errorNotFoundMsg));
         }
 
         var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(DAL.Entities.Media.Images.Image), request.Id);

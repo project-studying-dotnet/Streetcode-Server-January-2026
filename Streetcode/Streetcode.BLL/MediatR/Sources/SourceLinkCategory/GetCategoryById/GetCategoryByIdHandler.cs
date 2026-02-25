@@ -32,14 +32,14 @@ public class GetCategoryByIdHandler : IRequestHandler<GetCategoryByIdQuery, Resu
 
     public async Task<Result<SourceLinkCategoryDTO>> Handle(GetCategoryByIdQuery request, CancellationToken cancellationToken)
     {
-        var srcCategories = await _repositoryWrapper
+        var srcCategory = await _repositoryWrapper
             .SourceCategoryRepository.GetFirstOrDefaultAsync(
                 predicate: sc => sc.Id == request.Id,
                 include: scl => scl
                     .Include(sc => sc.StreetcodeCategoryContents)
                     .Include(sc => sc.Image) !);
 
-        if (srcCategories is null)
+        if (srcCategory is null)
         {
             var errorMsg = Messages.Error_EntityWithIdNotFound.Format(
                 nameof(DAL.Entities.Sources.SourceLinkCategory),
@@ -49,10 +49,19 @@ public class GetCategoryByIdHandler : IRequestHandler<GetCategoryByIdQuery, Resu
             return Result.Fail(new Error(errorMsg));
         }
 
-        var mappedSrcCategories = _mapper.Map<SourceLinkCategoryDTO>(srcCategories);
+        var mappedSrcCategory = _mapper.Map<SourceLinkCategoryDTO>(srcCategory);
+        var imageBase64 = await _blobService.FindFileInStorageAsBase64(mappedSrcCategory.Image.BlobName);
+        if (imageBase64 is not null)
+        {
+            mappedSrcCategory.Image.Base64 = imageBase64;
+            return Result.Ok(mappedSrcCategory);
+        }
 
-        mappedSrcCategories.Image.Base64 = _blobService.FindFileInStorageAsBase64(mappedSrcCategories.Image.BlobName);
+        var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(
+            nameof(DAL.Entities.Media.Images.Image),
+            mappedSrcCategory.Image.BlobName);
 
-        return Result.Ok(mappedSrcCategories);
+        _logger.LogError(request, errorNotFoundMsg);
+        return Result.Fail(new Error(errorNotFoundMsg));
     }
 }

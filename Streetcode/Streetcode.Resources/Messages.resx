@@ -204,4 +204,7 @@
   <data name="Error_CommandDataRequired" xml:space="preserve">
     <value>{} data required</value>
   </data>
+  <data name="Error_MediaBlobNotFound" xml:space="preserve">
+    <value>{0} blob with BlobName: "{1}" not found</value>
+  </data>
 </root>
