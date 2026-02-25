@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Streetcode.Auth.BLL.DTO.Options;
@@ -18,15 +19,18 @@ namespace Streetcode.Auth.BLL.Services
         private readonly JwtOptionsDTO _jwtOptions;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly ILogger<TokenService> _logger;
 
         public TokenService(
             IOptions<JwtOptionsDTO> jwtOptions,
             UserManager<ApplicationUser> userManager,
-            IRefreshTokenRepository refreshTokenRepository)
+            IRefreshTokenRepository refreshTokenRepository,
+            ILogger<TokenService> logger)
         {
             _jwtOptions = jwtOptions.Value;
             _userManager = userManager;
             _refreshTokenRepository = refreshTokenRepository;
+            _logger = logger;
         }
 
         public async Task<(string AccessToken, RefreshToken RefreshToken)> GenerateTokensAsync(ApplicationUser user)
@@ -78,6 +82,15 @@ namespace Streetcode.Auth.BLL.Services
         public async Task RevokeAllAsync(string userId)
         {
             await _refreshTokenRepository.RevokeAllAsync(userId);
+        }
+
+        public async Task RemoveExpiredRefreshTokensAsync()
+        {
+            var deletedCount = await _refreshTokenRepository.DeleteExpiredAsync();
+
+            _logger.LogInformation(
+                "Refresh tokens cleanup completed. DeletedCount={DeletedCount}",
+                deletedCount);
         }
 
         private async Task<string> GenerateAccessToken(ApplicationUser user)

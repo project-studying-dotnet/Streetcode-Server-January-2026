@@ -9,6 +9,6 @@ namespace Streetcode.Auth.DAL.Repositories.Interfaces
         Task UpdateAsync(RefreshToken refreshToken);
         Task RevokeAllAsync(string userId);
         Task DeleteAsync(RefreshToken refreshToken);
-        Task DeleteExpiredAsync();
+        Task<int> DeleteExpiredAsync();
     }
 }

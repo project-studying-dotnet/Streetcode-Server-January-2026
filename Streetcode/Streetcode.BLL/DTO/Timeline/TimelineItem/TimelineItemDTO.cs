@@ -1,6 +1,7 @@
+using Streetcode.BLL.DTO.Timeline.HistoricalContext;
 using Streetcode.DAL.Enums;
 
-namespace Streetcode.BLL.DTO.Timeline;
+namespace Streetcode.BLL.DTO.Timeline.TimelineItem;
 
 public class TimelineItemDTO
 {
