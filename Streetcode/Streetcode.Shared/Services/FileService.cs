@@ -20,7 +20,7 @@ public static class FileService
         byte[] keyBytes = Encoding.UTF8.GetBytes(keyCrypt);
         byte[] iv = new byte[16];
 
-        using (var rng = new RNGCryptoServiceProvider())
+        using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
         {
             rng.GetBytes(iv);
         }
