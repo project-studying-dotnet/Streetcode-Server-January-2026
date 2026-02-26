@@ -96,6 +96,9 @@ public class DeletePartnerHandlerTests
                 It.IsAny<bool>()))
             .ReturnsAsync(partner);
 
+        this.partnersRepositoryMock
+            .Setup(r => r.Delete(It.IsAny<Partner>()));
+
         this.repositoryWrapperMock
             .Setup(r => r.SaveChangesAsync())
             .ReturnsAsync(1);

@@ -24,19 +24,10 @@ namespace Streetcode.BLL.MediatR.Streetcode.RelatedTerm.Create
 
         public async Task<Result<RelatedTermDTO>> Handle(CreateRelatedTermCommand request, CancellationToken cancellationToken)
         {
-            var relatedTerm = _mapper.Map<DAL.Entities.Streetcode.TextContent.RelatedTerm>(request.RelatedTerm);
-
-            if (relatedTerm is null)
-            {
-                var errorConvertMsg =
-                    Messages.Error_ConvertNullToEntity.Format(nameof(DAL.Entities.Streetcode.TextContent.RelatedTerm));
-
-                _logger.LogError(request, errorConvertMsg);
-                return Result.Fail(new Error(errorConvertMsg));
-            }
+            var relatedTerm = _mapper.Map<DAL.Entities.Streetcode.TextContent.RelatedTerm>(request.CreateRelatedTerm);
 
             var existingTerms = await _repository.RelatedTermRepository
-                .GetAllAsync(rt => rt.TermId == request.RelatedTerm.TermId && rt.Word == request.RelatedTerm.Word);
+                .GetAllAsync(rt => rt.TermId == request.CreateRelatedTerm.TermId && rt.Word == request.CreateRelatedTerm.Word);
 
             if (existingTerms.Any())
             {

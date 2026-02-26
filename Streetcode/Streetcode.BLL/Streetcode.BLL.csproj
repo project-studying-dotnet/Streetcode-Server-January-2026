@@ -13,6 +13,7 @@
     <EmbeddedResource Remove="Exceptions\**" />
     <EmbeddedResource Remove="MediatR\Analytics\**" />
     <None Remove="MediatR\Analytics\**" />
+    <Compile Remove="DTO\Streetcode\TextContent\RelatedTermDTO.cs" />
   </ItemGroup>
 
   <ItemGroup>

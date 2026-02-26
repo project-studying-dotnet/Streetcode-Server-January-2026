@@ -25,6 +25,13 @@ namespace Streetcode.BLL.MediatR.News.Create
         {
             var newNews = _mapper.Map<DAL.Entities.News.News>(request.NewNews);
 
+            if (newNews is null)
+            {
+                var errorNullMsg = Messages.Error_ConvertNullToEntity.Format(nameof(DAL.Entities.News.News));
+                _logger.LogError(request, errorNullMsg);
+                return Result.Fail(new Error(errorNullMsg));
+            }
+
             if (newNews.ImageId == 0)
             {
                 newNews.ImageId = null;
