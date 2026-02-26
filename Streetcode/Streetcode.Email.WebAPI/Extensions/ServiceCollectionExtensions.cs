@@ -1,4 +1,5 @@
 ﻿using Hangfire;
+using Hangfire.Redis.StackExchange;
 using Microsoft.EntityFrameworkCore;
 using Streetcode.Email.BLL.Configs;
 using Streetcode.Email.BLL.Interfaces;
@@ -12,8 +13,7 @@ namespace Streetcode.Email.WebAPI.Extensions
         public static void AddApplicationServices(this IServiceCollection services, ConfigurationManager configuration)
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection");
-            var emailConfig = configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>();
-            services.AddSingleton(emailConfig);
+            var redisConnection = configuration.GetConnectionString("Redis");
 
             services.AddDbContext<EmailDbContext>(options =>
             {
@@ -26,7 +26,7 @@ namespace Streetcode.Email.WebAPI.Extensions
 
             services.AddHangfire(config =>
             {
-                config.UseSqlServerStorage(connectionString);
+                config.UseRedisStorage(redisConnection);
             });
 
             services.AddHangfireServer();
@@ -67,6 +67,26 @@ namespace Streetcode.Email.WebAPI.Extensions
 
             services.AddScoped<IEmailService, EmailService>();
 
+        }
+
+        public static void AddRabbitMQConsumer(this IServiceCollection services)
+        {
+            services.AddHostedService<EmailConsumer>();
+        }
+
+        public class CorsConfiguration
+        {
+            public List<string> AllowedOrigins { get; set; }
+            public List<string> AllowedHeaders { get; set; }
+            public List<string> AllowedMethods { get; set; }
+            public int PreflightMaxAge { get; set; }
+        }
+
+        public class JwtOptions
+        {
+            public string Key { get; set; }
+            public string Issuer { get; set; }
+            public string Audience { get; set; }
         }
     }
 }
