@@ -129,7 +129,7 @@ namespace Streetcode.XUnitTest.MediatR.News
             .ReturnsAsync(news);
 
             _blobServiceMock.Setup(bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()))
-                .Returns(fakeBase);
+                .ReturnsAsync(fakeBase);
 
             var request = new GetNewsByIdQuery(id);
 
@@ -139,6 +139,48 @@ namespace Streetcode.XUnitTest.MediatR.News
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Value.Image.Base64.Should().Be(fakeBase);
+        }
+
+        [Fact]
+        public async Task Handle_ShouldReturnFail_WhenNewsExistsByIdWithImageButBlobNotExists()
+        {
+            // Arrange
+            int id = 1;
+
+            var now = DateTime.Now;
+
+            var news = new NewsEntity
+            {
+                Id = id,
+                Title = "Test Title",
+                Text = "Sample text",
+                URL = "https://github.com/",
+                CreationDate = now,
+                Image = new Image
+                {
+                    BlobName = "BlobName",
+                },
+            };
+
+            _repositoryWrapperMock.Setup(r => r.NewsRepository.GetFirstOrDefaultAsync(
+                    It.IsAny<Expression<Func<NewsEntity, bool>>>(),
+                    It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
+                    false
+                ))
+                .ReturnsAsync(news);
+
+            _blobServiceMock.Setup(bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()))
+                .ReturnsAsync((string?)null);
+
+            var request = new GetNewsByIdQuery(id);
+
+            // Act
+            var result = await _handler.Handle(request, CancellationToken.None);
+
+            // Assert
+            result.IsFailed.Should().BeTrue();
+            result.Errors.Should()
+                .ContainSingle(Messages.Error_MediaBlobNotFound.Format(nameof(Image), news.Image.BlobName));
         }
     }
 }

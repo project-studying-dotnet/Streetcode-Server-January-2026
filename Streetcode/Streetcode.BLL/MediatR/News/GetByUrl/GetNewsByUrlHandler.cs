@@ -39,23 +39,24 @@ namespace Streetcode.BLL.MediatR.News.GetByUrl
                 return Result.Fail(errorMsg);
             }
 
-            if (newsDTO.Image is not null)
+            if (newsDTO.Image is null)
             {
-                var imageBase64 = await _blobService.FindFileInStorageAsBase64(newsDTO.Image.BlobName);
-                if (imageBase64 is not null)
-                {
-                    newsDTO.Image.Base64 = imageBase64;
-                }
-
-                var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(
-                    nameof(DAL.Entities.Media.Images.Image),
-                    newsDTO.Image.BlobName);
-
-                _logger.LogError(request, errorNotFoundMsg);
-                return Result.Fail(new Error(errorNotFoundMsg));
+                return Result.Ok(newsDTO);
             }
 
-            return Result.Ok(newsDTO);
+            var imageBase64 = await _blobService.FindFileInStorageAsBase64(newsDTO.Image.BlobName);
+            if (imageBase64 is not null)
+            {
+                newsDTO.Image.Base64 = imageBase64;
+                return Result.Ok(newsDTO);
+            }
+
+            var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(
+                nameof(DAL.Entities.Media.Images.Image),
+                newsDTO.Image.BlobName);
+
+            _logger.LogError(request, errorNotFoundMsg);
+            return Result.Fail(new Error(errorNotFoundMsg));
         }
     }
 }

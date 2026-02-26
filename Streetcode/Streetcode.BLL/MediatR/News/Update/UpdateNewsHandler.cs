@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FluentResults;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.News;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
@@ -26,45 +27,72 @@ namespace Streetcode.BLL.MediatR.News.Update
 
         public async Task<Result<NewsDTO>> Handle(UpdateNewsCommand request, CancellationToken cancellationToken)
         {
-            var news = _mapper.Map<DAL.Entities.News.News>(request.News);
-            if (news is null)
+            if (request.News is null)
             {
                 var errorConvertMsg = Messages.Error_ConvertNullToEntity.Format(nameof(DAL.Entities.News.News));
                 _logger.LogError(request, errorConvertMsg);
                 return Result.Fail(new Error(errorConvertMsg));
             }
 
-            var response = _mapper.Map<NewsDTO>(news);
+            var newsEntity = await _repositoryWrapper.NewsRepository.GetFirstOrDefaultAsync(
+                    n => n.Id == request.News.Id,
+                    x => x.Include(n => n.Image),
+                    true);
 
-            if (news.Image is not null)
+            if (newsEntity is null)
             {
-                var imageBase64 = await _blobService.FindFileInStorageAsBase64(response.Image.BlobName);
-                if (imageBase64 is not null)
-                {
-                    response.Image.Base64 = imageBase64;
-                }
-
-                var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(
-                    nameof(DAL.Entities.Media.Images.Image),
-                    response.Image.BlobName);
+                var errorNotFoundMsg = Messages.Error_EntityWithIdNotFound.Format(
+                    nameof(DAL.Entities.News.News),
+                    request.News.Id);
 
                 _logger.LogError(request, errorNotFoundMsg);
                 return Result.Fail(new Error(errorNotFoundMsg));
             }
 
-            var img = await _repositoryWrapper.ImageRepository
-                .GetFirstOrDefaultAsync(x => x.Id == response.ImageId);
-            if (img != null)
+            if (request.News.Image is not null && newsEntity.ImageId != request.News.ImageId)
             {
-                _repositoryWrapper.ImageRepository.Delete(img);
+                var img = await _repositoryWrapper.ImageRepository
+                    .GetFirstOrDefaultAsync(
+                        x => x.Id == request.News.Image.Id,
+                        trackEntities: true);
+
+                if (img is null)
+                {
+                    var errorNotFoundMsg = Messages.Error_EntityWithIdNotFound.Format(
+                        nameof(DAL.Entities.Media.Images.Image),
+                        request.News.Image.Id);
+
+                    _logger.LogError(request, errorNotFoundMsg);
+                    return Result.Fail(errorNotFoundMsg);
+                }
+
+                var imageBase64 = await _blobService.FindFileInStorageAsBase64(request.News.Image.BlobName);
+                if (imageBase64 is null)
+                {
+                    var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(
+                        nameof(DAL.Entities.Media.Images.Image),
+                        request.News.Image.BlobName);
+
+                    _logger.LogError(request, errorNotFoundMsg);
+                    return Result.Fail(new Error(errorNotFoundMsg));
+                }
+
+                request.News.Image.Base64 = imageBase64;
+                _repositoryWrapper.ImageRepository.Delete(newsEntity.Image);
+            }
+            else if (request.News.Image is null)
+            {
+                _repositoryWrapper.ImageRepository.Delete(newsEntity.Image);
             }
 
-            _repositoryWrapper.NewsRepository.Update(news);
+            _mapper.Map(request.News, newsEntity);
+
+            _repositoryWrapper.NewsRepository.Update(newsEntity);
             var resultIsSuccess = await _repositoryWrapper.SaveChangesAsync() > 0;
 
             if (resultIsSuccess)
             {
-                return Result.Ok(response);
+                return Result.Ok(_mapper.Map<NewsDTO>(newsEntity));
             }
 
             var errorMsg = Messages.Error_FailedToUpdateEntity.Format(nameof(DAL.Entities.News.News));

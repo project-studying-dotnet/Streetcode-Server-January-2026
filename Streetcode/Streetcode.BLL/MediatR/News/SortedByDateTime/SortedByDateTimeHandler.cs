@@ -50,6 +50,7 @@ namespace Streetcode.BLL.MediatR.News.SortedByDateTime
                 if (imageBase64 is not null)
                 {
                     dto.Image.Base64 = imageBase64;
+                    continue;
                 }
 
                 var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(

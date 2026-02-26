@@ -42,17 +42,17 @@ namespace Streetcode.BLL.MediatR.News.GetNewsAndLinksByUrl
             if (newsDTO.Image is not null)
             {
                 var imageBase64 = await _blobService.FindFileInStorageAsBase64(newsDTO.Image.BlobName);
-                if (imageBase64 is not null)
+                if (imageBase64 is null)
                 {
-                    newsDTO.Image.Base64 = imageBase64;
+                    var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(
+                        nameof(DAL.Entities.Media.Images.Image),
+                        newsDTO.Image.BlobName);
+
+                    _logger.LogError(request, errorNotFoundMsg);
+                    return Result.Fail(new Error(errorNotFoundMsg));
                 }
 
-                var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(
-                    nameof(DAL.Entities.Media.Images.Image),
-                    newsDTO.Image.BlobName);
-
-                _logger.LogError(request, errorNotFoundMsg);
-                return Result.Fail(new Error(errorNotFoundMsg));
+                newsDTO.Image.Base64 = imageBase64;
             }
 
             var news = (await _repositoryWrapper.NewsRepository.GetAllAsync()).ToList();
