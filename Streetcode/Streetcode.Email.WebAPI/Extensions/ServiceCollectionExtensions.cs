@@ -31,32 +31,6 @@ namespace Streetcode.Email.WebAPI.Extensions
 
             services.AddHangfireServer();
 
-            var corsConfig = configuration.GetSection("CORS").Get<CorsConfiguration>();
-            services.AddCors(opt =>
-            {
-                opt.AddDefaultPolicy(policy =>
-                {
-                    if (corsConfig?.AllowedOrigins?.Any() == true && !corsConfig.AllowedOrigins.Contains("*"))
-                    {
-                        policy.WithOrigins(corsConfig.AllowedOrigins.ToArray());
-                    }
-                    else
-                    {
-                        policy.SetIsOriginAllowed(origin => true);
-                    }
-
-                    policy.AllowAnyHeader()
-                          .AllowAnyMethod();
-                });
-            });
-
-            services.AddHsts(opt =>
-            {
-                opt.Preload = true;
-                opt.IncludeSubDomains = true;
-                opt.MaxAge = TimeSpan.FromDays(30);
-            });
-
             services.AddLogging();
             services.AddControllers();
         }

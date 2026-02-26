@@ -7,15 +7,20 @@ namespace Streetcode.Email.WebAPI.Extensions
     {
         public static async Task ApplyMigrations(this WebApplication app)
         {
-            var logger = app.Services.GetRequiredService<ILogger<Program>>();
+            using var scope = app.Services.CreateScope();
+            var services = scope.ServiceProvider;
+            var logger = services.GetRequiredService<ILogger<Program>>();
+
             try
             {
-                var emailContext = app.Services.GetRequiredService<EmailDbContext>();
+                var emailContext = services.GetRequiredService<EmailDbContext>();
                 await emailContext.Database.MigrateAsync();
+                logger.LogInformation("Database migrated successfully.");
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "An error occured during startup migration");
+                logger.LogError(ex, "An error occurred during startup migration");
+                throw;
             }
         }
     }

@@ -12,8 +12,17 @@ namespace Streetcode.Email.DAL.Persistence
 
         public DbSet<Feedback> Feedbacks { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
+                modelBuilder.Entity<Feedback>(entity =>
+                {
+                    entity.ToTable("Feedbacks");
+                    entity.HasKey(e => e.Id);
+                    entity.Property(e => e.Email).IsRequired().HasMaxLength(256);
+                    entity.Property(e => e.Message).IsRequired();
+                });
         }
     }
 }
