@@ -7,6 +7,7 @@ using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.Resources;
 using Streetcode.Shared.Extensions;
+using AudioEntity = Streetcode.DAL.Entities.Media.Audio;
 
 namespace Streetcode.BLL.MediatR.Media.Audio.GetById;
 
@@ -31,7 +32,7 @@ public class GetAudioByIdHandler : IRequestHandler<GetAudioByIdQuery, Result<Aud
 
         if (audio is null)
         {
-            var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(DAL.Entities.Media.Audio), request.Id);
+            var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(AudioEntity), request.Id);
             _logger.LogError(request, errorMsg);
             return Result.Fail(new Error(errorMsg));
         }

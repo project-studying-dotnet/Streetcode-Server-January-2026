@@ -7,6 +7,7 @@ using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.Resources;
 using Streetcode.Shared.Extensions;
+using AudioEntity = Streetcode.DAL.Entities.Media.Audio;
 
 namespace Streetcode.BLL.MediatR.Media.Audio.Create;
 
@@ -36,7 +37,7 @@ public class CreateAudioHandler : IRequestHandler<CreateAudioCommand, Result<Aud
             request.Audio.Title,
             request.Audio.Extension);
 
-        var audio = _mapper.Map<DAL.Entities.Media.Audio>(request.Audio);
+        var audio = _mapper.Map<AudioEntity>(request.Audio);
 
         audio.BlobName = $"{hashBlobStorageName}.{request.Audio.Extension}";
 
@@ -51,7 +52,7 @@ public class CreateAudioHandler : IRequestHandler<CreateAudioCommand, Result<Aud
             return Result.Ok(createdAudio);
         }
 
-        var errorMsg = Messages.Error_FailedToCreateEntity.Format(nameof(DAL.Entities.Media.Audio));
+        var errorMsg = Messages.Error_FailedToCreateEntity.Format(nameof(AudioEntity));
         _logger.LogError(request, errorMsg);
         return Result.Fail(new Error(errorMsg));
     }
