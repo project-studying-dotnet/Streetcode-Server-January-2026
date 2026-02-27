@@ -1,10 +1,14 @@
-﻿using Hangfire;
-using Hangfire.Redis.StackExchange;
+﻿using FluentValidation;
+using Hangfire;
+using MassTransit;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Streetcode.Email.BLL.Configs;
 using Streetcode.Email.BLL.Interfaces;
+using Streetcode.Email.BLL.MediatR.Behavior;
 using Streetcode.Email.BLL.Services;
 using Streetcode.Email.DAL.Persistence;
+using System.Reflection;
 
 namespace Streetcode.Email.WebAPI.Extensions
 {
@@ -13,7 +17,6 @@ namespace Streetcode.Email.WebAPI.Extensions
         public static void AddApplicationServices(this IServiceCollection services, ConfigurationManager configuration)
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection");
-            var redisConnection = configuration.GetConnectionString("Redis");
 
             services.AddDbContext<EmailDbContext>(options =>
             {
@@ -26,7 +29,7 @@ namespace Streetcode.Email.WebAPI.Extensions
 
             services.AddHangfire(config =>
             {
-                config.UseRedisStorage(redisConnection);
+                config.UseSqlServerStorage(connectionString);
             });
 
             services.AddHangfireServer();
@@ -36,31 +39,36 @@ namespace Streetcode.Email.WebAPI.Extensions
         }
         public static void AddCustomServices(this IServiceCollection services, IConfiguration configuration)
         {
+            var bllAssembly = Assembly.Load("Streetcode.Email.BLL");
+
+            services.AddAutoMapper(bllAssembly);
+            services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(bllAssembly));
             services.Configure<EmailConfiguration>(
                 configuration.GetSection("EmailConfiguration"));
 
             services.AddScoped<IEmailService, EmailService>();
 
-        }
+            services.AddValidatorsFromAssembly(bllAssembly);
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidatorBehavior<,>));
 
-        public static void AddRabbitMQConsumer(this IServiceCollection services)
-        {
-            services.AddHostedService<EmailConsumer>();
-        }
+            services.AddMassTransit(x =>
+            {
+                x.AddConsumer<EmailConsumer>();
 
-        public class CorsConfiguration
-        {
-            public List<string> AllowedOrigins { get; set; }
-            public List<string> AllowedHeaders { get; set; }
-            public List<string> AllowedMethods { get; set; }
-            public int PreflightMaxAge { get; set; }
-        }
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    var rabbitSection = configuration.GetSection("RabbitMQ");
 
-        public class JwtOptions
-        {
-            public string Key { get; set; }
-            public string Issuer { get; set; }
-            public string Audience { get; set; }
+                    cfg.Host(rabbitSection["Host"], "/", h =>
+                    {
+                        h.Username(rabbitSection["Username"]);
+                        h.Password(rabbitSection["Password"]);
+                    });
+
+                    cfg.ConfigureEndpoints(context);
+                });
+            });
+
         }
     }
 }
