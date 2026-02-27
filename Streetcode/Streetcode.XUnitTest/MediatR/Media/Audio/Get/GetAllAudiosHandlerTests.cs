@@ -1,4 +1,8 @@
-﻿namespace Streetcode.XUnitTest.MediatR.Media.Audio.Get {
+﻿using Streetcode.Shared.Extensions;
+
+namespace Streetcode.XUnitTest.MediatR.Media.Audio.Get
+{
+    using System.Linq.Expressions;
     using AutoMapper;
     using FluentAssertions;
     using Microsoft.EntityFrameworkCore.Query;
@@ -10,7 +14,6 @@
     using Streetcode.BLL.MediatR.Media.Audio.GetAll;
     using Streetcode.DAL.Repositories.Interfaces.Base;
     using Streetcode.Resources;
-    using System.Linq.Expressions;
     using Xunit;
     using AudioEntity = Streetcode.DAL.Entities.Media.Audio;
 
@@ -71,10 +74,10 @@
             // Arrange
             var query = new GetAllAudiosQuery();
             var audios = new List<AudioEntity>
-        {
-            new () { Id = 1, BlobName = "audio1.mp3" },
-            new () { Id = 2, BlobName = "audio2.mp3" }
-        };
+            {
+                new () { Id = 1, BlobName = "audio1.mp3" },
+                new () { Id = 2, BlobName = "audio2.mp3" }
+            };
 
             this.mockRepositoryWrapper
                 .Setup(r => r.AudioRepository.GetAllAsync(
@@ -85,7 +88,7 @@
 
             this.mockBlobService
                 .Setup(b => b.FindFileInStorageAsBase64(It.IsAny<string>()))
-                .Returns((string blobName) => $"base64-content-of-{blobName}");
+                .ReturnsAsync((string blobName) => $"base64-content-of-{blobName}");
 
             // Act
             var result = await this.handler.Handle(query, CancellationToken.None);
@@ -107,13 +110,49 @@
                     It.IsAny<Expression<Func<AudioEntity, bool>>>(),
                     It.IsAny<Func<IQueryable<AudioEntity>, IIncludableQueryable<AudioEntity, object>>>(),
                     It.IsAny<bool>()))
-                .ReturnsAsync(new List<AudioEntity> { new() });
+                .ReturnsAsync(new List<AudioEntity> { new () });
+
+            this.mockBlobService
+                .Setup(b => b.FindFileInStorageAsBase64(It.IsAny<string>()))
+                .ReturnsAsync("base64");
 
             // Act
             var result = await this.handler.Handle(new GetAllAudiosQuery(), CancellationToken.None);
 
             // Assert
             result.Value.Should().BeAssignableTo<IEnumerable<AudioDTO>>();
+        }
+
+        [Fact]
+        public async Task Handle_BlobNotFound_ReturnsFailResult()
+        {
+            // Arrange
+            var query = new GetAllAudiosQuery();
+            var audios = new List<AudioEntity>
+            {
+                new () { Id = 1, BlobName = "audio1.mp3" },
+                new () { Id = 2, BlobName = "audio2.mp3" },
+            };
+
+            this.mockRepositoryWrapper
+                .Setup(r => r.AudioRepository.GetAllAsync(
+                    It.IsAny<Expression<Func<AudioEntity, bool>>>(),
+                    It.IsAny<Func<IQueryable<AudioEntity>, IIncludableQueryable<AudioEntity, object>>>(),
+                    It.IsAny<bool>()))
+                .ReturnsAsync(audios);
+
+            this.mockBlobService
+                .Setup(b => b.FindFileInStorageAsBase64(It.IsAny<string>()))
+                .ReturnsAsync((string blobName) => null);
+
+            // Act
+            var result = await this.handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            result.IsFailed.Should().BeTrue();
+            result.Errors.Should().ContainSingle(Messages.Error_MediaBlobNotFound.Format(
+                nameof(AudioEntity),
+                audios[0].BlobName!));
         }
     }
 }

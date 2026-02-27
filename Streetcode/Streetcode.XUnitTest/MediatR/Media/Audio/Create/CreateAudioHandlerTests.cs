@@ -56,7 +56,7 @@
 
             this.mockBlobService
                 .Setup(b => b.SaveFileInStorage(createDto.BaseFormat, createDto.Title, createDto.Extension))
-                .Returns(hashName);
+                .ReturnsAsync(hashName);
 
             this.mockRepositoryWrapper
                 .Setup(r => r.AudioRepository.CreateAsync(It.IsAny<AudioEntity>()))
@@ -103,7 +103,7 @@
 
             this.mockBlobService
                 .Setup(b => b.SaveFileInStorage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-                .Returns("some-hash");
+                .ReturnsAsync("some-hash");
 
             this.mockRepositoryWrapper
                 .Setup(r => r.AudioRepository.CreateAsync(It.IsAny<AudioEntity>()))
@@ -121,7 +121,6 @@
             // Assert
             result.IsFailed.Should().BeTrue();
             result.Errors.First().Message.Should().Be(expectedErrorMsg);
-
         }
     }
 }

@@ -44,6 +44,7 @@ public class GetAllAudiosHandler : IRequestHandler<GetAllAudiosQuery, Result<IEn
             if (audioBase64 is not null)
             {
                 audio.Base64 = audioBase64;
+                continue;
             }
 
             var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(

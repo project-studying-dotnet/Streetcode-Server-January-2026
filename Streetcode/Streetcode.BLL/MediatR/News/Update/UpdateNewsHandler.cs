@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.News;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
+using Streetcode.DAL.Entities.Media.Images;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.Resources;
 using Streetcode.Shared.Extensions;
@@ -49,6 +50,7 @@ namespace Streetcode.BLL.MediatR.News.Update
                 return Result.Fail(new Error(errorNotFoundMsg));
             }
 
+            var isImageDeleted = false;
             if (request.News.Image is not null && newsEntity.ImageId != request.News.ImageId)
             {
                 var img = await _repositoryWrapper.ImageRepository
@@ -78,13 +80,14 @@ namespace Streetcode.BLL.MediatR.News.Update
                 }
 
                 request.News.Image.Base64 = imageBase64;
-                _repositoryWrapper.ImageRepository.Delete(newsEntity.Image);
+                isImageDeleted = await DeleteImageAsync(newsEntity.Image);
             }
             else if (request.News.Image is null)
             {
-                _repositoryWrapper.ImageRepository.Delete(newsEntity.Image);
+                isImageDeleted = await DeleteImageAsync(newsEntity.Image);
             }
 
+            var oldBlobName = newsEntity.Image?.BlobName;
             _mapper.Map(request.News, newsEntity);
 
             _repositoryWrapper.NewsRepository.Update(newsEntity);
@@ -92,12 +95,35 @@ namespace Streetcode.BLL.MediatR.News.Update
 
             if (resultIsSuccess)
             {
+                if (isImageDeleted)
+                {
+                    await _blobService.DeleteFileInStorage(oldBlobName);
+                }
+
                 return Result.Ok(_mapper.Map<NewsDTO>(newsEntity));
             }
 
             var errorMsg = Messages.Error_FailedToUpdateEntity.Format(nameof(DAL.Entities.News.News));
             _logger.LogError(request, errorMsg);
             return Result.Fail(new Error(errorMsg));
+        }
+
+        private async Task<bool> DeleteImageAsync(Image? image)
+        {
+            if (image is null)
+            {
+                return false;
+            }
+
+            var fact = await _repositoryWrapper.FactRepository.GetFirstOrDefaultAsync(f => f.ImageId == image.Id);
+
+            if (fact is not null)
+            {
+                return false;
+            }
+
+            _repositoryWrapper.ImageRepository.Delete(image);
+            return true;
         }
     }
 }

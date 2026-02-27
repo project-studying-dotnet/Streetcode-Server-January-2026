@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Options;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.Shared.Services;
@@ -54,7 +55,7 @@ public class BlobService : IBlobService
         string hashBlobStorageName = FileService.HashFunction(createdFileName);
 
         Directory.CreateDirectory(_blobPath);
-        byte[] encryptedData = FileService.EncryptFile(imageBytes, _keyCrypt);
+        byte[] encryptedData = FileService.EncryptBytes(imageBytes, _keyCrypt);
         File.WriteAllBytes($"{_blobPath}{hashBlobStorageName}.{extension}", encryptedData);
 
         return Task.FromResult(hashBlobStorageName);
@@ -64,8 +65,8 @@ public class BlobService : IBlobService
     {
         byte[] imageBytes = Convert.FromBase64String(base64);
         Directory.CreateDirectory(_blobPath);
-        FileService.EncryptFile(imageBytes, _keyCrypt);
-        File.WriteAllBytes($"{_blobPath}{name}.{extension}", imageBytes);
+        var encryptedBytes = FileService.EncryptBytes(imageBytes, _keyCrypt);
+        File.WriteAllBytes($"{_blobPath}{name}.{extension}", encryptedBytes);
         return Task.CompletedTask;
     }
 
@@ -118,14 +119,15 @@ public class BlobService : IBlobService
         return paths.Select(p => Path.GetFileName(p));
     }
 
-    private byte[] GetDecryptedFile(string name)
+    [SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1011:ClosingSquareBracketsMustBeSpacedCorrectly", Justification = "Reviewed.")]
+    private byte[]? GetDecryptedFile(string name)
     {
         if (!File.Exists($"{_blobPath}{name}"))
         {
-            return null!;
+            return null;
         }
 
         byte[] encryptedData = File.ReadAllBytes($"{_blobPath}{name}");
-        return FileService.DecryptFile(encryptedData, _keyCrypt);
+        return FileService.DecryptBytes(encryptedData, _keyCrypt);
     }
 }

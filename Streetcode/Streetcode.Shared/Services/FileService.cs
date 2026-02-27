@@ -15,7 +15,7 @@ public static class FileService
         }
     }
     
-    public static byte[] EncryptFile(byte[] imageBytes, string keyCrypt)
+    public static byte[] EncryptBytes(byte[] plainBytes, string keyCrypt)
     {
         byte[] keyBytes = Encoding.UTF8.GetBytes(keyCrypt);
         byte[] iv = new byte[16];
@@ -33,7 +33,7 @@ public static class FileService
         
             using (ICryptoTransform encryptor = aes.CreateEncryptor())
             {
-                byte[] encryptedBytes = encryptor.TransformFinalBlock(imageBytes, 0, imageBytes.Length);
+                byte[] encryptedBytes = encryptor.TransformFinalBlock(plainBytes, 0, plainBytes.Length);
                 
                 byte[] encryptedData = new byte[iv.Length + encryptedBytes.Length];
                 Buffer.BlockCopy(iv, 0, encryptedData, 0, iv.Length);
@@ -44,7 +44,7 @@ public static class FileService
         }
     }
 
-    public static byte[] DecryptFile(byte[] encryptedData, string keyCrypt)
+    public static byte[] DecryptBytes(byte[] encryptedData, string keyCrypt)
     {
         byte[] keyBytes = Encoding.UTF8.GetBytes(keyCrypt);
 

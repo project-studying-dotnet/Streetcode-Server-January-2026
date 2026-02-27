@@ -16,6 +16,7 @@ using Streetcode.Resources;
 using Streetcode.Shared.Extensions;
 using Xunit;
 using NewsEntity = Streetcode.DAL.Entities.News.News;
+using FactEntity = Streetcode.DAL.Entities.Streetcode.TextContent.Fact;
 
 namespace Streetcode.XUnitTest.MediatR.News
 {
@@ -206,8 +207,16 @@ namespace Streetcode.XUnitTest.MediatR.News
                     It.IsAny<bool>()))
                 .ReturnsAsync(newImage);
 
+            _repositoryWrapperMock.Setup(repo => repo.FactRepository.GetFirstOrDefaultAsync(
+                    It.IsAny<Expression<Func<FactEntity, bool>>>(),
+                    It.IsAny<Func<IQueryable<FactEntity>, IIncludableQueryable<FactEntity, object>>>(),
+                    It.IsAny<bool>()))
+                .ReturnsAsync((FactEntity)null!);
+
             _blobServiceMock.Setup(s => s.FindFileInStorageAsBase64(It.IsAny<string>()))
                 .ReturnsAsync(fakeBase);
+
+            _blobServiceMock.Setup(s => s.DeleteFileInStorage(It.IsAny<string>()));
 
             _repositoryWrapperMock
                 .Setup(repo => repo.ImageRepository.Delete(It.IsAny<Image>()));
@@ -232,6 +241,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             _repositoryWrapperMock.Verify(
                 repo => repo.ImageRepository.Delete(It.IsAny<Image>()),
+                Times.Once());
+
+            _blobServiceMock.Verify(
+                b => b.DeleteFileInStorage(It.IsAny<string>()),
                 Times.Once());
 
             res.Value.Should().BeEquivalentTo(expectedNewsDto);
@@ -347,7 +360,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         }
 
         [Fact]
-        public async Task Handle_ShouldDeleteOldImage_WhenNewImageIsNull()
+        public async Task Handle_ShouldDeleteOldImage_WhenNewImageIsNullAndFactNotLinkedToImage()
         {
             // Arrange
             var fakeBase = "fake_base_64";
@@ -390,8 +403,16 @@ namespace Streetcode.XUnitTest.MediatR.News
                     It.IsAny<bool>()))
                 .ReturnsAsync(newImage);
 
+            _repositoryWrapperMock.Setup(repo => repo.FactRepository.GetFirstOrDefaultAsync(
+                    It.IsAny<Expression<Func<FactEntity, bool>>>(),
+                    It.IsAny<Func<IQueryable<FactEntity>, IIncludableQueryable<FactEntity, object>>>(),
+                    It.IsAny<bool>()))
+                .ReturnsAsync((FactEntity)null!);
+
             _blobServiceMock.Setup(s => s.FindFileInStorageAsBase64(It.IsAny<string>()))
                 .ReturnsAsync(fakeBase);
+
+            _blobServiceMock.Setup(s => s.DeleteFileInStorage(It.IsAny<string>()));
 
             _repositoryWrapperMock
                 .Setup(repo => repo.ImageRepository.Delete(It.IsAny<Image>()));
@@ -417,6 +438,103 @@ namespace Streetcode.XUnitTest.MediatR.News
             _repositoryWrapperMock.Verify(
                 repo => repo.ImageRepository.Delete(It.IsAny<Image>()),
                 Times.Once());
+
+            _blobServiceMock.Verify(
+                b => b.DeleteFileInStorage(It.IsAny<string>()),
+                Times.Once());
+
+            res.Value.Should().BeEquivalentTo(expectedNewsDto);
+        }
+        
+        [Fact]
+        public async Task Handle_ShouldNotDeleteOldImage_WhenNewImageIsNullAndFactLinkedToImage()
+        {
+            // Arrange
+            var fakeBase = "fake_base_64";
+            var newsDto = new NewsDTO
+            {
+                Id = 1,
+                URL = "url1",
+                ImageId = 2,
+            };
+
+            var expectedNewsDto = new NewsDTO
+            {
+                Id = 1,
+                URL = "url1",
+                ImageId = 2,
+            };
+
+            var news = new NewsEntity
+            {
+                Id = 1,
+                URL = "url",
+                ImageId = 1,
+                Image = new Image
+                {
+                    Id = 1,
+                },
+            };
+
+            var newImage = new Image { Id = 2 };
+
+            var fact = new FactEntity
+            {
+                Id = 1,
+                ImageId = 1,
+            };
+
+            _repositoryWrapperMock.Setup(repo => repo.NewsRepository.GetFirstOrDefaultAsync(
+                    It.IsAny<Expression<Func<NewsEntity, bool>>>(),
+                    It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
+                    It.IsAny<bool>()))
+                .ReturnsAsync(news);
+
+            _repositoryWrapperMock.Setup(repo => repo.ImageRepository.GetFirstOrDefaultAsync(
+                    It.IsAny<Expression<Func<Image, bool>>>(),
+                    It.IsAny<Func<IQueryable<Image>, IIncludableQueryable<Image, object>>>(),
+                    It.IsAny<bool>()))
+                .ReturnsAsync(newImage);
+
+            _repositoryWrapperMock.Setup(repo => repo.FactRepository.GetFirstOrDefaultAsync(
+                    It.IsAny<Expression<Func<FactEntity, bool>>>(),
+                    It.IsAny<Func<IQueryable<FactEntity>, IIncludableQueryable<FactEntity, object>>>(),
+                    It.IsAny<bool>()))
+                .ReturnsAsync(fact);
+
+            _blobServiceMock.Setup(s => s.FindFileInStorageAsBase64(It.IsAny<string>()))
+                .ReturnsAsync(fakeBase);
+
+            _blobServiceMock.Setup(s => s.DeleteFileInStorage(It.IsAny<string>()));
+
+            _repositoryWrapperMock
+                .Setup(repo => repo.ImageRepository.Delete(It.IsAny<Image>()));
+
+            _repositoryWrapperMock
+                .Setup(repo => repo.NewsRepository.Update(It.IsAny<NewsEntity>()));
+
+            _repositoryWrapperMock
+                .Setup(repo => repo.SaveChangesAsync())
+                .ReturnsAsync(1);
+
+            var req = new UpdateNewsCommand(newsDto);
+
+            // Act
+            var res = await _handler.Handle(req, CancellationToken.None);
+
+            // Assert
+            res.IsSuccess.Should().BeTrue();
+            _repositoryWrapperMock.Verify(
+                repo => repo.NewsRepository.Update(It.IsAny<NewsEntity>()),
+                Times.Once());
+
+            _repositoryWrapperMock.Verify(
+                repo => repo.ImageRepository.Delete(It.IsAny<Image>()),
+                Times.Never);
+
+            _blobServiceMock.Verify(
+                b => b.DeleteFileInStorage(It.IsAny<string>()),
+                Times.Never);
 
             res.Value.Should().BeEquivalentTo(expectedNewsDto);
         }

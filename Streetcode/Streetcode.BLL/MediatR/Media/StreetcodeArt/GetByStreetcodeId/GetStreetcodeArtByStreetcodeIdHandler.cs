@@ -57,6 +57,7 @@ namespace Streetcode.BLL.MediatR.Media.StreetcodeArt.GetByStreetcodeId
                 if (imageBase64 is not null)
                 {
                     artDto.Art.Image.Base64 = imageBase64;
+                    continue;
                 }
 
                 var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(

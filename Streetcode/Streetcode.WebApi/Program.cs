@@ -1,4 +1,5 @@
 using Hangfire;
+using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Services.BlobStorageService;
 using Streetcode.WebApi.Extensions;
 using Streetcode.WebApi.Middleware;
@@ -47,9 +48,13 @@ if (app.Environment.EnvironmentName != "Local")
     BackgroundJob.Schedule<WebParsingUtils>(
     wp => wp.ParseZipFileFromWebAsync(bypassSslValidation), TimeSpan.FromMinutes(1));
     RecurringJob.AddOrUpdate<WebParsingUtils>(
-        wp => wp.ParseZipFileFromWebAsync(bypassSslValidation), Cron.Monthly);
-    RecurringJob.AddOrUpdate<AzureBlobService>(
-        b => b.CleanBlobStorage(), Cron.Monthly);
+        "parse-zip-file-job",
+        wp => wp.ParseZipFileFromWebAsync(bypassSslValidation),
+        Cron.Monthly);
+    RecurringJob.AddOrUpdate<IBlobService>(
+        "clean-blobs-job",
+        b => b.CleanBlobStorage(),
+        Cron.Monthly);
 }
 
 app.MapControllers();

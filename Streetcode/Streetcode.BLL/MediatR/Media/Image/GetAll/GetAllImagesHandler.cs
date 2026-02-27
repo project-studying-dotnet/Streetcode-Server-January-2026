@@ -44,6 +44,7 @@ public class GetAllImagesHandler : IRequestHandler<GetAllImagesQuery, Result<IEn
             if (imageBase64 is not null)
             {
                 image.Base64 = imageBase64;
+                continue;
             }
 
             var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(

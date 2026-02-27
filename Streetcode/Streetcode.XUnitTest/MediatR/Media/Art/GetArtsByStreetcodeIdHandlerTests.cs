@@ -160,7 +160,7 @@ namespace Streetcode.XUnitTest.MediatR.Media.Art
             // Assert
             Assert.True(result.IsFailed);
             Assert.Equal(
-                Messages.Error_MediaBlobNotFound.Format(nameof(Image), arts[0].Image.BlobName),
+                Messages.Error_MediaBlobNotFound.Format(nameof(Image), arts[0].Image!.BlobName!),
                 result.Errors[0].Message);
         }
 

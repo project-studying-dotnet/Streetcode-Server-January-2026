@@ -1,7 +1,9 @@
-﻿using Azure;
+﻿using System.Diagnostics.CodeAnalysis;
+using Azure;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Options;
 using Streetcode.BLL.Interfaces.BlobStorage;
+using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.Shared.Services;
 
@@ -12,15 +14,18 @@ public class AzureBlobService : IBlobService
     private readonly AzureBlobEnvironmentVariables _options;
     private readonly IRepositoryWrapper _repositoryWrapper;
     private readonly BlobServiceClient _blobServiceClient;
+    private readonly ILoggerService _logger;
 
     public AzureBlobService(
         IOptions<AzureBlobEnvironmentVariables> options,
         IRepositoryWrapper repositoryWrapper,
-        BlobServiceClient blobServiceClient)
+        BlobServiceClient blobServiceClient,
+        ILoggerService logger)
     {
         _options = options.Value;
         _repositoryWrapper = repositoryWrapper;
         _blobServiceClient = blobServiceClient;
+        _logger = logger;
     }
 
     public async Task<string> SaveFileInStorage(string base64, string name, string extension)
@@ -31,7 +36,7 @@ public class AzureBlobService : IBlobService
         string hashBlobName = FileService.HashFunction(createdFileName);
         string fullBlobName = $"{hashBlobName}.{extension}";
 
-        byte[] encryptedData = FileService.EncryptFile(imageBytes, _options.EncryptionKey);
+        byte[] encryptedData = FileService.EncryptBytes(imageBytes, _options.EncryptionKey);
 
         var containerClient = _blobServiceClient.GetBlobContainerClient(_options.ContainerName);
         await containerClient.CreateIfNotExistsAsync();
@@ -78,37 +83,74 @@ public class AzureBlobService : IBlobService
     {
         BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_options.ContainerName);
         BlobClient blobClient = containerClient.GetBlobClient(name);
+        _logger.LogInformation($"Deleting {name} from Azure...");
         await blobClient.DeleteIfExistsAsync();
     }
 
     public async Task CleanBlobStorage()
     {
+        const int BatchSize = 250;
         var containerClient = _blobServiceClient.GetBlobContainerClient(_options.ContainerName);
 
-        List<string> blobsInAzure = new ();
+        List<string> currentBatch = new ();
+
         await foreach (var blobItem in containerClient.GetBlobsAsync())
         {
-            blobsInAzure.Add(blobItem.Name);
+            currentBatch.Add(blobItem.Name);
+
+            // When we hit our limit, process the batch
+            if (currentBatch.Count >= BatchSize)
+            {
+                await ProcessBatch(currentBatch, containerClient);
+                currentBatch.Clear();
+            }
         }
 
-        var existingImages = await _repositoryWrapper.ImageRepository.GetAllAsync();
-        var existingAudios = await _repositoryWrapper.AudioRepository.GetAllAsync();
-
-        var existingMedia = existingImages.Select(img => img.BlobName)
-            .Concat(existingAudios.Select(aud => aud.BlobName))
-            .ToHashSet(); // HashSet makes the lookup/Except logic much faster
-
-        var filesToRemove = blobsInAzure.Except(existingMedia).ToList();
-
-        foreach (var fileName in filesToRemove)
+        if (currentBatch.Any())
         {
-            Console.WriteLine($"Deleting {fileName} from Azure...");
-            var blobClient = containerClient.GetBlobClient(fileName);
-            await blobClient.DeleteIfExistsAsync();
+            await ProcessBatch(currentBatch, containerClient);
         }
     }
 
-    private async Task<byte[]> FindFileInStorageAsBytes(string name)
+    private async Task ProcessBatch(List<string> blobNames, BlobContainerClient container)
+    {
+        try
+        {
+            var foundInImages = (await _repositoryWrapper.ImageRepository
+                    .GetAllAsync(img => blobNames.Contains(img.BlobName)))
+                .Select(img => img.BlobName)
+                .ToList();
+
+            var foundInAudios = (await _repositoryWrapper.AudioRepository
+                    .GetAllAsync(aud => blobNames.Contains(aud.BlobName)))
+                .Select(aud => aud.BlobName)
+                .ToList();
+
+            var existingInDb = foundInImages.Concat(foundInAudios).ToHashSet();
+
+            var orphans = blobNames.Except(existingInDb);
+
+            foreach (var orphan in orphans)
+            {
+                try
+                {
+                    _logger.LogInformation($"Deleting orphaned blob: {orphan}");
+                    await container.GetBlobClient(orphan).DeleteIfExistsAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Failed to delete blob {orphan}. Skipping...");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error during blob cleanup: {ex.Message}");
+        }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1011:ClosingSquareBracketsMustBeSpacedCorrectly", Justification = "Reviewed.")]
+    private async Task<byte[]?> FindFileInStorageAsBytes(string name)
     {
         var containerClient = _blobServiceClient.GetBlobContainerClient(_options.ContainerName);
 
@@ -120,13 +162,13 @@ public class AzureBlobService : IBlobService
             await blobClient.DownloadToAsync(ms);
             byte[] encryptedBytes = ms.ToArray();
 
-            return FileService.DecryptFile(encryptedBytes, _options.EncryptionKey);
+            return FileService.DecryptBytes(encryptedBytes, _options.EncryptionKey);
         }
         catch (RequestFailedException ex)
         {
             if (ex.Status == 404)
             {
-                return null!;
+                return null;
             }
 
             throw;
