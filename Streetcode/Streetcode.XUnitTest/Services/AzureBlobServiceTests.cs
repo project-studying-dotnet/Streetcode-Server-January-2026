@@ -1,12 +1,17 @@
-﻿using Streetcode.BLL.Interfaces.Logging;
+﻿using System.Linq.Expressions;
+using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.Services.BlobStorageService;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.Shared.Services;
 using Azure.Storage.Blobs.Models;
 using Azure;
 using Azure.Storage.Blobs;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Options;
 using Moq;
+using Streetcode.DAL.Entities.Media;
+using Streetcode.DAL.Entities.Media.Images;
+using Streetcode.Shared.Extensions;
 using Xunit;
 
 namespace Streetcode.XUnitTest.Services.AzureBlobService;
@@ -216,5 +221,46 @@ public class AzureBlobServiceTests
         _blobClientMock.Verify(
             x => x.UploadAsync(It.IsAny<Stream>(), true, default),
             Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task CleanBlobStorage_Azure_ShouldBatchDeleteOrphans()
+    {
+        // Arrange
+        var blobName1 = "db_image.png";
+        var blobName2 = "orphan.png";
+
+        var blobItems = new List<BlobItem>
+        {
+            BlobsModelFactory.BlobItem(blobName1),
+            BlobsModelFactory.BlobItem(blobName2),
+        };
+
+        var mockAsyncPageable = new Mock<AsyncPageable<BlobItem>>();
+        mockAsyncPageable.Setup(x => x.GetAsyncEnumerator(default))
+            .Returns(blobItems.ToAsyncEnumerable().GetAsyncEnumerator(CancellationToken.None));
+
+        _containerClientMock.Setup(x => x.GetBlobsAsync(default, default, default, default))
+            .Returns(mockAsyncPageable.Object);
+
+        _repositoryWrapperMock.Setup(r => r.ImageRepository.GetAllAsync(
+                It.IsAny<Expression<Func<Image, bool>>>(),
+                It.IsAny<Func<IQueryable<Image>, IIncludableQueryable<Image, object>>>(),
+                It.IsAny<bool>()))
+            .ReturnsAsync(new List<Image> { new () { BlobName = blobName1 } });
+
+        _repositoryWrapperMock
+            .Setup(r => r.AudioRepository.GetAllAsync(
+                    It.IsAny<Expression<Func<Audio, bool>>>(),
+                    It.IsAny<Func<IQueryable<Audio>, IIncludableQueryable<Audio, object>>>(),
+                    It.IsAny<bool>()))
+            .ReturnsAsync(new List<Audio>());
+
+        // Act
+        await _service.CleanBlobStorage();
+
+        // Assert
+        _containerClientMock.Verify(x => x.GetBlobClient(blobName2), Times.Once);
+        _containerClientMock.Verify(x => x.GetBlobClient(blobName1), Times.Never);
     }
 }
