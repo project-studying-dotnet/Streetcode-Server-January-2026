@@ -2,10 +2,6 @@
 using Streetcode.BLL.Services.BlobStorageService;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.Shared.Services;
-using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.BLL.Services.BlobStorageService;
-using Streetcode.DAL.Repositories.Interfaces.Base;
-using Streetcode.Shared.Services;
 using Azure.Storage.Blobs.Models;
 using Azure;
 using Azure.Storage.Blobs;
