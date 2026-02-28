@@ -108,7 +108,7 @@ public class BlobService : IBlobService
         foreach (var file in filesToRemove)
         {
             Console.WriteLine($"Deleting {file}...");
-            DeleteFileInStorage(file);
+            await DeleteFileInStorage(file);
         }
     }
 
