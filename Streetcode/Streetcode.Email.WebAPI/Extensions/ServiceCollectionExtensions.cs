@@ -57,15 +57,14 @@ namespace Streetcode.Email.WebAPI.Extensions
 
                 x.UsingRabbitMq((context, cfg) =>
                 {
-                    var rabbitSection = configuration.GetSection("RabbitMQ");
+                    cfg.Host("localhost", "/");
 
-                    cfg.Host(rabbitSection["Host"], "/", h =>
+                    cfg.ReceiveEndpoint("Email", e =>
                     {
-                        h.Username(rabbitSection["Username"]);
-                        h.Password(rabbitSection["Password"]);
-                    });
+                        e.ConfigureConsumer<EmailConsumer>(context);
 
-                    cfg.ConfigureEndpoints(context);
+                        e.Bind("Email");
+                    });
                 });
             });
 

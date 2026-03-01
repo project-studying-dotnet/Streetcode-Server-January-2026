@@ -3,7 +3,7 @@ using Streetcode.Email.BLL.DTO;
 
 namespace Streetcode.Email.BLL.MediatR.Feedback
 {
-    public class FeedbackDTOValidator : AbstractValidator<FeedbackDTO>
+    public class FeedbackDTOValidator : AbstractValidator<EmailDTO>
     {
         public FeedbackDTOValidator()
         { 

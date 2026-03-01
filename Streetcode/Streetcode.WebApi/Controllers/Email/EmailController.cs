@@ -2,7 +2,7 @@ using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Streetcode.BLL.DTO.Email;
-using Streetcode.BLL.MediatR.Email;
+using Streetcode.Shared.Contracts;
 
 namespace Streetcode.WebApi.Controllers.Email
 {
@@ -19,7 +19,11 @@ namespace Streetcode.WebApi.Controllers.Email
         [AllowAnonymous]
         public async Task<IActionResult> Send([FromBody] EmailDTO email)
         {
-            await _publishEndpoint.Publish(email);
+            await _publishEndpoint.Publish<IEmailMessage>(new
+            {
+                email.Email,
+                email.Message
+            });
 
             return Ok();
         }

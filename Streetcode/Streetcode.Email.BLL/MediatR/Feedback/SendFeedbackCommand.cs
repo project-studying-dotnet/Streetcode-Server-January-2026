@@ -4,5 +4,5 @@ using Streetcode.Email.BLL.DTO;
 
 namespace Streetcode.Email.BLL.MediatR.Feedback
 {
-    public record SendFeedbackCommand(FeedbackDTO Feedback) : IRequest<Result<Unit>>;
+    public record SendFeedbackCommand(EmailDTO Feedback) : IRequest<Result<Unit>>;
 }

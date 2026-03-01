@@ -17,7 +17,7 @@ namespace Streetcode.Email.BLL.Services
             _emailConfig = options.Value;
         }
 
-        public async Task SendEmailAsync(FeedbackDTO feedback)
+        public async Task SendEmailAsync(EmailDTO feedback)
         {
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress("Streetcode", _emailConfig.FromAddress));

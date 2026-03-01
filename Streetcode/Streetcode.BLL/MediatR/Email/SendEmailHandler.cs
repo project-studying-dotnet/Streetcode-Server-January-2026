@@ -23,9 +23,9 @@ namespace Streetcode.BLL.MediatR.Email
         {
             var message = new Message(
                 [Constants.StreetcodeContacts.Email],
-                request.Email.From,
+                request.Email.Email,
                 "FeedBack",
-                request.Email.Content);
+                request.Email.Message);
 
             var isResultSuccess = await _emailService.SendEmailAsync(message);
 

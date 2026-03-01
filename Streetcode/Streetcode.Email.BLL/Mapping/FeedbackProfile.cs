@@ -8,7 +8,7 @@ namespace Streetcode.Email.BLL.Mapping
     {
         public FeedbackProfile()
         {
-            CreateMap<Feedback, FeedbackDTO>().ReverseMap();
+            CreateMap<Feedback, EmailDTO>().ReverseMap();
         }
     }
 }
