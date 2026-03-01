@@ -9,10 +9,11 @@ public class Feedback
         [Key]
         public int Id { get; set; }
         [Required]
+        [EmailAddress]
         public string? Email { get; set; }
         [Required]
         [MinLength(5)]
-        [MaxLength(100)]
+        [MaxLength(1000)]
         public string? Message { get; set; }
     }
 
