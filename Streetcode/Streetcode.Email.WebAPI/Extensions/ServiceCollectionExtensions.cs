@@ -53,18 +53,15 @@ namespace Streetcode.Email.WebAPI.Extensions
 
             services.AddMassTransit(x =>
             {
+                x.SetKebabCaseEndpointNameFormatter();
+
                 x.AddConsumer<EmailConsumer>();
 
                 x.UsingRabbitMq((context, cfg) =>
                 {
                     cfg.Host("localhost", "/");
 
-                    cfg.ReceiveEndpoint("Email", e =>
-                    {
-                        e.ConfigureConsumer<EmailConsumer>(context);
-
-                        e.Bind("Email");
-                    });
+                    cfg.ConfigureEndpoints(context);
                 });
             });
 

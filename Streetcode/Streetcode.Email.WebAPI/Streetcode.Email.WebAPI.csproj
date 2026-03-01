@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Streetcode.Email.BLL\Streetcode.Email.BLL.csproj" />
+    <ProjectReference Include="..\Streetcode.Shared\Streetcode.Shared.csproj" />
   </ItemGroup>
 
 </Project>
