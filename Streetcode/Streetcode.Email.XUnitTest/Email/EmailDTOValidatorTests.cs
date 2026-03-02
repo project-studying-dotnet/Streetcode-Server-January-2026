@@ -65,7 +65,7 @@
             var model = new EmailDTO
             {
                 From = "test@gmail.com",
-                Content = new string('a', 101)
+                Content = new string('a', 1001)
             };
 
             // Act
