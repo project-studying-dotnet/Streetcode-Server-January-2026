@@ -5,11 +5,11 @@
     using Streetcode.Email.BLL.MediatR.Email;
     using Xunit;
 
-    public class FeedbackDTOValidatorTests
+    public class EmailDTOValidatorTests
     {
         private readonly EmailDTOValidator validator;
 
-        public FeedbackDTOValidatorTests()
+        public EmailDTOValidatorTests()
         {
             this.validator = new EmailDTOValidator();
         }

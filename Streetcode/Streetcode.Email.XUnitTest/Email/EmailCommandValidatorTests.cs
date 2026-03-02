@@ -7,11 +7,11 @@
     using Streetcode.Resources;
     using Xunit;
 
-    public class SendFeedbackCommandValidatorTests
+    public class EmailCommandValidatorTests
     {
         private readonly SendEmailCommandValidator validator;
 
-        public SendFeedbackCommandValidatorTests()
+        public EmailCommandValidatorTests()
         {
             this.validator = new SendEmailCommandValidator();
         }

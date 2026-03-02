@@ -16,7 +16,7 @@ namespace Streetcode.Email.XUnitTest.MediatR.Feedback
     using Streetcode.Email.DAL.Persistence;
     using Streetcode.Email.BLL.Mapping;
     using Streetcode.Resources;
-    public class SendFeedbackHandlerTests : IDisposable
+    public class SendEmailHandlerTests : IDisposable
     {
         private readonly EmailDbContext dbContext;
         private readonly Mock<ILogger<SendEmailHandler>> mockLogger;
@@ -24,7 +24,7 @@ namespace Streetcode.Email.XUnitTest.MediatR.Feedback
         private readonly IMapper mapper;
         private readonly SendEmailHandler handler;
 
-        public SendFeedbackHandlerTests()
+        public SendEmailHandlerTests()
         {
             var options = new DbContextOptionsBuilder<EmailDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
