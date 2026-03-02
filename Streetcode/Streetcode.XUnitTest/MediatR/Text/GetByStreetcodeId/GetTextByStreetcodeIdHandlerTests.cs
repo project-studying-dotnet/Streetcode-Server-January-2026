@@ -16,7 +16,6 @@ namespace Streetcode.XUnitTest.MediatR.Text.GetByStreetcodeId
     using Streetcode.BLL.Interfaces.Logging;
     using Streetcode.BLL.Interfaces.Text;
     using Streetcode.BLL.MediatR.Streetcode.Text.GetByStreetcodeId;
-    using Streetcode.DAL.Entities.Streetcode;
     using Streetcode.DAL.Entities.Streetcode.TextContent;
     using Streetcode.DAL.Repositories.Interfaces.Base;
     using Xunit;

@@ -1,28 +1,28 @@
 ﻿using Streetcode.Resources;
 using Streetcode.Shared.Extensions;
 
-namespace Streetcode.XUnitTest.MediatR.Timeline.TimelineItem;
+namespace Streetcode.XUnitTest.MediatR.Timeline.TimelineItem.Get;
 
 using AutoMapper;
 using Moq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
 using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.BLL.MediatR.Timeline.TimelineItem.GetById;
+using Streetcode.BLL.MediatR.Timeline.TimelineItem.GetAll;
 using Streetcode.DAL.Entities.Timeline;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.DAL.Repositories.Interfaces.Timeline;
 using Xunit;
 using Streetcode.BLL.DTO.Timeline.TimelineItem;
 
-public class GetTimelineItemByIdHandlerTests
+public class GetAllTimelineItemsHandlerTests
 {
     private readonly Mock<IRepositoryWrapper> repoWrapperMock;
     private readonly Mock<ITimelineRepository> timelineRepoMock;
     private readonly Mock<ILoggerService> loggerMock;
     private readonly IMapper mapper;
 
-    public GetTimelineItemByIdHandlerTests()
+    public GetAllTimelineItemsHandlerTests()
     {
         repoWrapperMock = new Mock<IRepositoryWrapper>();
         timelineRepoMock = new Mock<ITimelineRepository>();
@@ -40,63 +40,57 @@ public class GetTimelineItemByIdHandlerTests
         mapper = mapperConfig.CreateMapper();
     }
 
-    private GetTimelineItemByIdHandler CreateHandler()
-        => new (
+    private GetAllTimelineItemsHandler CreateHandler()
+        => new(
             repoWrapperMock.Object,
             mapper,
             loggerMock.Object);
 
     [Fact]
-    public async Task Handle_ReturnsOk_WhenTimelineItemExists()
+    public async Task Handle_ReturnsOk_WhenTimelineItemsExist()
     {
-        // Arrange
-        var entity = new TimelineItem
+        //Arrange
+        var entities = new List<TimelineItem>
         {
-            Id = 1
+            new () { Id = 1 },
+            new () { Id = 2 }
         };
 
         timelineRepoMock
-            .Setup(r => r.GetFirstOrDefaultAsync(
+            .Setup(r => r.GetAllAsync(
                 It.IsAny<Expression<Func<TimelineItem, bool>>>(),
                 It.IsAny<Func<IQueryable<TimelineItem>,
                     IIncludableQueryable<TimelineItem, object>>>(),
                 It.IsAny<bool>()))
-            .ReturnsAsync(entity);
-
-        var query = new GetTimelineItemByIdQuery(1);
+            .ReturnsAsync(entities);
 
         // Act
         var result = await CreateHandler().Handle(
-            query,
+            new GetAllTimelineItemsQuery(),
             CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.NotNull(result.Value);
-        Assert.Equal(1, result.Value.Id);
+        Assert.Equal(2, result.Value.Count());
     }
 
     [Fact]
-    public async Task Handle_ReturnsFail_WhenTimelineItemNotExists()
+    public async Task Handle_ReturnsFail_WhenTimelineItemsAreEmpty()
     {
-        // Arrange
-        var id = 99;
-        var query = new GetTimelineItemByIdQuery(id);
-        var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(TimelineItem), id);
+        //Arrange
+        var errorMsg = Messages.Error_EntitiesNotFound.Format(nameof(TimelineItem));
 
         timelineRepoMock
-            .Setup(r => r.GetFirstOrDefaultAsync(
+            .Setup(r => r.GetAllAsync(
                 It.IsAny<Expression<Func<TimelineItem, bool>>>(),
                 It.IsAny<Func<IQueryable<TimelineItem>,
                     IIncludableQueryable<TimelineItem, object>>>(),
                 It.IsAny<bool>()))
-            .ReturnsAsync((TimelineItem)null!);
-
-
+            .ReturnsAsync([]);
 
         // Act
         var result = await CreateHandler().Handle(
-            query,
+            new GetAllTimelineItemsQuery(),
             CancellationToken.None);
 
         // Assert
@@ -104,7 +98,9 @@ public class GetTimelineItemByIdHandlerTests
         Assert.Equal(errorMsg, result.Errors[0].Message);
 
         loggerMock.Verify(
-            l => l.LogError(query, errorMsg),
+            l => l.LogError(
+                It.IsAny<GetAllTimelineItemsQuery>(),
+                errorMsg),
             Times.Once);
     }
 }

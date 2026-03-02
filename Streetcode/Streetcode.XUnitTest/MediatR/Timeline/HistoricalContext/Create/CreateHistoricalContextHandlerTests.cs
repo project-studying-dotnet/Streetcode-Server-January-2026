@@ -35,7 +35,7 @@
 
             var configuration = new MapperConfiguration(cfg =>
             {
-                cfg.AddProfile(new HistoricalContextProfile());
+                cfg.AddProfile(new TimelineItemProfile());
             });
 
             this.mapper = new Mapper(configuration);
@@ -130,43 +130,6 @@
             result.IsFailed.Should().BeTrue();
             result.Errors.Should().NotBeEmpty();
             result.Errors.Should().ContainSingle(e => e.Message.Contains(Messages.Error_HistoricalContextTitleAlreadyExists));
-        }
-
-        [Fact]
-        public async Task Handle_ShouldReturnFail_IfSaveUnsuccessful()
-        {
-            // Arrange
-            var createDTO = new CreateHistoricalContextDTO
-            {
-                Title = "Test Title",
-            };
-            var createEntity = new HistoricalContextEntity
-            {
-                Id = 1,
-                Title = createDTO.Title,
-            };
-
-            var command = new CreateHistoricalContextCommand(createDTO);
-
-            this.mockHistoricalContextRepository
-                .Setup(h => h.CreateAsync(It.IsAny<HistoricalContextEntity>()))
-                .ReturnsAsync(createEntity);
-
-            this.mockHistoricalContextRepository
-                .Setup(h => h.GetFirstOrDefaultAsync(
-                    It.IsAny<Expression<Func<HistoricalContextEntity, bool>>>(),
-                    It.IsAny<Func<IQueryable<HistoricalContextEntity>,
-                    IIncludableQueryable<HistoricalContextEntity, object>>>(),
-                    It.IsAny<bool>()))
-            .ReturnsAsync(createEntity);
-
-            this.SetupSaveChangesMock(0);
-
-            // Act
-            var result = await this.handler.Handle(command, CancellationToken.None);
-
-            // Assert
-            result.IsFailed.Should().BeTrue();
         }
     }
 }

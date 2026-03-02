@@ -1,3 +1,5 @@
+using Hangfire;
+using Streetcode.Auth.BLL.Interfaces;
 using Streetcode.Auth.WebApi.Extensions;
 using Streetcode.Auth.WebApi.Middlewares;
 
@@ -9,6 +11,7 @@ builder.Services.AddDataAccessServices(builder.Configuration);
 builder.Services.AddIdentityServices(builder.Configuration);
 builder.Services.AddCustomServices(builder.Configuration);
 builder.Services.AddCorsServices(builder.Configuration);
+builder.Services.AddHangfireServices(builder.Configuration);
 builder.Services.AddSwaggerServices();
 
 var app = builder.Build();
@@ -32,10 +35,17 @@ app.UseCors("CorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseHangfireDashboard("/dash");
+
 app.MapControllers();
 
 await app.ApplyMigrationsAsync();
 
 await app.ApplySeedingAsync();
+
+RecurringJob.AddOrUpdate<ITokenService>(
+    "delete-expired-refresh-tokens",
+    service => service.RemoveExpiredRefreshTokensAsync(),
+    Cron.Daily);
 
 app.Run();

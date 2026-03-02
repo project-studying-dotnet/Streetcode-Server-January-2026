@@ -1,8 +1,7 @@
-﻿using Streetcode.Resources;
+﻿namespace Streetcode.XUnitTest.MediatR.Partners;
+
+using Streetcode.Resources;
 using Streetcode.Shared.Extensions;
-
-namespace Streetcode.XUnitTest.MediatR.Partners;
-
 using Streetcode.BLL.DTO.Partners.Create;
 using Streetcode.BLL.Mapping.Streetcode;
 using FluentAssertions;

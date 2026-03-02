@@ -8,5 +8,6 @@ namespace Streetcode.Auth.BLL.Interfaces
         Task<(string AccessToken, RefreshToken RefreshToken)> RotateRefreshTokenAsync(string oldRefreshToken);
         Task RevokeRefreshTokenAsync(string token);
         Task RevokeAllAsync(string userId);
+        Task RemoveExpiredRefreshTokensAsync();
     }
 }

@@ -50,7 +50,7 @@ namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Create
 
                 if (missingContextIds.Any())
                 {
-                    var errorMsg = string.Format(Messages.Error_EntityWithIdNotFound, string.Join(", ", missingContextIds));
+                    var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(HistoricalContext), string.Join(", ", missingContextIds));
                     _logger.LogError(request, errorMsg);
                     return Result.Fail(errorMsg);
                 }

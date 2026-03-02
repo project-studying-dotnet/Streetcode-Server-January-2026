@@ -27,9 +27,9 @@ namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Update
         public async Task<Result<TimelineItemDTO>> Handle(UpdateTimelineItemCommand request, CancellationToken cancellationToken)
         {
             var existingTimelineItem = await _repositoryWrapper.TimelineRepository
-                .FindAll()
-                .Include(t => t.HistoricalContextTimelines)
-                .FirstOrDefaultAsync(t => t.Id == request.TimelineItem.Id);
+                .GetFirstOrDefaultAsync(
+                    predicate: t => t.Id == request.TimelineItem.Id,
+                    include: query => query.Include(t => t.HistoricalContextTimelines));
 
             if (existingTimelineItem is null)
             {
@@ -59,7 +59,7 @@ namespace Streetcode.BLL.MediatR.Timeline.TimelineItem.Update
 
                 if (missingContextIds.Any())
                 {
-                    var errorMsg = string.Format(Messages.Error_EntityWithIdNotFound, string.Join(", ", missingContextIds));
+                    var errorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(HistoricalContext), string.Join(", ", missingContextIds));
                     _logger.LogError(request, errorMsg);
                     return Result.Fail<TimelineItemDTO>(errorMsg);
                 }

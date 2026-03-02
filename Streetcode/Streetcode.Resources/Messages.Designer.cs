@@ -19,7 +19,7 @@ namespace Streetcode.Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Messages {
@@ -214,6 +214,15 @@ namespace Streetcode.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to User ID is missing or invalid.
+        /// </summary>
+        public static string Error_MissingUserId {
+            get {
+                return ResourceManager.GetString("Error_MissingUserId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to News with Url: {0} not found.
         /// </summary>
         public static string Error_NewsWithUrlNotFound {
@@ -259,11 +268,20 @@ namespace Streetcode.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot find a related term by word: {0}.
+        ///   Looks up a localized string similar to Cannot find RelatedTerm by Word: &quot;{0}&quot; and TermId: {1}.
         /// </summary>
         public static string Error_RelatedTermNotFound {
             get {
                 return ResourceManager.GetString("Error_RelatedTermNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No RelatedTerm found by TermId: {0}.
+        /// </summary>
+        public static string Error_RelatedTermsByTermIdNotFound {
+            get {
+                return ResourceManager.GetString("Error_RelatedTermsByTermIdNotFound", resourceCulture);
             }
         }
         
@@ -286,7 +304,7 @@ namespace Streetcode.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Streetcode with Transliteration Url: {0} not found.
+        ///   Looks up a localized string similar to Streetcode with Transliteration Url: &quot;{0}&quot; not found.
         /// </summary>
         public static string Error_StreetcodeWithTransliterationUrlNotFound {
             get {
@@ -300,6 +318,15 @@ namespace Streetcode.Resources {
         public static string Error_TagWithTitleNotFound {
             get {
                 return ResourceManager.GetString("Error_TagWithTitleNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You do not have permission to edit or delete this comment.
+        /// </summary>
+        public static string Error_UserNotCommentOwner {
+            get {
+                return ResourceManager.GetString("Error_UserNotCommentOwner", resourceCulture);
             }
         }
         

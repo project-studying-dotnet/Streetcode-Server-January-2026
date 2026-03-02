@@ -10,15 +10,16 @@ using Streetcode.DAL.Entities.Media.Images;
 using Streetcode.DAL.Entities.Partners;
 using Streetcode.DAL.Entities.Sources;
 using Streetcode.DAL.Entities.Streetcode;
+using Streetcode.DAL.Entities.Streetcode.Comments;
 using Streetcode.DAL.Entities.Streetcode.TextContent;
 using Streetcode.DAL.Entities.Streetcode.Types;
 using Streetcode.DAL.Entities.Team;
 using Streetcode.DAL.Entities.Timeline;
 using Streetcode.DAL.Entities.Transactions;
+using Streetcode.DAL.Entities.Users;
 using Streetcode.DAL.Enums;
 using Streetcode.DAL.Persistence;
 using Streetcode.DAL.Repositories.Realizations.Base;
-using Streetcode.Shared.Enums;
 
 namespace Streetcode.WebApi.Extensions
 {
@@ -1398,6 +1399,54 @@ namespace Streetcode.WebApi.Extensions
                             }
                         }
                     }
+
+                    await dbContext.SaveChangesAsync();
+                }
+
+                string testUserId = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
+
+                if (!dbContext.Users.Any(u => u.Id == testUserId))
+                {
+                    dbContext.Users.Add(new User
+                    {
+                        Id = testUserId,
+                        Name = "Test",
+                        Surname = "User",
+                        Email = "test@example.com",
+                        PhoneNumber = "+380123456789",
+                        Role = Shared.Enums.UserRole.User
+                    });
+
+                    await dbContext.SaveChangesAsync();
+                }
+
+                if (!dbContext.Comments.Any())
+                {
+                    dbContext.Comments.AddRange(
+                        new Comment
+                        {
+                            TextContent = "Дуже крутий стріткод про Шевченка! Дізнався багато нового.",
+                            StreetcodeId = 1,
+                            UserId = testUserId,
+                            CreatedAt = DateTime.UtcNow.AddDays(-2),
+                            UpdatedAt = null
+                        },
+                        new Comment
+                        {
+                            TextContent = "Дякую за вашу працю! Це важливо для історії.",
+                            StreetcodeId = 1,
+                            UserId = testUserId,
+                            CreatedAt = DateTime.UtcNow.AddHours(-5),
+                            UpdatedAt = null
+                        },
+                        new Comment
+                        {
+                            TextContent = "Світла пам'ять Роману. Герої не вмирають.",
+                            StreetcodeId = 2,
+                            UserId = testUserId,
+                            CreatedAt = DateTime.UtcNow.AddMinutes(-30),
+                            UpdatedAt = null
+                        });
 
                     await dbContext.SaveChangesAsync();
                 }

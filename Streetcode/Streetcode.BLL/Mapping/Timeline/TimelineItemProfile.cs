@@ -9,8 +9,6 @@ public class TimelineItemProfile : Profile
 {
     public TimelineItemProfile()
     {
-        CreateMap<TimelineItem, TimelineItemDTO>().ReverseMap();
-
         CreateMap<TimelineItem, TimelineItemDTO>()
             .ForMember(dest => dest.HistoricalContexts, opt => opt.MapFrom(x => x.HistoricalContextTimelines
                 .Select(x => new HistoricalContextDTO
