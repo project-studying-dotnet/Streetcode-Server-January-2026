@@ -9,7 +9,7 @@ builder.Services.AddCustomServices(builder.Configuration);
 
 var app = builder.Build();
 
-if (app.Environment.EnvironmentName == "Local")
+if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Local")
 {
     app.UseHangfireDashboard("/dash");
 }
@@ -21,8 +21,6 @@ else
 await app.ApplyMigrations();
 
 // app.SeedDataAsync(); // uncomment for seeding data in local
-
-app.UseHangfireDashboard("/dash");
 
 app.MapControllers();
 
