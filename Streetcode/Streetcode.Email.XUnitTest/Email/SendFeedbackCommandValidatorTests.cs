@@ -36,8 +36,8 @@
             // Arrange
             var invalidDto = new EmailDTO
             {
-                Email = "invalid-email",
-                Message = "123"
+                From = "invalid-email",
+                Content = "123"
             };
             var command = new SendEmailCommand(invalidDto);
 
@@ -45,8 +45,8 @@
             var result = this.validator.TestValidate(command);
 
             // Assert
-            result.ShouldHaveValidationErrorFor(x => x.email.Email);
-            result.ShouldHaveValidationErrorFor(x => x.email.Message);
+            result.ShouldHaveValidationErrorFor(x => x.email.From);
+            result.ShouldHaveValidationErrorFor(x => x.email.Content);
         }
 
         [Fact]
@@ -55,8 +55,8 @@
             // Arrange
             var validDto = new EmailDTO
             {
-                Email = "test@gmail.com",
-                Message = "Valid message content"
+                From = "test@gmail.com",
+                Content = "Valid message content"
             };
             var command = new SendEmailCommand(validDto);
 

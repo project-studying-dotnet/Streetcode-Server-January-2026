@@ -18,26 +18,26 @@
         public void ShouldHaveError_WhenEmailIsEmpty()
         {
             // Arrange
-            var model = new EmailDTO { Email = string.Empty };
+            var model = new EmailDTO { From = string.Empty };
 
             // Act
             var result = this.validator.TestValidate(model);
 
             // Assert
-            result.ShouldHaveValidationErrorFor(x => x.Email);
+            result.ShouldHaveValidationErrorFor(x => x.From);
         }
 
         [Fact]
         public void ShouldHaveError_WhenEmailIsInvalid()
         {
             // Arrange
-            var model = new EmailDTO { Email = "not-an-email" };
+            var model = new EmailDTO { From = "not-an-email" };
 
             // Act
             var result = this.validator.TestValidate(model);
 
             // Assert
-            result.ShouldHaveValidationErrorFor(x => x.Email)
+            result.ShouldHaveValidationErrorFor(x => x.From)
                   .WithErrorCode("EmailValidator");
         }
 
@@ -47,15 +47,15 @@
             // Arrange
             var model = new EmailDTO
             {
-                Email = "test@gmail.com",
-                Message = "123"
+                From = "test@gmail.com",
+                Content = "123"
             };
 
             // Act
             var result = this.validator.TestValidate(model);
 
             // Assert
-            result.ShouldHaveValidationErrorFor(x => x.Message);
+            result.ShouldHaveValidationErrorFor(x => x.Content);
         }
 
         [Fact]
@@ -64,15 +64,15 @@
             // Arrange
             var model = new EmailDTO
             {
-                Email = "test@gmail.com",
-                Message = new string('a', 101)
+                From = "test@gmail.com",
+                Content = new string('a', 101)
             };
 
             // Act
             var result = this.validator.TestValidate(model);
 
             // Assert
-            result.ShouldHaveValidationErrorFor(x => x.Message);
+            result.ShouldHaveValidationErrorFor(x => x.Content);
         }
 
         [Fact]
@@ -81,8 +81,8 @@
             // Arrange
             var model = new EmailDTO
             {
-                Email = "test@gmail.com",
-                Message = "Hello World!"
+                From = "test@gmail.com",
+                Content = "Hello World!"
             };
 
             // Act

@@ -7,11 +7,11 @@ namespace Streetcode.Email.BLL.MediatR.Email
     {
         public EmailDTOValidator()
         { 
-        RuleFor(x => x.Email)
+        RuleFor(x => x.From)
                 .NotEmpty()
                 .EmailAddress();
 
-        RuleFor(x => x.Message)
+        RuleFor(x => x.Content)
                 .NotEmpty()
                 .MinimumLength(5)
                 .MaximumLength(100);

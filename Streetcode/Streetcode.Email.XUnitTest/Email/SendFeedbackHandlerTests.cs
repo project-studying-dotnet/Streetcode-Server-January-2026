@@ -51,7 +51,7 @@ namespace Streetcode.Email.XUnitTest.MediatR.Feedback
         public async Task Handle_ShouldReturnOk_WhenFeedbackIsSavedSuccessfully()
         {
             // Arrange
-            var feedbackDto = new EmailDTO { Email = "test@gmail.com", Message = "Valid message" };
+            var feedbackDto = new EmailDTO { From = "test@gmail.com", Content = "Valid message" };
             var command = new SendEmailCommand(feedbackDto);
 
             // Act
@@ -84,7 +84,7 @@ namespace Streetcode.Email.XUnitTest.MediatR.Feedback
                 this.mockLogger.Object,
                 this.mockBackgroundJob.Object);
 
-            var command = new SendEmailCommand(new EmailDTO { Email = "fail@test.com", Message = "fail message" });
+            var command = new SendEmailCommand(new EmailDTO { From = "fail@test.com", Content = "fail message" });
 
             // Act
             var result = await failHandler.Handle(command, CancellationToken.None);

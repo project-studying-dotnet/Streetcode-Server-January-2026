@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Streetcode.Email.DAL.Persistence;
 
@@ -10,9 +11,11 @@ using Streetcode.Email.DAL.Persistence;
 namespace Streetcode.Email.DAL.Migrations
 {
     [DbContext(typeof(EmailDbContext))]
-    partial class EmailDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260302112047_RenameFeedbackIntoEmail")]
+    partial class RenameFeedbackIntoEmail
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
