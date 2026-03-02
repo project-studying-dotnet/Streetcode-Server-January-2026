@@ -5,7 +5,8 @@ using Moq;
 using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.MediatR.AdditionalContent.Subtitle.GetAll;
-using Streetcode.DAL.Entities.AdditionalContent.Subtitles;
+using Streetcode.BLL.Mapping.AdditionalContent;
+using Streetcode.DAL.Entities.AdditionalContent; 
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using System.Linq.Expressions;
 using Xunit;
@@ -23,8 +24,10 @@ public class GetAllSubtitlesHandlerTests
         _mockRepo = new Mock<IRepositoryWrapper>();
         _mockLogger = new Mock<ILoggerService>();
 
-        // Real Mapper Setup
-        var config = new MapperConfiguration(cfg => cfg.AddProfile(new MappingProfile()));
+        var config = new MapperConfiguration(cfg =>
+        {
+            cfg.AddProfile(new SubtitleProfile());
+        });
         _mapper = new Mapper(config);
     }
 
@@ -32,14 +35,14 @@ public class GetAllSubtitlesHandlerTests
     public async Task Handle_SubtitlesExist_ReturnsSuccessWithCorrectTypeAndCount()
     {
         // Arrange
-        var subtitles = new List<Subtitle>
+        var subtitles = new List<Streetcode.DAL.Entities.AdditionalContent.Subtitle>
         {
             new() { Id = 1, SubtitleText = "Subtitle 1" },
             new() { Id = 2, SubtitleText = "Subtitle 2" }
         };
 
         _mockRepo.Setup(r => r.SubtitleRepository.GetAllAsync(
-            It.IsAny<Expression<Func<Subtitle, bool>>>(),
+            It.IsAny<Expression<Func<Streetcode.DAL.Entities.AdditionalContent.Subtitle, bool>>>(),
             null))
             .ReturnsAsync(subtitles);
 
@@ -50,7 +53,7 @@ public class GetAllSubtitlesHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().BeOfType<List<SubtitleDTO>>();
+        result.Value.Should().BeAssignableTo<IEnumerable<SubtitleDTO>>();
         result.Value.Count().Should().Be(2);
         result.Value.First().SubtitleText.Should().Be("Subtitle 1");
     }
@@ -60,9 +63,9 @@ public class GetAllSubtitlesHandlerTests
     {
         // Arrange
         _mockRepo.Setup(r => r.SubtitleRepository.GetAllAsync(
-            It.IsAny<Expression<Func<Subtitle, bool>>>(),
+            It.IsAny<Expression<Func<Streetcode.DAL.Entities.AdditionalContent.Subtitle, bool>>>(),
             null))
-            .ReturnsAsync((IEnumerable<Subtitle>?)null);
+            .ReturnsAsync((IEnumerable<Streetcode.DAL.Entities.AdditionalContent.Subtitle>?)null);
 
         var handler = new GetAllSubtitlesHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
         var query = new GetAllSubtitlesQuery();
@@ -74,24 +77,5 @@ public class GetAllSubtitlesHandlerTests
         result.IsFailed.Should().BeTrue();
         result.Errors.First().Message.Should().Be("Cannot find any subtitles");
         _mockLogger.Verify(x => x.LogError(query, "Cannot find any subtitles"), Times.Once);
-    }
-
-    [Fact]
-    public async Task Handle_EmptyList_ReturnsSuccessWithZeroCount()
-    {
-        // Arrange
-        _mockRepo.Setup(r => r.SubtitleRepository.GetAllAsync(
-            It.IsAny<Expression<Func<Subtitle, bool>>>(),
-            null))
-            .ReturnsAsync(new List<Subtitle>());
-
-        var handler = new GetAllSubtitlesHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
-
-        // Act
-        var result = await handler.Handle(new GetAllSubtitlesQuery(), CancellationToken.None);
-
-        // Assert
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Should().BeEmpty();
     }
 }

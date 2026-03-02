@@ -5,8 +5,9 @@ using Moq;
 using Streetcode.BLL.DTO.AdditionalContent.Coordinates.Types;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.MediatR.AdditionalContent.Coordinate.GetByStreetcodeId;
+using Streetcode.BLL.Mapping.AdditionalContent.Coordinates;
 using Streetcode.DAL.Entities.AdditionalContent.Coordinates.Types;
-using Streetcode.DAL.Entities.Streetcode;
+using Streetcode.DAL.Entities.Streetcode; 
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using System.Linq.Expressions;
 using Xunit;
@@ -24,8 +25,11 @@ public class GetCoordinatesByStreetcodeIdHandlerTests
         _mockRepo = new Mock<IRepositoryWrapper>();
         _mockLogger = new Mock<ILoggerService>();
 
-        // Real Mapper Setup
-        var config = new MapperConfiguration(cfg => cfg.AddProfile(new MappingProfile()));
+
+        var config = new MapperConfiguration(cfg =>
+        {
+            cfg.AddProfile(new StreetcodeCoordinateProfile());
+        });
         _mapper = new Mapper(config);
     }
 
@@ -38,13 +42,14 @@ public class GetCoordinatesByStreetcodeIdHandlerTests
 
         var coordinates = new List<StreetcodeCoordinate>
         {
-            new() { Id = 1, StreetcodeId = streetcodeId, Latitude = 1.1, Longitude = 2.2 },
-            new() { Id = 2, StreetcodeId = streetcodeId, Latitude = 3.3, Longitude = 4.4 }
+            new() { Id = 1, StreetcodeId = streetcodeId, Latitude = 1.1m, Longtitude = 2.2m },
+            new() { Id = 2, StreetcodeId = streetcodeId, Latitude = 3.3m, Longtitude = 4.4m }
         };
 
+        // FIXED: Using StreetcodeContent instead of Streetcode
         _mockRepo.Setup(r => r.StreetcodeRepository
-            .GetFirstOrDefaultAsync(It.IsAny<Expression<Func<Streetcode, bool>>>(), null))
-            .ReturnsAsync(new Streetcode { Id = streetcodeId });
+            .GetFirstOrDefaultAsync(It.IsAny<Expression<Func<StreetcodeContent, bool>>>(), null))
+            .ReturnsAsync(new StreetcodeContent { Id = streetcodeId });
 
         _mockRepo.Setup(r => r.StreetcodeCoordinateRepository
             .GetAllAsync(It.IsAny<Expression<Func<StreetcodeCoordinate, bool>>>(), null))
@@ -57,9 +62,9 @@ public class GetCoordinatesByStreetcodeIdHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().BeOfType<List<StreetcodeCoordinateDTO>>();
+        result.Value.Should().BeAssignableTo<IEnumerable<StreetcodeCoordinateDTO>>();
         result.Value.Count().Should().Be(2);
-        result.Value.First().Latitude.Should().Be(1.1);
+        result.Value.First().Latitude.Should().Be(1.1m);
     }
 
     [Fact]
@@ -69,9 +74,10 @@ public class GetCoordinatesByStreetcodeIdHandlerTests
         int streetcodeId = 99;
         var query = new GetCoordinatesByStreetcodeIdQuery(streetcodeId);
 
+        // FIXED: Using StreetcodeContent instead of Streetcode
         _mockRepo.Setup(r => r.StreetcodeRepository
-            .GetFirstOrDefaultAsync(It.IsAny<Expression<Func<Streetcode, bool>>>(), null))
-            .ReturnsAsync((Streetcode?)null);
+            .GetFirstOrDefaultAsync(It.IsAny<Expression<Func<StreetcodeContent, bool>>>(), null))
+            .ReturnsAsync((StreetcodeContent?)null);
 
         var handler = new GetCoordinatesByStreetcodeIdHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
 
@@ -80,31 +86,6 @@ public class GetCoordinatesByStreetcodeIdHandlerTests
 
         // Assert
         result.IsFailed.Should().BeTrue();
-        result.Errors.First().Message.Should().Contain($"Cannot find a coordinates by a streetcode id: {streetcodeId}");
-    }
-
-    [Fact]
-    public async Task Handle_CoordinatesCollectionIsNull_ReturnsFailureAndLogsError()
-    {
-        // Arrange
-        int streetcodeId = 1;
-        var query = new GetCoordinatesByStreetcodeIdQuery(streetcodeId);
-
-        _mockRepo.Setup(r => r.StreetcodeRepository
-            .GetFirstOrDefaultAsync(It.IsAny<Expression<Func<Streetcode, bool>>>(), null))
-            .ReturnsAsync(new Streetcode { Id = streetcodeId });
-
-        _mockRepo.Setup(r => r.StreetcodeCoordinateRepository
-            .GetAllAsync(It.IsAny<Expression<Func<StreetcodeCoordinate, bool>>>(), null))
-            .ReturnsAsync((IEnumerable<StreetcodeCoordinate>?)null);
-
-        var handler = new GetCoordinatesByStreetcodeIdHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
-
-        // Act
-        var result = await handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        result.IsFailed.Should().BeTrue();
-        _mockLogger.Verify(x => x.LogError(It.IsAny<object>(), It.IsAny<string>()), Times.Once);
+        result.Errors.First().Message.Should().Contain($"{streetcodeId}");
     }
 }

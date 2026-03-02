@@ -5,6 +5,7 @@ using Moq;
 using Streetcode.BLL.DTO.AdditionalContent;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetById;
+using Streetcode.BLL.Mapping.AdditionalContent; 
 using Streetcode.DAL.Entities.AdditionalContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using System.Linq.Expressions;
@@ -23,8 +24,11 @@ public class GetTagByIdHandlerTests
         _mockRepo = new Mock<IRepositoryWrapper>();
         _mockLogger = new Mock<ILoggerService>();
 
-        // Real Mapper Setup
-        var config = new MapperConfiguration(cfg => cfg.AddProfile(new MappingProfile()));
+        // FIXED: Using TagProfile instead of the non-existent MappingProfile
+        var config = new MapperConfiguration(cfg =>
+        {
+            cfg.AddProfile(new TagProfile());
+        });
         _mapper = new Mapper(config);
     }
 

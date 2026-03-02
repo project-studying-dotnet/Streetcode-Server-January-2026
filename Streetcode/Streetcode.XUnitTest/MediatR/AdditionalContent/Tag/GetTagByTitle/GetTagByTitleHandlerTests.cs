@@ -5,10 +5,12 @@ using Moq;
 using Streetcode.BLL.DTO.AdditionalContent;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetTagByTitle;
+using Streetcode.BLL.Mapping.AdditionalContent; 
 using Streetcode.DAL.Entities.AdditionalContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using System.Linq.Expressions;
 using Xunit;
+using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetByStreetcodeId;
 
 namespace Streetcode.XUnitTest.MediatR.AdditionalContent.Tag;
 
@@ -23,8 +25,10 @@ public class GetTagByTitleHandlerTests
         _mockRepo = new Mock<IRepositoryWrapper>();
         _mockLogger = new Mock<ILoggerService>();
 
-        // Real Mapper Setup
-        var config = new MapperConfiguration(cfg => cfg.AddProfile(new MappingProfile()));
+        var config = new MapperConfiguration(cfg =>
+        {
+            cfg.AddProfile(new TagProfile());
+        });
         _mapper = new Mapper(config);
     }
 
@@ -83,7 +87,7 @@ public class GetTagByTitleHandlerTests
         var query = new GetTagByTitleQuery("AnyTitle");
         _mockRepo.Setup(r => r.TagRepository.GetFirstOrDefaultAsync(
             It.IsAny<Expression<Func<DAL.Entities.AdditionalContent.Tag, bool>>>(), null))
-            .ReturnsAsync(new DAL.Entities.AdditionalContent.Tag());
+            .ReturnsAsync(new DAL.Entities.AdditionalContent.Tag { Title = "Any" });
 
         var handler = new GetTagByTitleHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
 

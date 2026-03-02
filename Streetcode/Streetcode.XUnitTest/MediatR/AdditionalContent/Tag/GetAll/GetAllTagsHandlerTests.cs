@@ -5,10 +5,12 @@ using Moq;
 using Streetcode.BLL.DTO.AdditionalContent.Tag;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetAll;
+using Streetcode.BLL.Mapping.AdditionalContent; 
 using Streetcode.DAL.Entities.AdditionalContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using System.Linq.Expressions;
 using Xunit;
+using Streetcode.BLL.DTO.AdditionalContent;
 
 namespace Streetcode.XUnitTest.MediatR.AdditionalContent.Tag;
 
@@ -24,7 +26,10 @@ public class GetAllTagsHandlerTests
         _mockLogger = new Mock<ILoggerService>();
 
         // Real Mapper Setup
-        var config = new MapperConfiguration(cfg => cfg.AddProfile(new MappingProfile()));
+        var config = new MapperConfiguration(cfg =>
+        {
+            cfg.AddProfile(new TagProfile());
+        });
         _mapper = new Mapper(config);
     }
 
@@ -50,7 +55,8 @@ public class GetAllTagsHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().BeOfType<List<TagDTO>>();
+        // Use BeAssignableTo for collection interfaces
+        result.Value.Should().BeAssignableTo<IEnumerable<TagDTO>>();
         result.Value.Count().Should().Be(2);
         result.Value.First().Title.Should().Be("Historical");
     }

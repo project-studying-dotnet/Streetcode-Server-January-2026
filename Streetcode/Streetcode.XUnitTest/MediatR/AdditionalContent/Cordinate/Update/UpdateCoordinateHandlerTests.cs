@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using FluentAssertions;
-using FluentResults;
 using MediatR;
 using Moq;
 using Streetcode.BLL.DTO.AdditionalContent.Coordinates.Types;
 using Streetcode.BLL.MediatR.AdditionalContent.Coordinate.Update;
+using Streetcode.BLL.Mapping.AdditionalContent.Coordinates;
 using Streetcode.DAL.Entities.AdditionalContent.Coordinates.Types;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Xunit;
@@ -20,8 +20,11 @@ public class UpdateCoordinateHandlerTests
     {
         _mockRepo = new Mock<IRepositoryWrapper>();
 
-        // Real Mapper Setup using your BLL Profile
-        var configuration = new MapperConfiguration(cfg => cfg.AddProfile(new MappingProfile()));
+        var configuration = new MapperConfiguration(cfg =>
+        {
+            cfg.AddProfile(new StreetcodeCoordinateProfile());
+        });
+
         _mapper = new Mapper(configuration);
     }
 
@@ -29,7 +32,12 @@ public class UpdateCoordinateHandlerTests
     public async Task Handle_ValidRequest_ReturnsSuccessAndCallsUpdate()
     {
         // Arrange
-        var coordinateDto = new StreetcodeCoordinateDTO { Id = 1, Latitude = 50.45, Longitude = 30.52 };
+        var coordinateDto = new StreetcodeCoordinateDTO
+        {
+            Id = 1,
+            Latitude = 50.5m,
+            Longtitude = 30.5m 
+        };
         var command = new UpdateCoordinateCommand(coordinateDto);
 
         _mockRepo.Setup(r => r.StreetcodeCoordinateRepository.Update(It.IsAny<StreetcodeCoordinate>()));
@@ -44,6 +52,7 @@ public class UpdateCoordinateHandlerTests
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be(Unit.Value);
         _mockRepo.Verify(r => r.StreetcodeCoordinateRepository.Update(It.IsAny<StreetcodeCoordinate>()), Times.Once);
+        _mockRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 
     [Fact]

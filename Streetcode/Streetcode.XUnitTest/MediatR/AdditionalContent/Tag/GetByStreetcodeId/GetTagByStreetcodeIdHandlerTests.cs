@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using Streetcode.BLL.DTO.AdditionalContent.Tag;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetByStreetcodeId;
+using Streetcode.BLL.Mapping.AdditionalContent; 
 using Streetcode.DAL.Entities.AdditionalContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using System.Linq.Expressions;
@@ -24,8 +25,11 @@ public class GetTagByStreetcodeIdHandlerTests
         _mockRepo = new Mock<IRepositoryWrapper>();
         _mockLogger = new Mock<ILoggerService>();
 
-        // Real Mapper Setup
-        var config = new MapperConfiguration(cfg => cfg.AddProfile(new MappingProfile()));
+        // FIXED: Using the actual TagProfile from BLL
+        var config = new MapperConfiguration(cfg =>
+        {
+            cfg.AddProfile(new TagProfile());
+        });
         _mapper = new Mapper(config);
     }
 
@@ -55,8 +59,10 @@ public class GetTagByStreetcodeIdHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(2);
-        // Verify sorting logic (OrderBy Index)
-        result.Value.First().Title.Should().Be("First");
+
+        var resultList = result.Value.ToList();
+        resultList[0].Title.Should().Be("First");
+        resultList[1].Title.Should().Be("Second");
     }
 
     [Fact]

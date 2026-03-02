@@ -4,12 +4,13 @@ using FluentResults;
 using Moq;
 using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.BLL.MediatR.AdditionalContent.GetById;
 using Streetcode.BLL.MediatR.AdditionalContent.Subtitle.GetById;
-using Streetcode.DAL.Entities.AdditionalContent.Subtitles;
+using Streetcode.BLL.Mapping.AdditionalContent; 
+using Streetcode.DAL.Entities.AdditionalContent; 
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using System.Linq.Expressions;
 using Xunit;
+using Streetcode.BLL.MediatR.AdditionalContent.GetById;
 
 namespace Streetcode.XUnitTest.MediatR.AdditionalContent.Subtitle;
 
@@ -24,8 +25,11 @@ public class GetSubtitleByIdHandlerTests
         _mockRepo = new Mock<IRepositoryWrapper>();
         _mockLogger = new Mock<ILoggerService>();
 
-        // Real Mapper Setup
-        var config = new MapperConfiguration(cfg => cfg.AddProfile(new MappingProfile()));
+        // Real Mapper Setup using the specific Subtitle profile
+        var config = new MapperConfiguration(cfg =>
+        {
+            cfg.AddProfile(new SubtitleProfile());
+        });
         _mapper = new Mapper(config);
     }
 
@@ -34,11 +38,15 @@ public class GetSubtitleByIdHandlerTests
     {
         // Arrange
         int testId = 1;
-        var subtitle = new Subtitle { Id = testId, SubtitleText = "Sample Subtitle" };
+        var subtitle = new Streetcode.DAL.Entities.AdditionalContent.Subtitle
+        {
+            Id = testId,
+            SubtitleText = "Sample Subtitle"
+        };
         var query = new GetSubtitleByIdQuery(testId);
 
         _mockRepo.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<Subtitle, bool>>>(),
+            It.IsAny<Expression<Func<Streetcode.DAL.Entities.AdditionalContent.Subtitle, bool>>>(),
             null))
             .ReturnsAsync(subtitle);
 
@@ -62,9 +70,9 @@ public class GetSubtitleByIdHandlerTests
         var query = new GetSubtitleByIdQuery(testId);
 
         _mockRepo.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<Subtitle, bool>>>(),
+            It.IsAny<Expression<Func<Streetcode.DAL.Entities.AdditionalContent.Subtitle, bool>>>(),
             null))
-            .ReturnsAsync((Subtitle?)null);
+            .ReturnsAsync((Streetcode.DAL.Entities.AdditionalContent.Subtitle?)null);
 
         var handler = new GetSubtitleByIdHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
 
