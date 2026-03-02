@@ -32,7 +32,7 @@ namespace Streetcode.Email.WebAPI.Extensions
             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
             .UseSimpleAssemblyNameTypeSerializer()
             .UseRecommendedSerializerSettings()
-            .UseSqlServerStorage(configuration.GetConnectionString("DefaultConnection"), new SqlServerStorageOptions
+            .UseSqlServerStorage(connectionString, new SqlServerStorageOptions
             {
                 PrepareSchemaIfNecessary = true,
 
