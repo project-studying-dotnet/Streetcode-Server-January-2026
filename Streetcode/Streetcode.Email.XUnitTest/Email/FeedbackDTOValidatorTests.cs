@@ -2,16 +2,16 @@
 {
     using FluentValidation.TestHelper;
     using Streetcode.Email.BLL.DTO;
-    using Streetcode.Email.BLL.MediatR.Feedback;
+    using Streetcode.Email.BLL.MediatR.Email;
     using Xunit;
 
     public class FeedbackDTOValidatorTests
     {
-        private readonly FeedbackDTOValidator validator;
+        private readonly EmailDTOValidator validator;
 
         public FeedbackDTOValidatorTests()
         {
-            this.validator = new FeedbackDTOValidator();
+            this.validator = new EmailDTOValidator();
         }
 
         [Fact]

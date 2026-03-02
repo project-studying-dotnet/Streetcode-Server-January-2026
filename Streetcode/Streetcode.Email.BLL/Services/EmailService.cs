@@ -17,7 +17,7 @@ namespace Streetcode.Email.BLL.Services
             _emailConfig = options.Value;
         }
 
-        public async Task SendEmailAsync(EmailDTO feedback)
+        public async Task SendEmailAsync(EmailDTO email)
         {
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress("Streetcode", _emailConfig.FromAddress));
@@ -25,7 +25,7 @@ namespace Streetcode.Email.BLL.Services
             message.Subject = $"New feedback from Streetcode User";
             message.Body = new TextPart("plain")
             {
-                Text = $"Користувач {feedback.Email} залишив повідомлення:\n\n{feedback.Message}"
+                Text = $"Користувач {email.From} залишив повідомлення:\n\n{email.Content}"
             };
 
             using var client = new SmtpClient();

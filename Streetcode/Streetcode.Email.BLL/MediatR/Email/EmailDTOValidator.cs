@@ -1,11 +1,11 @@
 ﻿using FluentValidation;
 using Streetcode.Email.BLL.DTO;
 
-namespace Streetcode.Email.BLL.MediatR.Feedback
+namespace Streetcode.Email.BLL.MediatR.Email
 {
-    public class FeedbackDTOValidator : AbstractValidator<EmailDTO>
+    public class EmailDTOValidator : AbstractValidator<EmailDTO>
     {
-        public FeedbackDTOValidator()
+        public EmailDTOValidator()
         { 
         RuleFor(x => x.Email)
                 .NotEmpty()

@@ -1,7 +1,7 @@
 ﻿using MassTransit;
 using MediatR;
 using Streetcode.Email.BLL.DTO;
-using Streetcode.Email.BLL.MediatR.Feedback;
+using Streetcode.Email.BLL.MediatR.Email;
 using Streetcode.Shared.Contracts;
 
 namespace Streetcode.Email.BLL.Services
@@ -18,13 +18,13 @@ namespace Streetcode.Email.BLL.Services
         {
             var message = context.Message;
 
-            var feedback = new EmailDTO
+            var email = new EmailDTO
             {
-                Email = message.Email,
-                Message = message.Message
+                From = message.From,
+                Content = message.Content
             };
 
-            var command = new SendFeedbackCommand(feedback);
+            var command = new SendEmailCommand(email);
 
             await _mediator.Send(command);
         }

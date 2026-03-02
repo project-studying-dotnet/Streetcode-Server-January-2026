@@ -5,7 +5,7 @@
         public EmailDTO()
         {
         }
-        public string Email { get; set; }
-        public string Message { get; set; }
+        public string From { get; set; }
+        public string Content { get; set; }
     }
 }

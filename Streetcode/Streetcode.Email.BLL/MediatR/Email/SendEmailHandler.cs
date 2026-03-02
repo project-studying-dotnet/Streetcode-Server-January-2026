@@ -7,18 +7,18 @@ using Streetcode.Email.BLL.DTO;
 using Streetcode.Email.BLL.Interfaces;
 using Streetcode.Email.DAL.Persistence;
 using Streetcode.Resources;
-using FeedbackEntity = Streetcode.Email.DAL.Entities.Email;
+using EmailEntity = Streetcode.Email.DAL.Entities.Email;
 
-namespace Streetcode.Email.BLL.MediatR.Feedback
+namespace Streetcode.Email.BLL.MediatR.Email
 {
-    public class SendFeedbackHandler : IRequestHandler<SendFeedbackCommand, Result<Unit>>
+    public class SendEmailHandler : IRequestHandler<SendEmailCommand, Result<Unit>>
     {
         private readonly EmailDbContext _context;
         private readonly IMapper _mapper;
-        private readonly ILogger<SendFeedbackHandler> _logger;
+        private readonly ILogger<SendEmailHandler> _logger;
         private readonly IBackgroundJobClient _backgroundJob;
 
-        public SendFeedbackHandler(EmailDbContext context, IMapper mapper, ILogger<SendFeedbackHandler> logger, IBackgroundJobClient backgroundJob)
+        public SendEmailHandler(EmailDbContext context, IMapper mapper, ILogger<SendEmailHandler> logger, IBackgroundJobClient backgroundJob)
         {
             _context = context;
             _mapper = mapper;
@@ -26,11 +26,11 @@ namespace Streetcode.Email.BLL.MediatR.Feedback
             _backgroundJob = backgroundJob;
         }
 
-        public async Task<Result<Unit>> Handle(SendFeedbackCommand request, CancellationToken cancellationToken)
+        public async Task<Result<Unit>> Handle(SendEmailCommand request, CancellationToken cancellationToken)
         {
-            var feedbackEntity = _mapper.Map<FeedbackEntity>(request.Feedback);
+            var feedbackEntity = _mapper.Map<EmailEntity>(request.email);
 
-            _context.Feedbacks.Add(feedbackEntity);
+            _context.Emails.Add(feedbackEntity);
 
             var rowsAffected = await _context.SaveChangesAsync(cancellationToken);
 
@@ -42,9 +42,9 @@ namespace Streetcode.Email.BLL.MediatR.Feedback
             }
 
             _backgroundJob.Enqueue<IEmailService>(emailService =>
-            emailService.SendEmailAsync(request.Feedback));
+            emailService.SendEmailAsync(request.email));
 
-            _logger.LogInformation("Feedback saved to DB and email task enqueued for {Email}", request.Feedback.Email);
+            _logger.LogInformation("Email saved to DB and email task enqueued for {Email}", request.email.From);
 
             return Result.Ok(Unit.Value);
         }

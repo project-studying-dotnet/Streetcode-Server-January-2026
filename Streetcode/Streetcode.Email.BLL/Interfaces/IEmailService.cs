@@ -4,6 +4,6 @@ namespace Streetcode.Email.BLL.Interfaces
 {
     public interface IEmailService
     {
-        Task SendEmailAsync(EmailDTO feedback);
+        Task SendEmailAsync(EmailDTO email);
     }
 }

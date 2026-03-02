@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Streetcode.Email.DAL.Entities;
+using EmailEntity = Streetcode.Email.DAL.Entities.Email;
 
 namespace Streetcode.Email.DAL.Persistence
 {
@@ -10,18 +10,18 @@ namespace Streetcode.Email.DAL.Persistence
         {
         }
 
-        public DbSet<Email> Emails { get; set; }
+        public DbSet<EmailEntity> Emails { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-                modelBuilder.Entity<Email>(entity =>
+                modelBuilder.Entity<EmailEntity>(entity =>
                 {
-                    entity.ToTable("Feedbacks");
+                    entity.ToTable("Emails");
                     entity.HasKey(e => e.Id);
-                    entity.Property(e => e.Email).IsRequired().HasMaxLength(256);
-                    entity.Property(e => e.Message).IsRequired();
+                    entity.Property(e => e.From).IsRequired().HasMaxLength(256);
+                    entity.Property(e => e.Content).IsRequired();
                 });
         }
     }

@@ -12,17 +12,17 @@ namespace Streetcode.Email.XUnitTest.MediatR.Feedback
     using Moq;
     using Streetcode.Email.BLL.DTO;
     using Streetcode.Email.BLL.Interfaces;
-    using Streetcode.Email.BLL.MediatR.Feedback;
+    using Streetcode.Email.BLL.MediatR.Email;
     using Streetcode.Email.DAL.Persistence;
     using Streetcode.Email.BLL.Mapping;
     using Streetcode.Resources;
     public class SendFeedbackHandlerTests : IDisposable
     {
         private readonly EmailDbContext dbContext;
-        private readonly Mock<ILogger<SendFeedbackHandler>> mockLogger;
+        private readonly Mock<ILogger<SendEmailHandler>> mockLogger;
         private readonly Mock<IBackgroundJobClient> mockBackgroundJob;
         private readonly IMapper mapper;
-        private readonly SendFeedbackHandler handler;
+        private readonly SendEmailHandler handler;
 
         public SendFeedbackHandlerTests()
         {
@@ -31,16 +31,16 @@ namespace Streetcode.Email.XUnitTest.MediatR.Feedback
                 .Options;
 
             this.dbContext = new EmailDbContext(options);
-            this.mockLogger = new Mock<ILogger<SendFeedbackHandler>>();
+            this.mockLogger = new Mock<ILogger<SendEmailHandler>>();
             this.mockBackgroundJob = new Mock<IBackgroundJobClient>();
 
             var configuration = new MapperConfiguration(cfg =>
             {
-                cfg.AddProfile(new FeedbackProfile());
+                cfg.AddProfile(new EmailProfile());
             });
             this.mapper = new Mapper(configuration);
 
-            this.handler = new SendFeedbackHandler(
+            this.handler = new SendEmailHandler(
                 this.dbContext,
                 this.mapper,
                 this.mockLogger.Object,
@@ -52,7 +52,7 @@ namespace Streetcode.Email.XUnitTest.MediatR.Feedback
         {
             // Arrange
             var feedbackDto = new EmailDTO { Email = "test@gmail.com", Message = "Valid message" };
-            var command = new SendFeedbackCommand(feedbackDto);
+            var command = new SendEmailCommand(feedbackDto);
 
             // Act
             var result = await this.handler.Handle(command, CancellationToken.None);
@@ -78,13 +78,13 @@ namespace Streetcode.Email.XUnitTest.MediatR.Feedback
                 .Setup(c => c.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(0);
 
-            var failHandler = new SendFeedbackHandler(
+            var failHandler = new SendEmailHandler(
                 mockContext.Object,
                 this.mapper,
                 this.mockLogger.Object,
                 this.mockBackgroundJob.Object);
 
-            var command = new SendFeedbackCommand(new EmailDTO { Email = "fail@test.com", Message = "fail message" });
+            var command = new SendEmailCommand(new EmailDTO { Email = "fail@test.com", Message = "fail message" });
 
             // Act
             var result = await failHandler.Handle(command, CancellationToken.None);

@@ -2,7 +2,7 @@
 {
     public interface IEmailMessage
     {
-        public string Email { get; }
-        public string Message { get; }
+        public string From { get; }
+        public string Content { get; }
     }
 }
