@@ -9,6 +9,8 @@ using Streetcode.BLL.Mapping.Transactions;
 using Streetcode.BLL.MediatR.Transactions.TransactionLink.GetAll;
 using Streetcode.DAL.Entities.Transactions;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using Xunit;
 
 namespace Streetcode.XUnitTest.MediatR.Transactions.TransactionLink;
@@ -47,10 +49,15 @@ public class GetAllTransactLinksHandlerTests
             It.IsAny<bool>()))
             .ReturnsAsync(links);
 
-        var handler = new GetAllTransactLinksHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+        var handler = new GetAllTransactLinksHandler(
+            _mockRepo.Object,
+            _mapper,
+            _mockLogger.Object);
 
         // Act
-        var result = await handler.Handle(new GetAllTransactLinksQuery(), CancellationToken.None);
+        var result = await handler.Handle(
+            new GetAllTransactLinksQuery(),
+            CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -67,32 +74,60 @@ public class GetAllTransactLinksHandlerTests
         _mockRepo.Setup(r => r.TransactLinksRepository.GetAllAsync(
             (Expression<Func<Streetcode.DAL.Entities.Transactions.TransactionLink, bool>>)null!,
             (Func<IQueryable<Streetcode.DAL.Entities.Transactions.TransactionLink>, IIncludableQueryable<Streetcode.DAL.Entities.Transactions.TransactionLink, object>>)null!,
-            false)) // trackEntities = false
+            false))
             .ReturnsAsync(new List<Streetcode.DAL.Entities.Transactions.TransactionLink>());
 
-        var handler = new GetAllTransactLinksHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+        var handler = new GetAllTransactLinksHandler(
+            _mockRepo.Object,
+            _mapper,
+            _mockLogger.Object);
+
+        var expectedError = Messages.Error_EntitiesNotFound.Format(
+            nameof(Streetcode.DAL.Entities.Transactions.TransactionLink));
 
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var result = await handler.Handle(
+            query,
+            CancellationToken.None);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-        _mockLogger.Verify(x => x.LogError(query, It.IsAny<string>()), Times.Once);
+        result.Errors.Should().ContainSingle()
+            .Which.Message.Should().Be(expectedError);
+
+        _mockLogger.Verify(x => x.LogError(
+            query,
+            expectedError), Times.Once);
     }
 
     [Fact]
     public async Task Handle_RepositoryReturnsNull_ReturnsFailure()
     {
         // Arrange
-        _mockRepo.Setup(r => r.TransactLinksRepository.GetAllAsync(null, null, false))
+        _mockRepo.Setup(r => r.TransactLinksRepository.GetAllAsync(
+            null,
+            null,
+            false))
             .ReturnsAsync((IEnumerable<Streetcode.DAL.Entities.Transactions.TransactionLink>?)null);
 
-        var handler = new GetAllTransactLinksHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+        var handler = new GetAllTransactLinksHandler(
+            _mockRepo.Object,
+            _mapper,
+            _mockLogger.Object);
+
+        var query = new GetAllTransactLinksQuery();
+
+        string expectedError = Messages.Error_EntitiesNotFound.Format(
+            nameof(Streetcode.DAL.Entities.Transactions.TransactionLink));
 
         // Act
-        var result = await handler.Handle(new GetAllTransactLinksQuery(), CancellationToken.None);
+        var result = await handler.Handle(
+            query,
+            CancellationToken.None);
 
         // Assert
         result.IsFailed.Should().BeTrue();
+        result.Errors.Should().ContainSingle()
+            .Which.Message.Should().Be(expectedError);
     }
 }

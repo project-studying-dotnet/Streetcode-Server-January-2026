@@ -9,6 +9,8 @@ using Streetcode.BLL.Mapping.Transactions;
 using Streetcode.BLL.MediatR.Transactions.TransactionLink.GetByStreetcodeId;
 using Streetcode.DAL.Entities.Transactions;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using Xunit;
 
 namespace Streetcode.XUnitTest.MediatR.Transactions.TransactionLink;
@@ -42,7 +44,8 @@ public class GetTransactLinkByStreetcodeIdHandlerTests
             StreetcodeId = streetcodeId,
             Url = "https://streetcode.com/donate"
         };
-        var query = new GetTransactLinkByStreetcodeIdQuery(streetcodeId);
+        var query = new GetTransactLinkByStreetcodeIdQuery(
+            streetcodeId);
 
         _mockRepo.Setup(r => r.TransactLinksRepository.GetFirstOrDefaultAsync(
             It.IsAny<Expression<Func<Streetcode.DAL.Entities.Transactions.TransactionLink, bool>>>(),
@@ -50,10 +53,15 @@ public class GetTransactLinkByStreetcodeIdHandlerTests
             It.IsAny<bool>()))
             .ReturnsAsync(link);
 
-        var handler = new GetTransactLinkByStreetcodeIdHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+        var handler = new GetTransactLinkByStreetcodeIdHandler(
+            _mockRepo.Object,
+            _mapper,
+            _mockLogger.Object);
 
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var result = await handler.Handle(
+            query,
+            CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -66,7 +74,8 @@ public class GetTransactLinkByStreetcodeIdHandlerTests
     {
         // Arrange
         int streetcodeId = 10;
-        var query = new GetTransactLinkByStreetcodeIdQuery(streetcodeId);
+        var query = new GetTransactLinkByStreetcodeIdQuery(
+            streetcodeId);
 
         _mockRepo.Setup(r => r.TransactLinksRepository.GetFirstOrDefaultAsync(
             It.IsAny<Expression<Func<Streetcode.DAL.Entities.Transactions.TransactionLink, bool>>>(),
@@ -74,13 +83,27 @@ public class GetTransactLinkByStreetcodeIdHandlerTests
             false))
             .ReturnsAsync((Streetcode.DAL.Entities.Transactions.TransactionLink?)null);
 
-        var handler = new GetTransactLinkByStreetcodeIdHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+        var handler = new GetTransactLinkByStreetcodeIdHandler(
+            _mockRepo.Object,
+            _mapper,
+            _mockLogger.Object);
+
+        var expectedError = Messages.Error_EntityWithStreetcodeIdNotFound.Format(
+            nameof(Streetcode.DAL.Entities.Transactions.TransactionLink),
+            streetcodeId);
 
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var result = await handler.Handle(
+            query,
+            CancellationToken.None);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-        _mockLogger.Verify(x => x.LogError(query, It.Is<string>(s => s.Contains(streetcodeId.ToString()))), Times.Once);
+        result.Errors.Should().ContainSingle()
+            .Which.Message.Should().Be(expectedError);
+
+        _mockLogger.Verify(x => x.LogError(
+            query,
+            expectedError), Times.Once);
     }
 }
