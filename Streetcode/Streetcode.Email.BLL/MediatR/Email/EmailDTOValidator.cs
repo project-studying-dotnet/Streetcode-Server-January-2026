@@ -14,7 +14,7 @@ namespace Streetcode.Email.BLL.MediatR.Email
             RuleFor(x => x.Content)
                 .NotEmpty()
                 .MinimumLength(5)
-                .MaximumLength(100);
+                .MaximumLength(1000);
         }
     }
 }
