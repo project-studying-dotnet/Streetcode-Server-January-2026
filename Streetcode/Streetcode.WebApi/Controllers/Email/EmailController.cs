@@ -19,11 +19,12 @@ namespace Streetcode.WebApi.Controllers.Email
         [AllowAnonymous]
         public async Task<IActionResult> Send([FromBody] EmailDTO email)
         {
-            await _publishEndpoint.Publish<IEmailMessage>(new
-            {
-                email.From,
-                email.Content
-            });
+            await _publishEndpoint.Publish<IEmailMessage>(
+                new
+                {
+                    email.From,
+                    email.Content
+                });
 
             return Accepted();
         }

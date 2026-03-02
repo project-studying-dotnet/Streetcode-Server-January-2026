@@ -42,7 +42,7 @@ namespace Streetcode.Email.BLL.MediatR.Email
             }
 
             _backgroundJob.Enqueue<IEmailService>(emailService =>
-            emailService.SendEmailAsync(request.email));
+                emailService.SendEmailAsync(request.email));
 
             _logger.LogInformation("Email saved to DB and email task enqueued for {Email}", request.email.From);
 
