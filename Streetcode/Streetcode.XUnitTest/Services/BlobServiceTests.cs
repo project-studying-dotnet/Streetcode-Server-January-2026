@@ -1,6 +1,11 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Linq.Expressions;
+using FluentAssertions;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.Extensions.Options;
 using Moq;
 using Streetcode.BLL.Services.BlobStorageService;
+using Streetcode.DAL.Entities.Media;
+using Streetcode.DAL.Entities.Media.Images;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.Shared.Services;
 using Xunit;
@@ -72,6 +77,24 @@ public class BlobServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task FindFileInStorageAsMemoryStream_ShouldReturnMemoryStream_WhenFileExists()
+    {
+        // Arrange
+        var originalData = new byte[] { 1, 2, 3, 4, 5 };
+        var fileName = "existingFile.bin";
+        var encrypted = FileService.EncryptBytes(originalData, _testKey);
+
+        File.WriteAllBytes(Path.Combine(_testTempPath, fileName), encrypted);
+
+        // Act
+        var result = await _service.FindFileInStorageAsMemoryStream(fileName);
+
+        // Assert
+        Assert.NotNull(result);
+        result.ToArray().Should().BeEquivalentTo(originalData);
+    }
+
+    [Fact]
     public async Task FindFileInStorageAsMemoryStream_ReturnsNull_WhenFileDoesNotExist()
     {
         // Act
@@ -79,6 +102,49 @@ public class BlobServiceTests : IDisposable
 
         // Assert
         Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task FindFileInStorageAsBase64_ReturnsNull_WhenFileDoesNotExist()
+    {
+        // Act
+        var result = await _service.FindFileInStorageAsBase64("non-existent.png");
+
+        // Assert
+        Assert.Null(result);
+    }
+    
+    [Fact]
+    public async Task UpdateFileInStorage_ShouldDeleteOldFileAndCreateNewOne()
+    {
+        // Arrange
+        string oldFileName = "old_image.png";
+        string newFileName = "updated_profile";
+        string extension = "png";
+        byte[] newRawBytes = new byte[] { 4, 5, 6 };
+        string newBase64 = Convert.ToBase64String(newRawBytes);
+        string oldFilePath = Path.Combine(_testTempPath, oldFileName);
+        await File.WriteAllBytesAsync(oldFilePath, new byte[] { 1, 1, 1 });
+
+        // Act
+        string resultHashName = await _service.UpdateFileInStorage(
+            oldFileName, 
+            newBase64, 
+            newFileName, 
+            extension);
+
+        // Assert
+        string newFilePath = Path.Combine(_testTempPath, $"{resultHashName}.{extension}");
+
+        Assert.False(File.Exists(oldFilePath), "The old file should have been deleted from storage.");
+
+        Assert.True(File.Exists(newFilePath), "The new file should have been created in storage.");
+
+        byte[] storedBytes = await File.ReadAllBytesAsync(newFilePath);
+        Assert.NotEqual(newRawBytes, storedBytes);
+
+        byte[] decryptedBytes = FileService.DecryptBytes(storedBytes, _testKey);
+        Assert.Equal(newRawBytes, decryptedBytes);
     }
 
     [Fact]
@@ -94,5 +160,41 @@ public class BlobServiceTests : IDisposable
 
         // Assert
         Assert.False(File.Exists(fullPath));
+    }
+
+    [Fact]
+    public async Task CleanBlobStorage_ShouldDeleteOnlyOrphanedFiles()
+    {
+        // Arrange
+        string fileInDb = "db_linked_file.png";
+        string fileOrphan = "orphan_file.png";
+        await File.WriteAllBytesAsync(Path.Combine(_testTempPath, fileInDb), new byte[] { 0 }, CancellationToken.None);
+        await File.WriteAllBytesAsync(Path.Combine(_testTempPath, fileOrphan), new byte[] { 0 }, CancellationToken.None);
+
+        // 2. Mock the DB to say only 'fileInDb' is used
+        _mockRepo.Setup(r => r.ImageRepository.GetAllAsync(
+                It.IsAny<Expression<Func<Image, bool>>>(),
+                It.IsAny<Func<IQueryable<Image>, IIncludableQueryable<Image, object>>>(),
+                It.IsAny<bool>()))
+            .ReturnsAsync(
+                new List<Image>
+                {
+                    new () { BlobName = fileInDb },
+                });
+
+        _mockRepo.Setup(r => r.AudioRepository.GetAllAsync(
+                It.IsAny<Expression<Func<Audio, bool>>>(),
+                It.IsAny<Func<IQueryable<Audio>, IIncludableQueryable<Audio, object>>>(),
+                It.IsAny<bool>()))
+            .ReturnsAsync(new List<Audio>());
+
+        // Act
+        await _service.CleanBlobStorage();
+
+        // Assert
+        var remainingFiles = Directory.GetFiles(_testTempPath).Select(Path.GetFileName);
+
+        Assert.Contains(fileInDb, remainingFiles);
+        Assert.DoesNotContain(fileOrphan, remainingFiles);
     }
 }
