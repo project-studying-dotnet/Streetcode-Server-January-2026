@@ -7,7 +7,7 @@ using Streetcode.Email.BLL.DTO;
 using Streetcode.Email.BLL.Interfaces;
 using Streetcode.Email.DAL.Persistence;
 using Streetcode.Resources;
-using FeedbackEntity = Streetcode.Email.DAL.Entities.Feedback;
+using FeedbackEntity = Streetcode.Email.DAL.Entities.Email;
 
 namespace Streetcode.Email.BLL.MediatR.Feedback
 {

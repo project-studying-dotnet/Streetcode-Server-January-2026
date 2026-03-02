@@ -3,17 +3,17 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Streetcode.Email.DAL.Entities;
 
-[Table("feedback", Schema = "email")]
-public class Feedback
+[Table("emails", Schema = "email")]
+public class Email
     {
         [Key]
         public int Id { get; set; }
         [Required]
         [EmailAddress]
-        public string? Email { get; set; }
+        public string? From { get; set; }
         [Required]
         [MinLength(5)]
         [MaxLength(1000)]
-        public string? Message { get; set; }
+        public string? Content { get; set; }
     }
 

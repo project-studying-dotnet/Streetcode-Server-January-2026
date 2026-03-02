@@ -10,13 +10,13 @@ namespace Streetcode.Email.DAL.Persistence
         {
         }
 
-        public DbSet<Feedback> Feedbacks { get; set; }
+        public DbSet<Email> Emails { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-                modelBuilder.Entity<Feedback>(entity =>
+                modelBuilder.Entity<Email>(entity =>
                 {
                     entity.ToTable("Feedbacks");
                     entity.HasKey(e => e.Id);
