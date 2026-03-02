@@ -10,7 +10,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Cache;
-using Streetcode.BLL.Interfaces.Email;
 using Streetcode.BLL.Interfaces.Instagram;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.Interfaces.Payment;
@@ -18,7 +17,6 @@ using Streetcode.BLL.Interfaces.Text;
 using Streetcode.BLL.MediatR.PipelineBehavior;
 using Streetcode.BLL.Services.BlobStorageService;
 using Streetcode.BLL.Services.Cache;
-using Streetcode.BLL.Services.Email;
 using Streetcode.BLL.Services.Instagram;
 using Streetcode.BLL.Services.Logging;
 using Streetcode.BLL.Services.Payment;
@@ -51,7 +49,6 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IBlobService, BlobService>();
         services.AddScoped<ILoggerService, LoggerService>();
-        services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IInstagramService, InstagramService>();
         services.AddScoped<ITextService, AddTermsToTextService>();

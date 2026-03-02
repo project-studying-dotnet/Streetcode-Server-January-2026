@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Hangfire;
+using Hangfire.SqlServer;
 using MassTransit;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -27,10 +28,20 @@ namespace Streetcode.Email.WebAPI.Extensions
                 });
             });
 
-            services.AddHangfire(config =>
+            services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UseSqlServerStorage(configuration.GetConnectionString("DefaultConnection"), new SqlServerStorageOptions
             {
-                config.UseSqlServerStorage(connectionString);
-            });
+                PrepareSchemaIfNecessary = true,
+
+                CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                QueuePollInterval = TimeSpan.Zero,
+                UseRecommendedIsolationLevel = true,
+                DisableGlobalLocks = true
+            }));
 
             services.AddHangfireServer();
 

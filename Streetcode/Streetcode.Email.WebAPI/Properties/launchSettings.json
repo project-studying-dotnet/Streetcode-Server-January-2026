@@ -9,25 +9,25 @@
     }
   },
   "profiles": {
-    "http": {
+    "Streetcode_Email_Local": {
       "commandName": "Project",
-      "dotnetRunMessages": true,
-      "launchBrowser": true,
-      "launchUrl": "dash",
-      "applicationUrl": "http://localhost:5179",
+      "launchBrowser": false,
       "environmentVariables": {
+        "STREETCODE_ENVIRONMENT": "Local",
         "ASPNETCORE_ENVIRONMENT": "Local"
-      }
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "https://localhost:7094;http://localhost:5179"
     },
-    "https": {
+    "Streetcode_Email_Dev": {
       "commandName": "Project",
-      "dotnetRunMessages": true,
-      "launchBrowser": true,
-      "launchUrl": "dash",
-      "applicationUrl": "https://localhost:7094;http://localhost:5179",
+      "launchBrowser": false,
+      "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Local"
-      }
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "https://localhost:7094;http://localhost:5179"
     },
     "IIS Express": {
       "commandName": "IISExpress",
