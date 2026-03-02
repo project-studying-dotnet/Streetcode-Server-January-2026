@@ -1,6 +1,4 @@
-﻿
-
-namespace Streetcode.Email.XUnitTest.MediatR.Feedback
+﻿namespace Streetcode.Email.XUnitTest.MediatR.Email
 {
     using AutoMapper;
     using FluentAssertions;
@@ -48,11 +46,11 @@ namespace Streetcode.Email.XUnitTest.MediatR.Feedback
         }
 
         [Fact]
-        public async Task Handle_ShouldReturnOk_WhenFeedbackIsSavedSuccessfully()
+        public async Task Handle_ShouldReturnOk_WhenEmailIsSavedSuccessfully()
         {
             // Arrange
-            var feedbackDto = new EmailDTO { From = "test@gmail.com", Content = "Valid message" };
-            var command = new SendEmailCommand(feedbackDto);
+            var EmailDto = new EmailDTO { From = "test@gmail.com", Content = "Valid message" };
+            var command = new SendEmailCommand(EmailDto);
 
             // Act
             var result = await this.handler.Handle(command, CancellationToken.None);

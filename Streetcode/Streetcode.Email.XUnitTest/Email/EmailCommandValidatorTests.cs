@@ -1,4 +1,4 @@
-﻿namespace Streetcode.Email.XUnitTest.MediatR.Feedback
+﻿namespace Streetcode.Email.XUnitTest.MediatR.Email
 {
     using FluentAssertions;
     using FluentValidation.TestHelper;
@@ -17,7 +17,7 @@
         }
 
         [Fact]
-        public void ShouldReturnError_IfFeedbackIsNull()
+        public void ShouldReturnError_IfEmailIsNull()
         {
             // Arrange
             var command = new SendEmailCommand(null!);
@@ -31,7 +31,7 @@
         }
 
         [Fact]
-        public void ShouldHaveError_WhenFeedbackDTOIsInvalid()
+        public void ShouldHaveError_WhenEmailDTOIsInvalid()
         {
             // Arrange
             var invalidDto = new EmailDTO

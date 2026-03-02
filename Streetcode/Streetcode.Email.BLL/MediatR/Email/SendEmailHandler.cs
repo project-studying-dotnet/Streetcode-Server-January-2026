@@ -28,9 +28,9 @@ namespace Streetcode.Email.BLL.MediatR.Email
 
         public async Task<Result<Unit>> Handle(SendEmailCommand request, CancellationToken cancellationToken)
         {
-            var feedbackEntity = _mapper.Map<EmailEntity>(request.email);
+            var EmailEntity = _mapper.Map<EmailEntity>(request.email);
 
-            _context.Emails.Add(feedbackEntity);
+            _context.Emails.Add(EmailEntity);
 
             var rowsAffected = await _context.SaveChangesAsync(cancellationToken);
 

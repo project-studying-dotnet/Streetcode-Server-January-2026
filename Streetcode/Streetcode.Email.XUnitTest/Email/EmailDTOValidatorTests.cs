@@ -1,4 +1,4 @@
-﻿namespace Streetcode.Email.XUnitTest.MediatR.Feedback
+﻿namespace Streetcode.Email.XUnitTest.MediatR.Email
 {
     using FluentValidation.TestHelper;
     using Streetcode.Email.BLL.DTO;
