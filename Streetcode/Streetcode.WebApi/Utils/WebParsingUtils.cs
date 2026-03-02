@@ -264,8 +264,8 @@ public class WebParsingUtils
         if (dataToUpload.Count > 0)
         {
             var toponymsToUpload = dataToUpload
-            .Select(row => ConvertRowToToponym(row))
-            .ToList();
+                .Select(row => ConvertRowToToponym(row))
+                .ToList();
 
             await _repository.ToponymRepository.CreateRangeAsync(toponymsToUpload);
             isDataChanged = true;
@@ -274,27 +274,18 @@ public class WebParsingUtils
         if (dataToDelete.Count > 0)
         {
             var possibleToponymsToDelete = dataToDelete
-            .Select(row => ConvertRowToToponym(row))
-            .ToList();
+                .Select(row => ConvertRowToToponym(row))
+                .ToList();
 
-            var toponymEntitesToDelete = new List<Toponym>();
-
-            foreach (var candidate in possibleToponymsToDelete)
-            {
-                var entity = await _repository.ToponymRepository.GetFirstOrDefaultAsync(t =>
-                    t.Gromada == candidate.Gromada &&
-                    t.Coordinate.Latitude == candidate.Coordinate.Latitude &&
-                    t.Coordinate.Longtitude == candidate.Coordinate.Longtitude &&
-                    t.Community == candidate.Community &&
-                    t.Oblast == candidate.Oblast &&
-                    t.StreetType == candidate.StreetType &&
-                    t.StreetName == candidate.StreetName);
-
-                if (entity != null)
-                {
-                    toponymEntitesToDelete.Add(entity);
-                }
-            }
+            var toponymEntitesToDelete = (await _repository.ToponymRepository.GetAllAsync(t =>
+                possibleToponymsToDelete.Any(c =>
+                    t.Gromada == c.Gromada &&
+                    t.Coordinate.Latitude == c.Coordinate.Latitude &&
+                    t.Coordinate.Longtitude == c.Coordinate.Longtitude &&
+                    t.Community == c.Community &&
+                    t.Oblast == c.Oblast &&
+                    t.StreetType == c.StreetType &&
+                    t.StreetName == c.StreetName))).ToList();
 
             if (toponymEntitesToDelete.Count > 0)
             {
