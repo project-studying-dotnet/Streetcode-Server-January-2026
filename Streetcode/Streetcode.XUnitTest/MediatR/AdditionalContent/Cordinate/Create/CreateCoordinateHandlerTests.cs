@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentAssertions;
+using FluentResults;
 using MediatR;
 using Moq;
 using Streetcode.BLL.DTO.AdditionalContent.Coordinates.Types;
@@ -8,143 +9,74 @@ using Streetcode.DAL.Entities.AdditionalContent.Coordinates.Types;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Xunit;
 
-namespace Streetcode.XUnitTest.MediatR.AdditionalContent.Coordinate.Create;
+namespace Streetcode.XUnitTest.MediatR.AdditionalContent.Coordinate;
 
 public class CreateCoordinateHandlerTests
 {
-    private readonly Mock<IRepositoryWrapper> mockRepoWrapper;
-    private readonly Mock<IMapper> mockMapper;
-    private readonly CreateCoordinateHandler handler;
+    private readonly Mock<IRepositoryWrapper> _mockRepo;
+    private readonly IMapper _mapper;
 
     public CreateCoordinateHandlerTests()
     {
-        this.mockRepoWrapper = new Mock<IRepositoryWrapper>();
-        this.mockMapper = new Mock<IMapper>();
+        _mockRepo = new Mock<IRepositoryWrapper>();
 
-        this.handler = new CreateCoordinateHandler(
-            this.mockRepoWrapper.Object,
-            this.mockMapper.Object);
+        // Real Mapper Setup
+        var myProfile = new MappingProfile(); // Replace with your actual BLL Mapping Profile class
+        var configuration = new MapperConfiguration(cfg => cfg.AddProfile(myProfile));
+        _mapper = new Mapper(configuration);
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnSuccess_WhenCoordinateIsCreated()
+    public async Task Handle_ValidRequest_ReturnsSuccessAndCallsCreate()
     {
         // Arrange
-        var coordinateDto = new StreetcodeCoordinateDTO();
-        var coordinate = new StreetcodeCoordinate();
+        var command = new CreateCoordinateCommand(new StreetcodeCoordinateDTO { Latitude = 10, Longitude = 20 });
 
-        this.mockMapper.Setup(m => m.Map<StreetcodeCoordinate>(It.IsAny<StreetcodeCoordinateDTO>()))
-            .Returns(coordinate);
+        _mockRepo.Setup(r => r.StreetcodeCoordinateRepository.Create(It.IsAny<StreetcodeCoordinate>()));
+        _mockRepo.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
 
-        this.mockRepoWrapper.Setup(r => r.SaveChangesAsync())
-            .ReturnsAsync(1);
+        var handler = new CreateCoordinateHandler(_mockRepo.Object, _mapper);
 
         // Act
-        var result = await this.handler.Handle(new CreateCoordinateCommand(coordinateDto), CancellationToken.None);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(Unit.Value);
+        _mockRepo.Verify(r => r.StreetcodeCoordinateRepository.Create(It.IsAny<StreetcodeCoordinate>()), Times.Once);
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnCorrectDataType()
+    public async Task Handle_MapperReturnsNull_ReturnsFailure()
     {
         // Arrange
-        var coordinateDto = new StreetcodeCoordinateDTO();
-        this.mockMapper.Setup(m => m.Map<StreetcodeCoordinate>(It.IsAny<StreetcodeCoordinateDTO>()))
-            .Returns(new StreetcodeCoordinate());
-
-        this.mockRepoWrapper.Setup(r => r.SaveChangesAsync())
-            .ReturnsAsync(1);
+        // Passing a null DTO to force the mapper/handler logic to trigger the null check
+        var command = new CreateCoordinateCommand(null!);
+        var handler = new CreateCoordinateHandler(_mockRepo.Object, _mapper);
 
         // Act
-        var result = await this.handler.Handle(new CreateCoordinateCommand(coordinateDto), CancellationToken.None);
-
-        // Assert
-        result.Value.Should().BeOfType<Unit>();
-    }
-
-    [Fact]
-    public async Task Handle_ShouldReturnCorrectCountOfItems_MeaningOneRecordCreated()
-    {
-        // Arrange
-        var coordinateDto = new StreetcodeCoordinateDTO();
-        this.mockMapper.Setup(m => m.Map<StreetcodeCoordinate>(It.IsAny<StreetcodeCoordinateDTO>()))
-            .Returns(new StreetcodeCoordinate());
-
-        this.mockRepoWrapper.Setup(r => r.SaveChangesAsync())
-            .ReturnsAsync(1);
-
-        // Act
-        await this.handler.Handle(new CreateCoordinateCommand(coordinateDto), CancellationToken.None);
-
-        // Assert
-        this.mockRepoWrapper.Verify(r => r.SaveChangesAsync(), Times.Once);
-    }
-
-    [Fact]
-    public async Task Handle_ShouldMapDtoToEntityCorrectly()
-    {
-        // Arrange
-        var coordinateDto = new StreetcodeCoordinateDTO { Latitude = 10, Longtitude = 20 };
-        
-        // Act
-        await this.handler.Handle(new CreateCoordinateCommand(coordinateDto), CancellationToken.None);
-
-        // Assert
-        this.mockMapper.Verify(m => m.Map<StreetcodeCoordinate>(coordinateDto), Times.Once);
-    }
-
-    [Fact]
-    public async Task Handle_ShouldReturnFailure_WhenMappedEntityIsNull()
-    {
-        // Arrange
-        var coordinateDto = new StreetcodeCoordinateDTO();
-        this.mockMapper.Setup(m => m.Map<StreetcodeCoordinate>(It.IsAny<StreetcodeCoordinateDTO>()))
-            .Returns((StreetcodeCoordinate?)null);
-
-        // Act
-        var result = await this.handler.Handle(new CreateCoordinateCommand(coordinateDto), CancellationToken.None);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsFailed.Should().BeTrue();
+        result.Errors.First().Message.Should().Be("Cannot convert null to streetcodeCoordinate");
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnFailure_WhenSaveChangesAsyncReturnsZero()
+    public async Task Handle_SaveChangesFails_ReturnsFailureMessage()
     {
         // Arrange
-        var coordinateDto = new StreetcodeCoordinateDTO();
-        this.mockMapper.Setup(m => m.Map<StreetcodeCoordinate>(It.IsAny<StreetcodeCoordinateDTO>()))
-            .Returns(new StreetcodeCoordinate());
+        var command = new CreateCoordinateCommand(new StreetcodeCoordinateDTO());
 
-        this.mockRepoWrapper.Setup(r => r.SaveChangesAsync())
-            .ReturnsAsync(0);
+        _mockRepo.Setup(r => r.SaveChangesAsync()).ReturnsAsync(0); // Simulate database error
+
+        var handler = new CreateCoordinateHandler(_mockRepo.Object, _mapper);
 
         // Act
-        var result = await this.handler.Handle(new CreateCoordinateCommand(coordinateDto), CancellationToken.None);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Handle_ShouldReturnCorrectErrorMessage_WhenCreationFails()
-    {
-        // Arrange
-        var coordinateDto = new StreetcodeCoordinateDTO();
-        this.mockMapper.Setup(m => m.Map<StreetcodeCoordinate>(It.IsAny<StreetcodeCoordinateDTO>()))
-            .Returns(new StreetcodeCoordinate());
-
-        this.mockRepoWrapper.Setup(r => r.SaveChangesAsync())
-            .ReturnsAsync(0);
-        
-        var expectedError = "Failed to create a streetcodeCoordinate";
-
-        // Act
-        var result = await this.handler.Handle(new CreateCoordinateCommand(coordinateDto), CancellationToken.None);
-
-        // Assert
-        result.Errors.Should().ContainSingle(e => e.Message == expectedError);
+        result.Errors.First().Message.Should().Be("Failed to create a streetcodeCoordinate");
     }
 }

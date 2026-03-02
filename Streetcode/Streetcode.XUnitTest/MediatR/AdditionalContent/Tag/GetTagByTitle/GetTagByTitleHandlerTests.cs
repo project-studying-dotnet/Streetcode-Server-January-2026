@@ -1,158 +1,96 @@
-using System.Linq.Expressions;
 using AutoMapper;
 using FluentAssertions;
+using FluentResults;
 using Moq;
 using Streetcode.BLL.DTO.AdditionalContent;
 using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetByStreetcodeId;
 using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetTagByTitle;
+using Streetcode.DAL.Entities.AdditionalContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using System.Linq.Expressions;
 using Xunit;
 
-// Alias to resolve naming conflict between 'Tag' namespace and 'Tag' entity
-using TagEntity = Streetcode.DAL.Entities.AdditionalContent.Tag;
-
-namespace Streetcode.XUnitTest.MediatR.AdditionalContent.Tag.GetTagByTitle;
+namespace Streetcode.XUnitTest.MediatR.AdditionalContent.Tag;
 
 public class GetTagByTitleHandlerTests
 {
-    private readonly Mock<IRepositoryWrapper> _mockRepoWrapper;
-    private readonly Mock<IMapper> _mockMapper;
+    private readonly Mock<IRepositoryWrapper> _mockRepo;
     private readonly Mock<ILoggerService> _mockLogger;
-    private readonly GetTagByTitleHandler _handler;
+    private readonly IMapper _mapper;
 
     public GetTagByTitleHandlerTests()
     {
-        _mockRepoWrapper = new Mock<IRepositoryWrapper>();
-        _mockMapper = new Mock<IMapper>();
+        _mockRepo = new Mock<IRepositoryWrapper>();
         _mockLogger = new Mock<ILoggerService>();
 
-        _handler = new GetTagByTitleHandler(
-            _mockRepoWrapper.Object,
-            _mockMapper.Object,
-            _mockLogger.Object);
+        // Real Mapper Setup
+        var config = new MapperConfiguration(cfg => cfg.AddProfile(new MappingProfile()));
+        _mapper = new Mapper(config);
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnSuccess_WhenDataExists()
+    public async Task Handle_TagExists_ReturnsSuccessWithCorrectData()
     {
         // Arrange
-        var title = "History";
-        var tag = new TagEntity { Id = 1, Title = title };
-        _mockRepoWrapper.Setup(r => r.TagRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<TagEntity, bool>>>(), null))
-            .ReturnsAsync(tag);
+        string testTitle = "History";
+        var query = new GetTagByTitleQuery(testTitle);
+        var tagEntity = new DAL.Entities.AdditionalContent.Tag { Id = 1, Title = testTitle };
+
+        _mockRepo.Setup(r => r.TagRepository.GetFirstOrDefaultAsync(
+            It.IsAny<Expression<Func<DAL.Entities.AdditionalContent.Tag, bool>>>(),
+            null))
+            .ReturnsAsync(tagEntity);
+
+        var handler = new GetTagByTitleHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
 
         // Act
-        var result = await _handler.Handle(new GetTagByTitleQuery(title), CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeOfType<TagDTO>();
+        result.Value.Title.Should().Be(testTitle);
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnCorrectDataType()
+    public async Task Handle_TagDoesNotExist_ReturnsFailureAndLogsError()
     {
         // Arrange
-        var title = "Culture";
-        var tag = new TagEntity { Id = 1, Title = title };
-        var tagDto = new TagDTO { Id = 1, Title = title };
+        string testTitle = "NonExistent";
+        var query = new GetTagByTitleQuery(testTitle);
+        string expectedError = $"Cannot find any tag by the title: {testTitle}";
 
-        _mockRepoWrapper.Setup(r => r.TagRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<TagEntity, bool>>>(), null))
-            .ReturnsAsync(tag);
+        _mockRepo.Setup(r => r.TagRepository.GetFirstOrDefaultAsync(
+            It.IsAny<Expression<Func<DAL.Entities.AdditionalContent.Tag, bool>>>(),
+            null))
+            .ReturnsAsync((DAL.Entities.AdditionalContent.Tag?)null);
 
-        _mockMapper.Setup(m => m.Map<TagDTO>(tag))
-            .Returns(tagDto);
+        var handler = new GetTagByTitleHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
 
         // Act
-        var result = await _handler.Handle(new GetTagByTitleQuery(title), CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.IsFailed.Should().BeTrue();
+        result.Errors.First().Message.Should().Be(expectedError);
+        _mockLogger.Verify(x => x.LogError(query, expectedError), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_ValidRequest_ReturnsCorrectDtoType()
+    {
+        // Arrange
+        var query = new GetTagByTitleQuery("AnyTitle");
+        _mockRepo.Setup(r => r.TagRepository.GetFirstOrDefaultAsync(
+            It.IsAny<Expression<Func<DAL.Entities.AdditionalContent.Tag, bool>>>(), null))
+            .ReturnsAsync(new DAL.Entities.AdditionalContent.Tag());
+
+        var handler = new GetTagByTitleHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.Value.Should().BeOfType<TagDTO>();
-    }
-
-    [Fact]
-    public async Task Handle_ShouldReturnCorrectCountOfItems_MeaningNotNull()
-    {
-        // Arrange
-        var title = "Art";
-        var tag = new TagEntity { Id = 1, Title = title };
-        _mockRepoWrapper.Setup(r => r.TagRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<TagEntity, bool>>>(), null))
-            .ReturnsAsync(tag);
-
-        _mockMapper.Setup(m => m.Map<TagDTO>(tag)).Returns(new TagDTO());
-
-        // Act
-        var result = await _handler.Handle(new GetTagByTitleQuery(title), CancellationToken.None);
-
-        // Assert
-        result.Value.Should().NotBeNull();
-    }
-
-    [Fact]
-    public async Task Handle_ShouldMapEntityToDtoCorrectly()
-    {
-        // Arrange
-        var title = "Science";
-        var tag = new TagEntity { Id = 1, Title = title };
-        _mockRepoWrapper.Setup(r => r.TagRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<TagEntity, bool>>>(), null))
-            .ReturnsAsync(tag);
-
-        // Act
-        await _handler.Handle(new GetTagByTitleQuery(title), CancellationToken.None);
-
-        // Assert
-        _mockMapper.Verify(m => m.Map<TagDTO>(tag), Times.Once);
-    }
-
-    [Fact]
-    public async Task Handle_ShouldReturnFailure_WhenDataIsNull()
-    {
-        // Arrange
-        _mockRepoWrapper.Setup(r => r.TagRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<TagEntity, bool>>>(), null))
-            .ReturnsAsync((TagEntity?)null);
-
-        // Act
-        var result = await _handler.Handle(new GetTagByTitleQuery("NonExistent"), CancellationToken.None);
-
-        // Assert
-        result.IsFailed.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Handle_ShouldReturnFailure_WhenEntityNotFound()
-    {
-        // Arrange
-        _mockRepoWrapper.Setup(r => r.TagRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<TagEntity, bool>>>(), null))
-            .ReturnsAsync((TagEntity?)null);
-
-        // Act
-        var result = await _handler.Handle(new GetTagByTitleQuery("Empty"), CancellationToken.None);
-
-        // Assert
-        result.IsFailed.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Handle_ShouldReturnCorrectErrorMessage_WhenTagNotFound()
-    {
-        // Arrange
-        string title = "MissingTitle";
-        _mockRepoWrapper.Setup(r => r.TagRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<TagEntity, bool>>>(), null))
-            .ReturnsAsync((TagEntity?)null);
-
-        var expectedError = $"Cannot find any tag by the title: {title}";
-
-        // Act
-        var result = await _handler.Handle(new GetTagByTitleQuery(title), CancellationToken.None);
-
-        // Assert
-        result.Errors.Should().ContainSingle(e => e.Message == expectedError);
     }
 }

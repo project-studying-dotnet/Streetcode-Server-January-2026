@@ -1,155 +1,79 @@
-﻿using System.Linq.Expressions;
-using AutoMapper;
+﻿using AutoMapper;
 using FluentAssertions;
+using FluentResults;
 using Moq;
 using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.MediatR.AdditionalContent.GetById;
 using Streetcode.BLL.MediatR.AdditionalContent.Subtitle.GetById;
+using Streetcode.DAL.Entities.AdditionalContent.Subtitles;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using System.Linq.Expressions;
 using Xunit;
 
-// Alias to resolve conflict between 'Subtitle' namespace and 'Subtitle' entity class
-using SubtitleEntity = Streetcode.DAL.Entities.AdditionalContent.Subtitle;
-
-namespace Streetcode.XUnitTest.MediatR.AdditionalContent.Subtitle.GetById;
+namespace Streetcode.XUnitTest.MediatR.AdditionalContent.Subtitle;
 
 public class GetSubtitleByIdHandlerTests
 {
-    private readonly Mock<IRepositoryWrapper> mockRepoWrapper;
-    private readonly Mock<IMapper> mockMapper;
-    private readonly Mock<ILoggerService> mockLogger;
-    private readonly GetSubtitleByIdHandler handler;
+    private readonly Mock<IRepositoryWrapper> _mockRepo;
+    private readonly Mock<ILoggerService> _mockLogger;
+    private readonly IMapper _mapper;
 
     public GetSubtitleByIdHandlerTests()
     {
-        this.mockRepoWrapper = new Mock<IRepositoryWrapper>();
-        this.mockMapper = new Mock<IMapper>();
-        this.mockLogger = new Mock<ILoggerService>();
+        _mockRepo = new Mock<IRepositoryWrapper>();
+        _mockLogger = new Mock<ILoggerService>();
 
-        this.handler = new GetSubtitleByIdHandler(
-            this.mockRepoWrapper.Object,
-            this.mockMapper.Object,
-            this.mockLogger.Object);
+        // Real Mapper Setup
+        var config = new MapperConfiguration(cfg => cfg.AddProfile(new MappingProfile()));
+        _mapper = new Mapper(config);
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnSuccess_WhenDataExists()
+    public async Task Handle_SubtitleExists_ReturnsSuccessWithCorrectMappedData()
     {
         // Arrange
-        var subtitle = new SubtitleEntity { Id = 1 };
-        this.mockRepoWrapper.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<SubtitleEntity, bool>>>(), null))
+        int testId = 1;
+        var subtitle = new Subtitle { Id = testId, SubtitleText = "Sample Subtitle" };
+        var query = new GetSubtitleByIdQuery(testId);
+
+        _mockRepo.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
+            It.IsAny<Expression<Func<Subtitle, bool>>>(),
+            null))
             .ReturnsAsync(subtitle);
 
+        var handler = new GetSubtitleByIdHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+
         // Act
-        var result = await this.handler.Handle(new GetSubtitleByIdQuery(1), CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Handle_ShouldReturnCorrectDataType()
-    {
-        // Arrange
-        var subtitle = new SubtitleEntity { Id = 1 };
-        var subtitleDto = new SubtitleDTO { Id = 1 };
-
-        this.mockRepoWrapper.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<SubtitleEntity, bool>>>(), null))
-            .ReturnsAsync(subtitle);
-
-        this.mockMapper.Setup(m => m.Map<SubtitleDTO>(subtitle))
-            .Returns(subtitleDto);
-
-        // Act
-        var result = await this.handler.Handle(new GetSubtitleByIdQuery(1), CancellationToken.None);
-
-        // Assert
         result.Value.Should().BeOfType<SubtitleDTO>();
+        result.Value.Id.Should().Be(testId);
+        result.Value.SubtitleText.Should().Be("Sample Subtitle");
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnCorrectCountOfItems_MeaningNotNull()
+    public async Task Handle_SubtitleDoesNotExist_ReturnsFailureAndLogsError()
     {
         // Arrange
-        var subtitle = new SubtitleEntity { Id = 1 };
-        this.mockRepoWrapper.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<SubtitleEntity, bool>>>(), null))
-            .ReturnsAsync(subtitle);
+        int testId = 99;
+        var query = new GetSubtitleByIdQuery(testId);
 
-        this.mockMapper.Setup(m => m.Map<SubtitleDTO>(subtitle))
-            .Returns(new SubtitleDTO());
+        _mockRepo.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
+            It.IsAny<Expression<Func<Subtitle, bool>>>(),
+            null))
+            .ReturnsAsync((Subtitle?)null);
 
-        // Act
-        var result = await this.handler.Handle(new GetSubtitleByIdQuery(1), CancellationToken.None);
-
-        // Assert
-        result.Value.Should().NotBeNull();
-    }
-
-    [Fact]
-    public async Task Handle_ShouldMapEntityToDtoCorrectly()
-    {
-        // Arrange
-        var subtitle = new SubtitleEntity { Id = 1 };
-        this.mockRepoWrapper.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<SubtitleEntity, bool>>>(), null))
-            .ReturnsAsync(subtitle);
+        var handler = new GetSubtitleByIdHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
 
         // Act
-        await this.handler.Handle(new GetSubtitleByIdQuery(1), CancellationToken.None);
-
-        // Assert
-        this.mockMapper.Verify(m => m.Map<SubtitleDTO>(subtitle), Times.Once);
-    }
-
-    [Fact]
-    public async Task Handle_ShouldReturnFailure_WhenDataIsNull()
-    {
-        // Arrange
-        this.mockRepoWrapper.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<SubtitleEntity, bool>>>(), null))
-            .ReturnsAsync((SubtitleEntity?)null);
-
-        // Act
-        var result = await this.handler.Handle(new GetSubtitleByIdQuery(1), CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Handle_ShouldReturnFailure_WhenEntityNotFound()
-    {
-        // Arrange
-        this.mockRepoWrapper.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<SubtitleEntity, bool>>>(), null))
-            .ReturnsAsync((SubtitleEntity?)null);
-
-        // Act
-        var result = await this.handler.Handle(new GetSubtitleByIdQuery(1), CancellationToken.None);
-
-        // Assert
-        result.IsFailed.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Handle_ShouldReturnCorrectErrorMessage_WhenSubtitleNotFound()
-    {
-        // Arrange
-        int id = 1;
-        this.mockRepoWrapper.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<SubtitleEntity, bool>>>(), null))
-            .ReturnsAsync((SubtitleEntity?)null);
-
-        var expectedError = $"Cannot find a subtitle with corresponding id: {id}";
-
-        // Act
-        var result = await this.handler.Handle(new GetSubtitleByIdQuery(id), CancellationToken.None);
-
-        // Assert
-        result.Errors.Should().ContainSingle(e => e.Message == expectedError);
+        result.Errors.First().Message.Should().Be($"Cannot find a subtitle with corresponding id: {testId}");
+        _mockLogger.Verify(x => x.LogError(query, It.IsAny<string>()), Times.Once);
     }
 }

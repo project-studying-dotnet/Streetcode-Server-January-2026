@@ -1,123 +1,95 @@
-using System.Linq.Expressions;
 using AutoMapper;
 using FluentAssertions;
+using FluentResults;
 using Moq;
 using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.MediatR.AdditionalContent.Subtitle.GetByStreetcodeId;
+using Streetcode.DAL.Entities.AdditionalContent.Subtitles;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using System.Linq.Expressions;
 using Xunit;
 
-// Alias to resolve the naming conflict between the namespace and the entity
-using SubtitleEntity = Streetcode.DAL.Entities.AdditionalContent.Subtitle;
-
-namespace Streetcode.XUnitTest.MediatR.AdditionalContent.Subtitle.GetByStreetcodeId;
+namespace Streetcode.XUnitTest.MediatR.AdditionalContent.Subtitle;
 
 public class GetSubtitlesByStreetcodeIdHandlerTests
 {
-    private readonly Mock<IRepositoryWrapper> _mockRepoWrapper;
-    private readonly Mock<IMapper> _mockMapper;
+    private readonly Mock<IRepositoryWrapper> _mockRepo;
     private readonly Mock<ILoggerService> _mockLogger;
-    private readonly GetSubtitlesByStreetcodeIdHandler _handler;
+    private readonly IMapper _mapper;
 
     public GetSubtitlesByStreetcodeIdHandlerTests()
     {
-        _mockRepoWrapper = new Mock<IRepositoryWrapper>();
-        _mockMapper = new Mock<IMapper>();
+        _mockRepo = new Mock<IRepositoryWrapper>();
         _mockLogger = new Mock<ILoggerService>();
 
-        _handler = new GetSubtitlesByStreetcodeIdHandler(
-            _mockRepoWrapper.Object,
-            _mockMapper.Object,
-            _mockLogger.Object);
+        // Real Mapper Setup
+        var config = new MapperConfiguration(cfg => cfg.AddProfile(new MappingProfile()));
+        _mapper = new Mapper(config);
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnSuccess_WhenDataExists()
+    public async Task Handle_SubtitleExists_ReturnsSuccessWithMappedSubtitle()
     {
         // Arrange
-        var subtitle = new SubtitleEntity { StreetcodeId = 1 };
-        _mockRepoWrapper.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<SubtitleEntity, bool>>>(), null))
+        int streetcodeId = 10;
+        var subtitle = new Subtitle { Id = 1, StreetcodeId = streetcodeId, SubtitleText = "Found it" };
+        var query = new GetSubtitlesByStreetcodeIdQuery(streetcodeId);
+
+        _mockRepo.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
+            It.IsAny<Expression<Func<Subtitle, bool>>>(),
+            null))
             .ReturnsAsync(subtitle);
 
+        var handler = new GetSubtitlesByStreetcodeIdHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+
         // Act
-        var result = await _handler.Handle(new GetSubtitlesByStreetcodeIdQuery(1), CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value.SubtitleText.Should().Be("Found it");
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnCorrectDataType()
+    public async Task Handle_SubtitleDoesNotExist_ReturnsSuccessWithNullValue()
     {
         // Arrange
-        var subtitle = new SubtitleEntity { StreetcodeId = 1 };
-        var subtitleDto = new SubtitleDTO { StreetcodeId = 1 };
+        int streetcodeId = 10;
+        var query = new GetSubtitlesByStreetcodeIdQuery(streetcodeId);
 
-        _mockRepoWrapper.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<SubtitleEntity, bool>>>(), null))
-            .ReturnsAsync(subtitle);
+        _mockRepo.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
+            It.IsAny<Expression<Func<Subtitle, bool>>>(),
+            null))
+            .ReturnsAsync((Subtitle?)null);
 
-        _mockMapper.Setup(m => m.Map<SubtitleDTO>(subtitle))
-            .Returns(subtitleDto);
+        var handler = new GetSubtitlesByStreetcodeIdHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
 
         // Act
-        var result = await _handler.Handle(new GetSubtitlesByStreetcodeIdQuery(1), CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        // Given the use of NullResult, we check if it's still a success but contains a null value
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Handle_RepositoryReturnsData_CorrectDataTypeReturned()
+    {
+        // Arrange
+        var query = new GetSubtitlesByStreetcodeIdQuery(1);
+        _mockRepo.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
+            It.IsAny<Expression<Func<Subtitle, bool>>>(), null))
+            .ReturnsAsync(new Subtitle());
+
+        var handler = new GetSubtitlesByStreetcodeIdHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.Value.Should().BeOfType<SubtitleDTO>();
-    }
-
-    [Fact]
-    public async Task Handle_ShouldReturnCorrectCountOfItems_MeaningNotNull()
-    {
-        // Arrange
-        var subtitle = new SubtitleEntity { StreetcodeId = 1 };
-        _mockRepoWrapper.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<SubtitleEntity, bool>>>(), null))
-            .ReturnsAsync(subtitle);
-
-        _mockMapper.Setup(m => m.Map<SubtitleDTO>(subtitle))
-            .Returns(new SubtitleDTO());
-
-        // Act
-        var result = await _handler.Handle(new GetSubtitlesByStreetcodeIdQuery(1), CancellationToken.None);
-
-        // Assert
-        result.Value.Should().NotBeNull();
-    }
-
-    [Fact]
-    public async Task Handle_ShouldMapEntityToDtoCorrectly()
-    {
-        // Arrange
-        var subtitle = new SubtitleEntity { StreetcodeId = 1 };
-        _mockRepoWrapper.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<SubtitleEntity, bool>>>(), null))
-            .ReturnsAsync(subtitle);
-
-        // Act
-        await _handler.Handle(new GetSubtitlesByStreetcodeIdQuery(1), CancellationToken.None);
-
-        // Assert
-        _mockMapper.Verify(m => m.Map<SubtitleDTO>(subtitle), Times.Once);
-    }
-
-    [Fact]
-    public async Task Handle_ShouldReturnSuccess_EvenWhenDataIsNull_DueToNullResult()
-    {
-        // Arrange
-        _mockRepoWrapper.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<SubtitleEntity, bool>>>(), null))
-            .ReturnsAsync((SubtitleEntity?)null);
-
-        // Act
-        var result = await _handler.Handle(new GetSubtitlesByStreetcodeIdQuery(1), CancellationToken.None);
-
-        // Assert
-        // NullResult is often used to return a success state with a null value rather than a Fail state.
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Should().BeNull();
     }
 }

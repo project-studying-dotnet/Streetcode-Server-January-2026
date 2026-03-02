@@ -1,114 +1,91 @@
-﻿using System.Linq.Expressions;
-using FluentAssertions;
+﻿using FluentAssertions;
+using FluentResults;
 using MediatR;
 using Moq;
 using Streetcode.BLL.MediatR.AdditionalContent.Coordinate.Delete;
 using Streetcode.DAL.Entities.AdditionalContent.Coordinates.Types;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using System.Linq.Expressions;
 using Xunit;
 
-namespace Streetcode.XUnitTest.MediatR.AdditionalContent.Coordinate.Delete;
+namespace Streetcode.XUnitTest.MediatR.AdditionalContent.Coordinate;
 
 public class DeleteCoordinateHandlerTests
 {
-    private readonly Mock<IRepositoryWrapper> mockRepoWrapper;
-    private readonly DeleteCoordinateHandler handler;
+    private readonly Mock<IRepositoryWrapper> _mockRepo;
 
     public DeleteCoordinateHandlerTests()
     {
-        this.mockRepoWrapper = new Mock<IRepositoryWrapper>();
-        this.handler = new DeleteCoordinateHandler(this.mockRepoWrapper.Object);
+        _mockRepo = new Mock<IRepositoryWrapper>();
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnSuccess_WhenEntityExistsAndDeleted()
+    public async Task Handle_ExistingCoordinate_ReturnsSuccess()
     {
         // Arrange
-        var coordinate = new StreetcodeCoordinate { Id = 1 };
-        this.mockRepoWrapper.Setup(r => r.StreetcodeCoordinateRepository.GetFirstOrDefaultAsync(It.IsAny<Expression<Func<StreetcodeCoordinate, bool>>>(), null))
+        int testId = 1;
+        var command = new DeleteCoordinateCommand(testId);
+        var coordinate = new StreetcodeCoordinate { Id = testId };
+
+        _mockRepo.Setup(r => r.StreetcodeCoordinateRepository
+            .GetFirstOrDefaultAsync(It.IsAny<Expression<Func<StreetcodeCoordinate, bool>>>(), null))
             .ReturnsAsync(coordinate);
-        this.mockRepoWrapper.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
+
+        _mockRepo.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
+
+        var handler = new DeleteCoordinateHandler(_mockRepo.Object);
 
         // Act
-        var result = await this.handler.Handle(new DeleteCoordinateCommand(1), CancellationToken.None);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
+        _mockRepo.Verify(r => r.StreetcodeCoordinateRepository.Delete(coordinate), Times.Once);
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnCorrectDataType()
+    public async Task Handle_NonExistingCoordinate_ReturnsFailureWithCorrectMessage()
     {
         // Arrange
-        this.mockRepoWrapper.Setup(r => r.StreetcodeCoordinateRepository.GetFirstOrDefaultAsync(It.IsAny<Expression<Func<StreetcodeCoordinate, bool>>>(), null))
-            .ReturnsAsync(new StreetcodeCoordinate());
-        this.mockRepoWrapper.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
+        int testId = 99;
+        var command = new DeleteCoordinateCommand(testId);
+
+        _mockRepo.Setup(r => r.StreetcodeCoordinateRepository
+            .GetFirstOrDefaultAsync(It.IsAny<Expression<Func<StreetcodeCoordinate, bool>>>(), null))
+            .ReturnsAsync((StreetcodeCoordinate?)null);
+
+        var handler = new DeleteCoordinateHandler(_mockRepo.Object);
 
         // Act
-        var result = await this.handler.Handle(new DeleteCoordinateCommand(1), CancellationToken.None);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Value.Should().BeOfType<Unit>();
+        result.IsFailed.Should().BeTrue();
+        result.Errors.First().Message.Should().Be($"Cannot find a coordinate with corresponding categoryId: {testId}");
+        _mockRepo.Verify(r => r.StreetcodeCoordinateRepository.Delete(It.IsAny<StreetcodeCoordinate>()), Times.Never);
     }
 
     [Fact]
-    public async Task Handle_ShouldCallDeleteOnce_WhenEntityExists()
+    public async Task Handle_SaveChangesFails_ReturnsFailureMessage()
     {
         // Arrange
-        var coordinate = new StreetcodeCoordinate { Id = 1 };
-        this.mockRepoWrapper.Setup(r => r.StreetcodeCoordinateRepository.GetFirstOrDefaultAsync(It.IsAny<Expression<Func<StreetcodeCoordinate, bool>>>(), null))
+        int testId = 1;
+        var command = new DeleteCoordinateCommand(testId);
+        var coordinate = new StreetcodeCoordinate { Id = testId };
+
+        _mockRepo.Setup(r => r.StreetcodeCoordinateRepository
+            .GetFirstOrDefaultAsync(It.IsAny<Expression<Func<StreetcodeCoordinate, bool>>>(), null))
             .ReturnsAsync(coordinate);
-        this.mockRepoWrapper.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
+
+        _mockRepo.Setup(r => r.SaveChangesAsync()).ReturnsAsync(0); // DB failure
+
+        var handler = new DeleteCoordinateHandler(_mockRepo.Object);
 
         // Act
-        await this.handler.Handle(new DeleteCoordinateCommand(1), CancellationToken.None);
-
-        // Assert
-        this.mockRepoWrapper.Verify(r => r.StreetcodeCoordinateRepository.Delete(coordinate), Times.Once);
-    }
-
-    [Fact]
-    public async Task Handle_ShouldReturnFailure_WhenEntityNotFound()
-    {
-        // Arrange
-        this.mockRepoWrapper.Setup(r => r.StreetcodeCoordinateRepository.GetFirstOrDefaultAsync(It.IsAny<Expression<Func<StreetcodeCoordinate, bool>>>(), null))
-            .ReturnsAsync((StreetcodeCoordinate?)null);
-
-        // Act
-        var result = await this.handler.Handle(new DeleteCoordinateCommand(1), CancellationToken.None);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Handle_ShouldReturnFailure_WhenSaveChangesAsyncReturnsZero()
-    {
-        // Arrange
-        this.mockRepoWrapper.Setup(r => r.StreetcodeCoordinateRepository.GetFirstOrDefaultAsync(It.IsAny<Expression<Func<StreetcodeCoordinate, bool>>>(), null))
-            .ReturnsAsync(new StreetcodeCoordinate());
-        this.mockRepoWrapper.Setup(r => r.SaveChangesAsync()).ReturnsAsync(0);
-
-        // Act
-        var result = await this.handler.Handle(new DeleteCoordinateCommand(1), CancellationToken.None);
-
-        // Assert
-        result.IsFailed.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Handle_ShouldReturnCorrectErrorMessage_WhenEntityNotFound()
-    {
-        // Arrange
-        int id = 1;
-        this.mockRepoWrapper.Setup(r => r.StreetcodeCoordinateRepository.GetFirstOrDefaultAsync(It.IsAny<Expression<Func<StreetcodeCoordinate, bool>>>(), null))
-            .ReturnsAsync((StreetcodeCoordinate?)null);
-        var expectedError = $"Cannot find a coordinate with corresponding categoryId: {id}";
-
-        // Act
-        var result = await this.handler.Handle(new DeleteCoordinateCommand(id), CancellationToken.None);
-
-        // Assert
-        result.Errors.Should().ContainSingle(e => e.Message == expectedError);
+        result.Errors.First().Message.Should().Be("Failed to delete a coordinate");
     }
 }

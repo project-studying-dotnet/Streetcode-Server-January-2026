@@ -1,156 +1,97 @@
 using AutoMapper;
 using FluentAssertions;
+using FluentResults;
 using Moq;
 using Streetcode.BLL.DTO.AdditionalContent;
-using Streetcode.BLL.DTO.AdditionalContent.Tag;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.MediatR.AdditionalContent.Tag.Create;
 using Streetcode.DAL.Entities.AdditionalContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Xunit;
 
-namespace Streetcode.XUnitTest.MediatR.AdditionalContent.Tag.Create;
+namespace Streetcode.XUnitTest.MediatR.AdditionalContent.Tag;
 
 public class CreateTagHandlerTests
 {
-    private readonly Mock<IRepositoryWrapper> _mockRepoWrapper;
-    private readonly Mock<IMapper> _mockMapper;
+    private readonly Mock<IRepositoryWrapper> _mockRepo;
     private readonly Mock<ILoggerService> _mockLogger;
-    private readonly CreateTagHandler _handler;
+    private readonly IMapper _mapper;
 
     public CreateTagHandlerTests()
     {
-        _mockRepoWrapper = new Mock<IRepositoryWrapper>();
-        _mockMapper = new Mock<IMapper>();
+        _mockRepo = new Mock<IRepositoryWrapper>();
         _mockLogger = new Mock<ILoggerService>();
 
-        _handler = new CreateTagHandler(
-            _mockRepoWrapper.Object,
-            _mockMapper.Object,
-            _mockLogger.Object);
+        // Real Mapper Setup
+        var config = new MapperConfiguration(cfg => cfg.AddProfile(new MappingProfile()));
+        _mapper = new Mapper(config);
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnSuccess_WhenTagIsCreated()
+    public async Task Handle_ValidRequest_ReturnsSuccessAndMappedTag()
     {
         // Arrange
-        var createTagDto = new CreateTagDTO { Title = "Test" };
-        var tag = new DAL.Entities.AdditionalContent.Tag { Id = 1, Title = "Test" };
+        var tagDto = new TagDTO { Title = "Test Tag" };
+        var query = new CreateTagQuery(tagDto);
+        var createdTag = new DAL.Entities.AdditionalContent.Tag { Id = 1, Title = "Test Tag" };
 
-        _mockRepoWrapper.Setup(r => r.TagRepository.CreateAsync(It.IsAny<DAL.Entities.AdditionalContent.Tag>()))
-            .ReturnsAsync(tag);
+        _mockRepo.Setup(r => r.TagRepository.CreateAsync(It.IsAny<DAL.Entities.AdditionalContent.Tag>()))
+            .ReturnsAsync(createdTag);
+
+        _mockRepo.Setup(r => r.SaveChanges()).Returns(1);
+
+        var handler = new CreateTagHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
 
         // Act
-        var result = await _handler.Handle(new CreateTagQuery(createTagDto), CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Handle_ShouldReturnCorrectDataType()
-    {
-        // Arrange
-        var createTagDto = new CreateTagDTO();
-        var tag = new DAL.Entities.AdditionalContent.Tag { Id = 1 };
-        var tagDto = new TagDTO { Id = 1 };
-
-        _mockRepoWrapper.Setup(r => r.TagRepository.CreateAsync(It.IsAny<DAL.Entities.AdditionalContent.Tag>()))
-            .ReturnsAsync(tag);
-        _mockMapper.Setup(m => m.Map<TagDTO>(tag))
-            .Returns(tagDto);
-
-        // Act
-        var result = await _handler.Handle(new CreateTagQuery(createTagDto), CancellationToken.None);
-
-        // Assert
         result.Value.Should().BeOfType<TagDTO>();
+        result.Value.Title.Should().Be("Test Tag");
+        _mockRepo.Verify(r => r.SaveChanges(), Times.Once);
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnCorrectCountOfItems_MeaningNotNull()
+    public async Task Handle_SaveChangesThrowsException_ReturnsFailureAndLogsError()
     {
         // Arrange
-        var createTagDto = new CreateTagDTO();
-        var tag = new DAL.Entities.AdditionalContent.Tag { Id = 1 };
+        var tagDto = new TagDTO { Title = "Test Tag" };
+        var query = new CreateTagQuery(tagDto);
+        var exceptionMessage = "Database Error";
 
-        _mockRepoWrapper.Setup(r => r.TagRepository.CreateAsync(It.IsAny<DAL.Entities.AdditionalContent.Tag>()))
-            .ReturnsAsync(tag);
-        _mockMapper.Setup(m => m.Map<TagDTO>(tag)).Returns(new TagDTO());
-
-        // Act
-        var result = await _handler.Handle(new CreateTagQuery(createTagDto), CancellationToken.None);
-
-        // Assert
-        result.Value.Should().NotBeNull();
-    }
-
-    [Fact]
-    public async Task Handle_ShouldMapCreatedEntityToDtoCorrectly()
-    {
-        // Arrange
-        var createTagDto = new CreateTagDTO { Title = "New Tag" };
-        var tag = new DAL.Entities.AdditionalContent.Tag { Id = 1, Title = "New Tag" };
-
-        _mockRepoWrapper.Setup(r => r.TagRepository.CreateAsync(It.IsAny<DAL.Entities.AdditionalContent.Tag>()))
-            .ReturnsAsync(tag);
-
-        // Act
-        await _handler.Handle(new CreateTagQuery(createTagDto), CancellationToken.None);
-
-        // Assert
-        _mockMapper.Verify(m => m.Map<TagDTO>(tag), Times.Once);
-    }
-
-    [Fact]
-    public async Task Handle_ShouldReturnFailure_WhenExceptionIsThrown()
-    {
-        // Arrange
-        var createTagDto = new CreateTagDTO();
-        _mockRepoWrapper.Setup(r => r.TagRepository.CreateAsync(It.IsAny<DAL.Entities.AdditionalContent.Tag>()))
+        _mockRepo.Setup(r => r.TagRepository.CreateAsync(It.IsAny<DAL.Entities.AdditionalContent.Tag>()))
             .ReturnsAsync(new DAL.Entities.AdditionalContent.Tag());
 
-        _mockRepoWrapper.Setup(r => r.SaveChanges()).Throws(new Exception("Database error"));
+        _mockRepo.Setup(r => r.SaveChanges()).Throws(new Exception(exceptionMessage));
+
+        var handler = new CreateTagHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
 
         // Act
-        var result = await _handler.Handle(new CreateTagQuery(createTagDto), CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.IsFailed.Should().BeTrue();
+        result.Errors.First().Message.Should().Contain(exceptionMessage);
+        _mockLogger.Verify(x => x.LogError(query, It.IsAny<string>()), Times.Once);
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnCorrectErrorMessage_WhenExceptionOccurs()
+    public async Task Handle_ValidRequest_CallsCreateAsyncWithCorrectData()
     {
         // Arrange
-        var createTagDto = new CreateTagDTO();
-        var exceptionMsg = "Persistence failed";
+        var tagDto = new TagDTO { Title = "New Unique Tag" };
+        var query = new CreateTagQuery(tagDto);
 
-        _mockRepoWrapper.Setup(r => r.TagRepository.CreateAsync(It.IsAny<DAL.Entities.AdditionalContent.Tag>()))
+        _mockRepo.Setup(r => r.TagRepository.CreateAsync(It.Is<DAL.Entities.AdditionalContent.Tag>(t => t.Title == tagDto.Title)))
             .ReturnsAsync(new DAL.Entities.AdditionalContent.Tag());
-        _mockRepoWrapper.Setup(r => r.SaveChanges()).Throws(new Exception(exceptionMsg));
+
+        var handler = new CreateTagHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
 
         // Act
-        var result = await _handler.Handle(new CreateTagQuery(createTagDto), CancellationToken.None);
+        await handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Errors.First().Message.Should().Contain(exceptionMsg);
-    }
-
-    [Fact]
-    public async Task Handle_ShouldLogErrorMessage_WhenExceptionOccurs()
-    {
-        // Arrange
-        var createTagDto = new CreateTagDTO();
-        var query = new CreateTagQuery(createTagDto);
-        _mockRepoWrapper.Setup(r => r.TagRepository.CreateAsync(It.IsAny<DAL.Entities.AdditionalContent.Tag>()))
-            .ReturnsAsync(new DAL.Entities.AdditionalContent.Tag());
-        _mockRepoWrapper.Setup(r => r.SaveChanges()).Throws(new Exception("Log this error"));
-
-        // Act
-        await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        _mockLogger.Verify(x => x.LogError(It.IsAny<object>(), It.IsAny<string>()), Times.Once);
+        _mockRepo.Verify(r => r.TagRepository.CreateAsync(It.Is<DAL.Entities.AdditionalContent.Tag>(t => t.Title == "New Unique Tag")), Times.Once);
     }
 }
