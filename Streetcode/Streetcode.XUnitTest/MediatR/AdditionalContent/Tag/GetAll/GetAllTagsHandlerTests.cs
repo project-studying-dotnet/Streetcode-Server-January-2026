@@ -5,9 +5,11 @@ using Moq;
 using Streetcode.BLL.DTO.AdditionalContent.Tag;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetAll;
-using Streetcode.BLL.Mapping.AdditionalContent; 
+using Streetcode.BLL.Mapping.AdditionalContent;
 using Streetcode.DAL.Entities.AdditionalContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using System.Linq.Expressions;
 using Xunit;
 using Streetcode.BLL.DTO.AdditionalContent;
@@ -25,7 +27,6 @@ public class GetAllTagsHandlerTests
         _mockRepo = new Mock<IRepositoryWrapper>();
         _mockLogger = new Mock<ILoggerService>();
 
-        // Real Mapper Setup
         var config = new MapperConfiguration(cfg =>
         {
             cfg.AddProfile(new TagProfile());
@@ -48,14 +49,18 @@ public class GetAllTagsHandlerTests
             null))
             .ReturnsAsync(tags);
 
-        var handler = new GetAllTagsHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+        var handler = new GetAllTagsHandler(
+            _mockRepo.Object,
+            _mapper,
+            _mockLogger.Object);
 
         // Act
-        var result = await handler.Handle(new GetAllTagsQuery(), CancellationToken.None);
+        var result = await handler.Handle(
+            new GetAllTagsQuery(),
+            CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        // Use BeAssignableTo for collection interfaces
         result.Value.Should().BeAssignableTo<IEnumerable<TagDTO>>();
         result.Value.Count().Should().Be(2);
         result.Value.First().Title.Should().Be("Historical");
@@ -70,16 +75,29 @@ public class GetAllTagsHandlerTests
             null))
             .ReturnsAsync((IEnumerable<DAL.Entities.AdditionalContent.Tag>?)null);
 
-        var handler = new GetAllTagsHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+        var handler = new GetAllTagsHandler(
+            _mockRepo.Object,
+            _mapper,
+            _mockLogger.Object);
+
         var query = new GetAllTagsQuery();
 
+        var expectedError = Messages.Error_EntitiesNotFound.Format(
+            nameof(DAL.Entities.AdditionalContent.Tag));
+
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var result = await handler.Handle(
+            query,
+            CancellationToken.None);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-        result.Errors.First().Message.Should().Be("Cannot find any tags");
-        _mockLogger.Verify(x => x.LogError(query, "Cannot find any tags"), Times.Once);
+        result.Errors.Should().ContainSingle()
+            .Which.Message.Should().Be(expectedError);
+
+        _mockLogger.Verify(x => x.LogError(
+            query,
+            expectedError), Times.Once);
     }
 
     [Fact]
@@ -91,10 +109,15 @@ public class GetAllTagsHandlerTests
             null))
             .ReturnsAsync(new List<DAL.Entities.AdditionalContent.Tag>());
 
-        var handler = new GetAllTagsHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+        var handler = new GetAllTagsHandler(
+            _mockRepo.Object,
+            _mapper,
+            _mockLogger.Object);
 
         // Act
-        var result = await handler.Handle(new GetAllTagsQuery(), CancellationToken.None);
+        var result = await handler.Handle(
+            new GetAllTagsQuery(),
+            CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();

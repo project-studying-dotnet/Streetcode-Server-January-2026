@@ -7,6 +7,8 @@ using Streetcode.BLL.MediatR.AdditionalContent.Coordinate.Update;
 using Streetcode.BLL.Mapping.AdditionalContent.Coordinates;
 using Streetcode.DAL.Entities.AdditionalContent.Coordinates.Types;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using Xunit;
 
 namespace Streetcode.XUnitTest.MediatR.AdditionalContent.Coordinate;
@@ -36,22 +38,33 @@ public class UpdateCoordinateHandlerTests
         {
             Id = 1,
             Latitude = 50.5m,
-            Longtitude = 30.5m 
+            Longtitude = 30.5m
         };
-        var command = new UpdateCoordinateCommand(coordinateDto);
+        var command = new UpdateCoordinateCommand(
+            coordinateDto);
 
-        _mockRepo.Setup(r => r.StreetcodeCoordinateRepository.Update(It.IsAny<StreetcodeCoordinate>()));
-        _mockRepo.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
+        _mockRepo.Setup(r => r.StreetcodeCoordinateRepository.Update(
+            It.IsAny<StreetcodeCoordinate>()));
 
-        var handler = new UpdateCoordinateHandler(_mockRepo.Object, _mapper);
+        _mockRepo.Setup(r => r.SaveChangesAsync())
+            .ReturnsAsync(1);
+
+        var handler = new UpdateCoordinateHandler(
+            _mockRepo.Object,
+            _mapper);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(
+            command,
+            CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be(Unit.Value);
-        _mockRepo.Verify(r => r.StreetcodeCoordinateRepository.Update(It.IsAny<StreetcodeCoordinate>()), Times.Once);
+
+        _mockRepo.Verify(r => r.StreetcodeCoordinateRepository.Update(
+            It.IsAny<StreetcodeCoordinate>()), Times.Once);
+
         _mockRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 
@@ -59,33 +72,57 @@ public class UpdateCoordinateHandlerTests
     public async Task Handle_MapperReturnsNull_ReturnsFailure()
     {
         // Arrange
-        var command = new UpdateCoordinateCommand(null!);
-        var handler = new UpdateCoordinateHandler(_mockRepo.Object, _mapper);
+        var command = new UpdateCoordinateCommand(
+            null!);
+
+        var handler = new UpdateCoordinateHandler(
+            _mockRepo.Object,
+            _mapper);
+
+        var expectedError = Messages.Error_ConvertNullToEntity.Format(
+            nameof(StreetcodeCoordinate));
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(
+            command,
+            CancellationToken.None);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-        result.Errors.First().Message.Should().Be("Cannot convert null to streetcodeCoordinate");
+        result.Errors.Should().ContainSingle()
+            .Which.Message.Should().Be(expectedError);
     }
 
     [Fact]
     public async Task Handle_SaveChangesFails_ReturnsFailureMessage()
     {
         // Arrange
-        var coordinateDto = new StreetcodeCoordinateDTO { Id = 1 };
-        var command = new UpdateCoordinateCommand(coordinateDto);
+        var coordinateDto = new StreetcodeCoordinateDTO
+        {
+            Id = 1
+        };
 
-        _mockRepo.Setup(r => r.SaveChangesAsync()).ReturnsAsync(0);
+        var command = new UpdateCoordinateCommand(
+            coordinateDto);
 
-        var handler = new UpdateCoordinateHandler(_mockRepo.Object, _mapper);
+        _mockRepo.Setup(r => r.SaveChangesAsync())
+            .ReturnsAsync(0);
+
+        var handler = new UpdateCoordinateHandler(
+            _mockRepo.Object,
+            _mapper);
+
+        string expectedError = Messages.Error_FailedToUpdateEntity.Format(
+            nameof(StreetcodeCoordinate));
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(
+            command,
+            CancellationToken.None);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-        result.Errors.First().Message.Should().Be("Failed to update a streetcodeCoordinate");
+        result.Errors.Should().ContainSingle()
+            .Which.Message.Should().Be(expectedError);
     }
 }

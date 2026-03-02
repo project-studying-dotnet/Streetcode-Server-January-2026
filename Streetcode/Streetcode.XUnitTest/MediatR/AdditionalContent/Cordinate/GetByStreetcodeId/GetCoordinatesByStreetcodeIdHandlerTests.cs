@@ -7,8 +7,10 @@ using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.MediatR.AdditionalContent.Coordinate.GetByStreetcodeId;
 using Streetcode.BLL.Mapping.AdditionalContent.Coordinates;
 using Streetcode.DAL.Entities.AdditionalContent.Coordinates.Types;
-using Streetcode.DAL.Entities.Streetcode; 
+using Streetcode.DAL.Entities.Streetcode;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using System.Linq.Expressions;
 using Xunit;
 
@@ -25,7 +27,6 @@ public class GetCoordinatesByStreetcodeIdHandlerTests
         _mockRepo = new Mock<IRepositoryWrapper>();
         _mockLogger = new Mock<ILoggerService>();
 
-
         var config = new MapperConfiguration(cfg =>
         {
             cfg.AddProfile(new StreetcodeCoordinateProfile());
@@ -38,7 +39,8 @@ public class GetCoordinatesByStreetcodeIdHandlerTests
     {
         // Arrange
         int streetcodeId = 1;
-        var query = new GetCoordinatesByStreetcodeIdQuery(streetcodeId);
+        var query = new GetCoordinatesByStreetcodeIdQuery(
+            streetcodeId);
 
         var coordinates = new List<StreetcodeCoordinate>
         {
@@ -46,7 +48,6 @@ public class GetCoordinatesByStreetcodeIdHandlerTests
             new() { Id = 2, StreetcodeId = streetcodeId, Latitude = 3.3m, Longtitude = 4.4m }
         };
 
-        // FIXED: Using StreetcodeContent instead of Streetcode
         _mockRepo.Setup(r => r.StreetcodeRepository
             .GetFirstOrDefaultAsync(It.IsAny<Expression<Func<StreetcodeContent, bool>>>(), null))
             .ReturnsAsync(new StreetcodeContent { Id = streetcodeId });
@@ -55,10 +56,15 @@ public class GetCoordinatesByStreetcodeIdHandlerTests
             .GetAllAsync(It.IsAny<Expression<Func<StreetcodeCoordinate, bool>>>(), null))
             .ReturnsAsync(coordinates);
 
-        var handler = new GetCoordinatesByStreetcodeIdHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+        var handler = new GetCoordinatesByStreetcodeIdHandler(
+            _mockRepo.Object,
+            _mapper,
+            _mockLogger.Object);
 
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var result = await handler.Handle(
+            query,
+            CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -72,20 +78,30 @@ public class GetCoordinatesByStreetcodeIdHandlerTests
     {
         // Arrange
         int streetcodeId = 99;
-        var query = new GetCoordinatesByStreetcodeIdQuery(streetcodeId);
+        var query = new GetCoordinatesByStreetcodeIdQuery(
+            streetcodeId);
 
-        // FIXED: Using StreetcodeContent instead of Streetcode
         _mockRepo.Setup(r => r.StreetcodeRepository
             .GetFirstOrDefaultAsync(It.IsAny<Expression<Func<StreetcodeContent, bool>>>(), null))
             .ReturnsAsync((StreetcodeContent?)null);
 
-        var handler = new GetCoordinatesByStreetcodeIdHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+        var handler = new GetCoordinatesByStreetcodeIdHandler(
+            _mockRepo.Object,
+            _mapper,
+            _mockLogger.Object);
+
+        var expectedError = Messages.Error_EntityWithStreetcodeIdNotFound.Format(
+            nameof(StreetcodeCoordinate),
+            streetcodeId);
 
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var result = await handler.Handle(
+            query,
+            CancellationToken.None);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-        result.Errors.First().Message.Should().Contain($"{streetcodeId}");
+        result.Errors.Should().ContainSingle()
+            .Which.Message.Should().Be(expectedError);
     }
 }

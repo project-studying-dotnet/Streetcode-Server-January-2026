@@ -3,11 +3,14 @@ using FluentAssertions;
 using FluentResults;
 using Moq;
 using Streetcode.BLL.DTO.AdditionalContent;
+using Streetcode.BLL.DTO.AdditionalContent.Tag;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetById;
-using Streetcode.BLL.Mapping.AdditionalContent; 
+using Streetcode.BLL.Mapping.AdditionalContent;
 using Streetcode.DAL.Entities.AdditionalContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using System.Linq.Expressions;
 using Xunit;
 
@@ -24,7 +27,6 @@ public class GetTagByIdHandlerTests
         _mockRepo = new Mock<IRepositoryWrapper>();
         _mockLogger = new Mock<ILoggerService>();
 
-        // FIXED: Using TagProfile instead of the non-existent MappingProfile
         var config = new MapperConfiguration(cfg =>
         {
             cfg.AddProfile(new TagProfile());
@@ -37,18 +39,28 @@ public class GetTagByIdHandlerTests
     {
         // Arrange
         int testId = 5;
-        var tagEntity = new DAL.Entities.AdditionalContent.Tag { Id = testId, Title = "Culture" };
-        var query = new GetTagByIdQuery(testId);
+        var tagEntity = new DAL.Entities.AdditionalContent.Tag
+        {
+            Id = testId,
+            Title = "Culture"
+        };
+        var query = new GetTagByIdQuery(
+            testId);
 
         _mockRepo.Setup(r => r.TagRepository.GetFirstOrDefaultAsync(
             It.IsAny<Expression<Func<DAL.Entities.AdditionalContent.Tag, bool>>>(),
             null))
             .ReturnsAsync(tagEntity);
 
-        var handler = new GetTagByIdHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+        var handler = new GetTagByIdHandler(
+            _mockRepo.Object,
+            _mapper,
+            _mockLogger.Object);
 
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var result = await handler.Handle(
+            query,
+            CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -62,22 +74,35 @@ public class GetTagByIdHandlerTests
     {
         // Arrange
         int testId = 999;
-        var query = new GetTagByIdQuery(testId);
-        string expectedError = $"Cannot find a Tag with corresponding id: {testId}";
+        var query = new GetTagByIdQuery(
+            testId);
 
         _mockRepo.Setup(r => r.TagRepository.GetFirstOrDefaultAsync(
             It.IsAny<Expression<Func<DAL.Entities.AdditionalContent.Tag, bool>>>(),
             null))
             .ReturnsAsync((DAL.Entities.AdditionalContent.Tag?)null);
 
-        var handler = new GetTagByIdHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+        var handler = new GetTagByIdHandler(
+            _mockRepo.Object,
+            _mapper,
+            _mockLogger.Object);
+
+        var expectedError = Messages.Error_EntityWithIdNotFound.Format(
+            nameof(DAL.Entities.AdditionalContent.Tag),
+            testId);
 
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var result = await handler.Handle(
+            query,
+            CancellationToken.None);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-        result.Errors.First().Message.Should().Be(expectedError);
-        _mockLogger.Verify(x => x.LogError(query, expectedError), Times.Once);
+        result.Errors.Should().ContainSingle()
+            .Which.Message.Should().Be(expectedError);
+
+        _mockLogger.Verify(x => x.LogError(
+            query,
+            expectedError), Times.Once);
     }
 }

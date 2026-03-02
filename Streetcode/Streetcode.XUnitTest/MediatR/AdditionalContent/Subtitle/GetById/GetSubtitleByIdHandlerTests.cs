@@ -5,9 +5,11 @@ using Moq;
 using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.MediatR.AdditionalContent.Subtitle.GetById;
-using Streetcode.BLL.Mapping.AdditionalContent; 
-using Streetcode.DAL.Entities.AdditionalContent; 
+using Streetcode.BLL.Mapping.AdditionalContent;
+using Streetcode.DAL.Entities.AdditionalContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using System.Linq.Expressions;
 using Xunit;
 using Streetcode.BLL.MediatR.AdditionalContent.GetById;
@@ -25,7 +27,6 @@ public class GetSubtitleByIdHandlerTests
         _mockRepo = new Mock<IRepositoryWrapper>();
         _mockLogger = new Mock<ILoggerService>();
 
-        // Real Mapper Setup using the specific Subtitle profile
         var config = new MapperConfiguration(cfg =>
         {
             cfg.AddProfile(new SubtitleProfile());
@@ -43,17 +44,23 @@ public class GetSubtitleByIdHandlerTests
             Id = testId,
             SubtitleText = "Sample Subtitle"
         };
-        var query = new GetSubtitleByIdQuery(testId);
+        var query = new GetSubtitleByIdQuery(
+            testId);
 
         _mockRepo.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
             It.IsAny<Expression<Func<Streetcode.DAL.Entities.AdditionalContent.Subtitle, bool>>>(),
             null))
             .ReturnsAsync(subtitle);
 
-        var handler = new GetSubtitleByIdHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+        var handler = new GetSubtitleByIdHandler(
+            _mockRepo.Object,
+            _mapper,
+            _mockLogger.Object);
 
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var result = await handler.Handle(
+            query,
+            CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -67,21 +74,35 @@ public class GetSubtitleByIdHandlerTests
     {
         // Arrange
         int testId = 99;
-        var query = new GetSubtitleByIdQuery(testId);
+        var query = new GetSubtitleByIdQuery(
+            testId);
 
         _mockRepo.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
             It.IsAny<Expression<Func<Streetcode.DAL.Entities.AdditionalContent.Subtitle, bool>>>(),
             null))
             .ReturnsAsync((Streetcode.DAL.Entities.AdditionalContent.Subtitle?)null);
 
-        var handler = new GetSubtitleByIdHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+        var handler = new GetSubtitleByIdHandler(
+            _mockRepo.Object,
+            _mapper,
+            _mockLogger.Object);
+
+        var expectedError = Messages.Error_EntityWithIdNotFound.Format(
+            nameof(Streetcode.DAL.Entities.AdditionalContent.Subtitle),
+            testId);
 
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var result = await handler.Handle(
+            query,
+            CancellationToken.None);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-        result.Errors.First().Message.Should().Be($"Cannot find a subtitle with corresponding id: {testId}");
-        _mockLogger.Verify(x => x.LogError(query, It.IsAny<string>()), Times.Once);
+        result.Errors.Should().ContainSingle()
+            .Which.Message.Should().Be(expectedError);
+
+        _mockLogger.Verify(x => x.LogError(
+            query,
+            expectedError), Times.Once);
     }
 }

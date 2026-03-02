@@ -6,8 +6,10 @@ using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.MediatR.AdditionalContent.Subtitle.GetAll;
 using Streetcode.BLL.Mapping.AdditionalContent;
-using Streetcode.DAL.Entities.AdditionalContent; 
+using Streetcode.DAL.Entities.AdditionalContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using System.Linq.Expressions;
 using Xunit;
 
@@ -46,10 +48,15 @@ public class GetAllSubtitlesHandlerTests
             null))
             .ReturnsAsync(subtitles);
 
-        var handler = new GetAllSubtitlesHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+        var handler = new GetAllSubtitlesHandler(
+            _mockRepo.Object,
+            _mapper,
+            _mockLogger.Object);
 
         // Act
-        var result = await handler.Handle(new GetAllSubtitlesQuery(), CancellationToken.None);
+        var result = await handler.Handle(
+            new GetAllSubtitlesQuery(),
+            CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -67,15 +74,28 @@ public class GetAllSubtitlesHandlerTests
             null))
             .ReturnsAsync((IEnumerable<Streetcode.DAL.Entities.AdditionalContent.Subtitle>?)null);
 
-        var handler = new GetAllSubtitlesHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+        var handler = new GetAllSubtitlesHandler(
+            _mockRepo.Object,
+            _mapper,
+            _mockLogger.Object);
+
         var query = new GetAllSubtitlesQuery();
 
+        var expectedError = Messages.Error_EntitiesNotFound.Format(
+            nameof(Streetcode.DAL.Entities.AdditionalContent.Subtitle));
+
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var result = await handler.Handle(
+            query,
+            CancellationToken.None);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-        result.Errors.First().Message.Should().Be("Cannot find any subtitles");
-        _mockLogger.Verify(x => x.LogError(query, "Cannot find any subtitles"), Times.Once);
+        result.Errors.Should().ContainSingle()
+            .Which.Message.Should().Be(expectedError);
+
+        _mockLogger.Verify(x => x.LogError(
+            query,
+            expectedError), Times.Once);
     }
 }
