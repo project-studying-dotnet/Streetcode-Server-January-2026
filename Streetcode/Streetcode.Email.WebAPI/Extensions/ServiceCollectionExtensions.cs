@@ -65,18 +65,27 @@ namespace Streetcode.Email.WebAPI.Extensions
 
             services.AddMassTransit(x =>
             {
-                x.SetKebabCaseEndpointNameFormatter();
-
                 x.AddConsumer<EmailConsumer>();
 
                 x.UsingRabbitMq((context, cfg) =>
                 {
-                    cfg.Host("localhost", "/");
+                    var rabbitSection = configuration.GetSection("RabbitMQ");
 
+                    var host = rabbitSection["Host"]
+                        ?? throw new InvalidOperationException("RabbitMQ Host is missing");
+                    var username = rabbitSection["Username"]
+                        ?? throw new InvalidOperationException("RabbitMQ Username is missing");
+                    var password = rabbitSection["Password"]
+                        ?? throw new InvalidOperationException("RabbitMQ Password is missing");
+
+                    cfg.Host(host, "/", h =>
+                    {
+                        h.Username(username);
+                        h.Password(password);
+                    });
                     cfg.ConfigureEndpoints(context);
                 });
             });
-
         }
     }
 }
