@@ -9,10 +9,10 @@ namespace Streetcode.BLL.DTO.Email
         }
 
         [MaxLength(80)]
-        public string Email { get; set; }
+        public string From { get; set; }
 
         [Required]
         [StringLength(500, MinimumLength = 1)]
-        public string Message { get; set; }
+        public string Content { get; set; }
     }
 }

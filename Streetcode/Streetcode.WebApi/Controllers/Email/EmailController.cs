@@ -21,11 +21,11 @@ namespace Streetcode.WebApi.Controllers.Email
         {
             await _publishEndpoint.Publish<IEmailMessage>(new
             {
-                email.Email,
-                email.Message
+                email.From,
+                email.Content
             });
 
-            return Ok();
+            return Accepted();
         }
     }
 }
