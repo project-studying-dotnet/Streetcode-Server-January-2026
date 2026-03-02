@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
 using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 
 namespace Streetcode.BLL.MediatR.Streetcode.Text.Update
 {
@@ -11,7 +13,7 @@ namespace Streetcode.BLL.MediatR.Streetcode.Text.Update
 
             RuleFor(x => x.Id)
                 .GreaterThan(0)
-                .WithMessage("Text Id must be greater than zero");
+                .WithMessage(Messages.Error_PropertyMustBeGreaterThanZero.Format(nameof(TextUpdateDTO.Id)));
         }
     }
 }

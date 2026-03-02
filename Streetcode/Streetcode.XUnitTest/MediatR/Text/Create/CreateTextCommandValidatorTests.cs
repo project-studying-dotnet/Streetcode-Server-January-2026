@@ -2,13 +2,12 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-using Streetcode.Resources;
-
 namespace Streetcode.XUnitTest.MediatR.Text.Create
 {
     using FluentValidation.TestHelper;
     using Streetcode.BLL.DTO.Streetcode.TextContent.Text;
     using Streetcode.BLL.MediatR.Streetcode.Text.Create;
+    using Streetcode.Resources;
     using Xunit;
 
     public class CreateTextCommandValidatorTests

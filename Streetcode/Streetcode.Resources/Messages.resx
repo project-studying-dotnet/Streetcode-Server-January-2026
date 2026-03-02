@@ -163,7 +163,7 @@
     <value>Слово з цим визначенням уже існує</value>
   </data>
   <data name="Error_RelatedTermNotFound" xml:space="preserve">
-    <value>Cannot find a related term by word: {0}</value>
+    <value>Cannot find RelatedTerm by Word: "{0}" and TermId: {1}</value>
   </data>
   <data name="Error_FailedToSoftDeleteStreetcode" xml:space="preserve">
     <value>Failed to change status of streetcode to deleted</value>
@@ -172,7 +172,7 @@
     <value>Streetcode with Index {0} not found</value>
   </data>
   <data name="Error_StreetcodeWithTransliterationUrlNotFound" xml:space="preserve">
-    <value>Streetcode with Transliteration Url: {0} not found</value>
+    <value>Streetcode with Transliteration Url: "{0}" not found</value>
   </data>
   <data name="Error_CannotMapEntityToDto" xml:space="preserve">
     <value>Cannot map {0} to {1}</value>
@@ -203,5 +203,17 @@
   </data>
   <data name="Error_CommandDataRequired" xml:space="preserve">
     <value>{} data required</value>
+  </data>
+  <data name="Error_UserNotCommentOwner" xml:space="preserve">
+    <value>You do not have permission to edit or delete this comment</value>
+  </data>
+  <data name="Error_MissingUserId" xml:space="preserve">
+    <value>User ID is missing or invalid</value>
+  </data>
+  <data name="Error_HistoricalContextTitleAlreadyExists" xml:space="preserve">
+    <value>Historical Context Title Already Exists</value>
+  </data>
+  <data name="Error_RelatedTermsByTermIdNotFound" xml:space="preserve">
+    <value>No RelatedTerm found by TermId: {0}</value>
   </data>
 </root>

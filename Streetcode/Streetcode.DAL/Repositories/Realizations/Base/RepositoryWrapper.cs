@@ -5,10 +5,11 @@ using Streetcode.DAL.Repositories.Interfaces.AdditionalContent;
 using Streetcode.DAL.Repositories.Interfaces.Analytics;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.DAL.Repositories.Interfaces.Media.Images;
-using Streetcode.DAL.Repositories.Interfaces.Newss;
+using Streetcode.DAL.Repositories.Interfaces.News;
 using Streetcode.DAL.Repositories.Interfaces.Partners;
 using Streetcode.DAL.Repositories.Interfaces.Source;
 using Streetcode.DAL.Repositories.Interfaces.Streetcode;
+using Streetcode.DAL.Repositories.Interfaces.Streetcode.Comments;
 using Streetcode.DAL.Repositories.Interfaces.Streetcode.TextContent;
 using Streetcode.DAL.Repositories.Interfaces.Team;
 using Streetcode.DAL.Repositories.Interfaces.Timeline;
@@ -19,10 +20,11 @@ using Streetcode.DAL.Repositories.Realizations.AdditionalContent;
 using Streetcode.DAL.Repositories.Realizations.Analytics;
 using Streetcode.DAL.Repositories.Realizations.Media;
 using Streetcode.DAL.Repositories.Realizations.Media.Images;
-using Streetcode.DAL.Repositories.Realizations.Newss;
+using Streetcode.DAL.Repositories.Realizations.News;
 using Streetcode.DAL.Repositories.Realizations.Partners;
 using Streetcode.DAL.Repositories.Realizations.Source;
 using Streetcode.DAL.Repositories.Realizations.Streetcode;
+using Streetcode.DAL.Repositories.Realizations.Streetcode.Comments;
 using Streetcode.DAL.Repositories.Realizations.Streetcode.TextContent;
 using Streetcode.DAL.Repositories.Realizations.Team;
 using Streetcode.DAL.Repositories.Realizations.Timeline;
@@ -63,6 +65,8 @@ public class RepositoryWrapper : IRepositoryWrapper
     private IRelatedTermRepository _relatedTermRepository;
 
     private IStreetcodeRepository _streetcodeRepository;
+
+    private ICommentRepository _commentRepository;
 
     private ISubtitleRepository _subtitleRepository;
 
@@ -303,6 +307,19 @@ public class RepositoryWrapper : IRepositoryWrapper
             }
 
             return _streetcodeRepository;
+        }
+    }
+
+    public ICommentRepository CommentRepository
+    {
+        get
+        {
+            if (_commentRepository is null)
+            {
+                _commentRepository = new CommentRepository(_streetcodeDbContext);
+            }
+
+            return _commentRepository;
         }
     }
 

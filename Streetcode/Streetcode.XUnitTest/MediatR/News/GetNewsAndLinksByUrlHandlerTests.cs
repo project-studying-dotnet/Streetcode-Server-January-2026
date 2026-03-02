@@ -5,11 +5,13 @@ using Moq;
 using Streetcode.BLL.Interfaces.BlobStorage;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.Mapping.Media.Images;
-using Streetcode.BLL.Mapping.Newss;
-using Streetcode.BLL.MediatR.Newss.GetNewsAndLinksByUrl;
+using Streetcode.BLL.Mapping.News;
+using Streetcode.BLL.MediatR.News.GetNewsAndLinksByUrl;
 using Streetcode.DAL.Entities.Media.Images;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using System.Linq.Expressions;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using Xunit;
 using NewsEntity = Streetcode.DAL.Entities.News.News;
 
@@ -47,7 +49,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnFail_WhenNewsNotExists()
         {
-            // arrange
+            // Arrange
             var url = "test";
             var request = new GetNewsAndLinksByUrlQuery(url);
 
@@ -57,18 +59,18 @@ namespace Streetcode.XUnitTest.MediatR.News
                 false))
                 .ReturnsAsync((NewsEntity)null);
 
-            // act
+            // Act
             var res = await _handler.Handle(request, CancellationToken.None);
 
-            // assert
+            // Assert
             res.IsFailed.Should().BeTrue();
-            res.Errors.Should().ContainSingle(e => e.Message == $"No news by entered Url - {url}");
+            res.Errors.Should().ContainSingle(Messages.Error_NewsWithUrlNotFound.Format(url));
         }
 
         [Fact]
         public async Task Handle_ShouldReturnNewsDTOWithURLsAndImage_WhenNewsExists()
         {
-            // arrange
+            // Arrange
             var targetId = 2;
             var url = "target-url";
             var expectedBase64 = "fake_base64_string";
@@ -99,11 +101,11 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new GetNewsAndLinksByUrlQuery(url);
 
-            // act
+            // Act
             var res = await _handler.Handle(request, CancellationToken.None);
 
 
-            // assert
+            // Assert
             res.IsSuccess.Should().BeTrue();
             res.Value.News.Image.Base64.Should().Be(expectedBase64);
             _blobServiceMock.Verify(
@@ -116,7 +118,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnNewsDTOWithURLsAndWithoutNextAndPrevNews_WhenNewsExists()
         {
-            // arrange
+            // Arrange
             var targetId = 2;
             var url = "target-url";
 
@@ -141,11 +143,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new GetNewsAndLinksByUrlQuery(url);
 
-            // act
+            // Act
             var res = await _handler.Handle(request, CancellationToken.None);
 
-
-            // assert
+            // Assert
             res.IsSuccess.Should().BeTrue();
             _blobServiceMock.Verify(
                 bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()),
@@ -157,7 +158,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnNewsDTOWithURLsAndRandomNewsIsCurrentsNews_WhenNewsExistsAndNewLess3()
         {
-            // arrange
+            // Arrange
             var targetId = 2;
             var url = "target-url";
 
@@ -183,10 +184,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new GetNewsAndLinksByUrlQuery(url);
 
-            // act
+            // Act
             var res = await _handler.Handle(request, CancellationToken.None);
 
-            // assert
+            // Assert
             res.IsSuccess.Should().BeTrue();
             res.Value.PrevNewsUrl.Should().Be("prev-url");
             res.Value.RandomNews.RandomNewsUrl.Should().Be(targetNewsEntity.URL);
@@ -196,16 +197,16 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnNewsDTOWithURLsAndRandomNewsIsPrevNews_WhenNewsExistsAndNewGreater3()
         {
-            // arrange
+            // Arrange
             var targetId = 2;
             var url = "target-url";
 
             var allNews = new List<NewsEntity>
             {
                 new NewsEntity { Id = 1, Title = "test1", URL = "prev-url" },
-                new NewsEntity { Id = targetId, Title = "test", URL = url,},
-                new NewsEntity { Id = 3, Title = "test3", URL = "next-url",},
-                new NewsEntity { Id = 4, Title = "test2", URL = "test-url",},
+                new NewsEntity { Id = targetId, Title = "test", URL = url, },
+                new NewsEntity { Id = 3, Title = "test3", URL = "next-url", },
+                new NewsEntity { Id = 4, Title = "test2", URL = "test-url", },
             };
 
             var targetNewsEntity = allNews[1];
@@ -224,11 +225,11 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new GetNewsAndLinksByUrlQuery(url);
 
-            // act
+            // Act
             var res = await _handler.Handle(request, CancellationToken.None);
 
 
-            // assert
+            // Assert
             res.IsSuccess.Should().BeTrue();
             res.Value.RandomNews.RandomNewsUrl.Should().Be(allNews[3].URL);
             res.Value.RandomNews.Title.Should().Be(allNews[3].Title);
@@ -237,7 +238,7 @@ namespace Streetcode.XUnitTest.MediatR.News
         [Fact]
         public async Task Handle_ShouldReturnRandomNewsMinusTwo_WhenNewsIsLastAndCountGreater3()
         {
-            // arrange
+            // Arrange
             var allNews = new List<NewsEntity>
             {
                 new NewsEntity { Id = 1, Title = "First", URL = "url-1" },
@@ -265,10 +266,10 @@ namespace Streetcode.XUnitTest.MediatR.News
 
             var request = new GetNewsAndLinksByUrlQuery(url);
 
-            // act
+            // Act
             var res = await _handler.Handle(request, CancellationToken.None);
 
-            // assert
+            // Assert
             res.IsSuccess.Should().BeTrue();
             res.Value.RandomNews.RandomNewsUrl.Should().Be(allNews[1].URL);
             res.Value.RandomNews.Title.Should().Be(allNews[1].Title);
