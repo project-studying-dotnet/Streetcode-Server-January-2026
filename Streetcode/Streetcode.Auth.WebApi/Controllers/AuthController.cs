@@ -1,7 +1,12 @@
-﻿using MediatR;
+﻿using System.Security.Claims;
+using MediatR;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
 using Streetcode.Auth.BLL.DTO.Auth;
 using Streetcode.Auth.BLL.MediatR.Login;
+using Streetcode.Auth.BLL.MediatR.LoginWithGoogle;
 using Streetcode.Auth.BLL.MediatR.Logout;
 using Streetcode.Auth.BLL.MediatR.RefreshToken;
 using Streetcode.Auth.BLL.MediatR.Register;
@@ -72,6 +77,48 @@ namespace Streetcode.Auth.WebApi.Controllers
             var (responseDto, newRefreshToken) = result.Value;
 
             _cookieService.SetRefreshTokenCookie(Response, newRefreshToken);
+
+            return Ok(responseDto);
+        }
+
+        [HttpGet("login-google")]
+        public IActionResult LoginGoogle()
+        {
+            var redirectUrl = Url.Action("GoogleCallback");
+            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+
+            return Challenge(properties, GoogleDefaults.AuthenticationScheme);
+        }
+
+        [HttpGet("google-callback")]
+        public async Task<IActionResult> GoogleCallback()
+        {
+            var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(new { error = "Google authentication failed" });
+            }
+
+            var email = result.Principal.FindFirstValue(ClaimTypes.Email);
+            var name = result.Principal.FindFirstValue(ClaimTypes.Name);
+
+            var command = new LoginWithGoogleCommand(new LoginWithGoogleDTO()
+            {
+                Email = email,
+                Name = name
+            });
+
+            var loginResult = await _mediator.Send(command);
+
+            if (loginResult.IsFailed)
+            {
+                return Unauthorized(loginResult.Errors.Select(e => e.Message));
+            }
+
+            var (responseDto, refreshToken) = loginResult.Value;
+
+            _cookieService.SetRefreshTokenCookie(Response, refreshToken);
 
             return Ok(responseDto);
         }

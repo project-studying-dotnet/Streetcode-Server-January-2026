@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Text;
 using FluentValidation;
+using Hangfire;
 using MassTransit;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -18,8 +19,6 @@ using Streetcode.Auth.DAL.Repositories.Interfaces;
 using Streetcode.Auth.DAL.Repositories.Realizations;
 using Streetcode.Auth.WebApi.Services.Interfaces;
 using Streetcode.Auth.WebApi.Services.Realizations;
-using Hangfire;
-using Hangfire.SqlServer;
 
 namespace Streetcode.Auth.WebApi.Extensions;
 
@@ -66,6 +65,7 @@ public static class ServiceCollectionExtensions
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         })
+        .AddCookie()
         .AddJwtBearer(options =>
         {
             options.TokenValidationParameters = new TokenValidationParameters
@@ -78,6 +78,11 @@ public static class ServiceCollectionExtensions
                 ValidAudience = jwtOptions.Audience,
                 IssuerSigningKey = new SymmetricSecurityKey(key)
             };
+        })
+        .AddGoogle(options =>
+        {
+                    options.ClientId = configuration["Authentication:Google:ClientId"];
+                    options.ClientSecret = configuration["Authentication:Google:ClientSecret"];
         });
     }
 
