@@ -30,15 +30,12 @@ namespace Streetcode.BLL.MediatR.Streetcode.Comments.UpdateStatus
 
             if (comment is null)
             {
-                var errorNotFoundMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(Comment), request.Dto.Id);
+                var errorNotFoundMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(Comment), request.Comment.Id);
                 _logger.LogError(request, errorNotFoundMsg);
                 return Result.Fail(new Error(errorNotFoundMsg));
             }
 
-            // Оновлюємо статус
-            comment.Status = request.Dto.Status;
-
-            // Фіксуємо час, коли адмін перевірив коментар
+            comment.Status = request.Comment.Status;
             comment.UpdatedAt = DateTime.UtcNow;
 
             _repositoryWrapper.CommentRepository.Update(comment);
