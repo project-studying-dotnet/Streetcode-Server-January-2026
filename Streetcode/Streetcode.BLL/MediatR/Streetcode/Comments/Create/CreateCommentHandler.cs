@@ -25,6 +25,19 @@ namespace Streetcode.BLL.MediatR.Streetcode.Comments.Create
 
         public async Task<Result<CommentDTO>> Handle(CreateCommentCommand command, CancellationToken cancellationToken)
         {
+            if (command.Comment.ParentCommentId.HasValue)
+            {
+                var parentComment = await _repositoryWrapper.CommentRepository
+                    .GetFirstOrDefaultAsync(c => c.Id == command.Comment.ParentCommentId.Value);
+
+                if (parentComment == null)
+                {
+                    string errorParentMsg = "Parent comment not found.";
+                    _logger.LogError(command, errorParentMsg);
+                    return Result.Fail(new Error(errorParentMsg));
+                }
+            }
+
             var comment = _mapper.Map<Comment>(command.Comment);
 
             comment.UserId = command.UserId;

@@ -47,7 +47,7 @@ namespace Streetcode.BLL.MediatR.Streetcode.Comments.Update
                 return Result.Fail(new Error(errorAuthMsg));
             }
 
-            comment = _mapper.Map(command.Comment, comment);
+            _mapper.Map(command.Comment, comment);
             comment.UpdatedAt = DateTime.UtcNow;
 
             _repositoryWrapper.CommentRepository.Update(comment);

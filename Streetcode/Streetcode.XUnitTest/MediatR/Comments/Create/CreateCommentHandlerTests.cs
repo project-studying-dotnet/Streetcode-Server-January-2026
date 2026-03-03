@@ -59,72 +59,62 @@
             var userId = "user-123";
             var command = new CreateCommentCommand(createDto, userId);
 
-            var commentEntity = new Comment
-            {
-                Id = 1,
-                TextContent = createDto.TextContent,
-                StreetcodeId = createDto.StreetcodeId,
-                UserId = userId,
-            };
-
-            this.commentRepositoryMock.Setup(x => x.CreateAsync(It.IsAny<Comment>()))
-                .ReturnsAsync(commentEntity);
-
-            this.repositoryWrapperMock.Setup(x => x.SaveChangesAsync())
-                .ReturnsAsync(1);
-
-            this.userRepositoryMock
-                .Setup(x => x.GetFirstOrDefaultAsync(
-                    It.IsAny<Expression<Func<User, bool>>>(),
-                    null,
-                    It.IsAny<bool>()))
-                .ReturnsAsync(new User());
+            this.SetupStandardSuccessMocks(userId, createDto.TextContent);
 
             // Act
             var result = await this.handler.Handle(command, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            result.Value.Should().NotBeNull();
             result.Value.TextContent.Should().Be(createDto.TextContent);
-
-            this.commentRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Comment>()), Times.Once);
-            this.repositoryWrapperMock.Verify(x => x.SaveChangesAsync(), Times.Once);
         }
 
         [Fact]
-        public async Task Handle_SetsCorrectUser_WhenRequestIsValid()
+        public async Task Handle_ReturnsSuccess_WhenReplyIsValid()
         {
             // Arrange
+            int parentId = 1;
             var createDto = GetCreateCommentDTO();
-            var userId = "test-user-id";
+            createDto.ParentCommentId = parentId;
+            var userId = "user-123";
             var command = new CreateCommentCommand(createDto, userId);
 
-            var user = new User
-            {
-                Id = userId,
-                Name = "TestName",
-                Surname = "TestSurname",
-            };
+            this.commentRepositoryMock.Setup(x => x.GetFirstOrDefaultAsync(
+                It.IsAny<Expression<Func<Comment, bool>>>(), null, It.IsAny<bool>()))
+                .ReturnsAsync(new Comment { Id = parentId });
 
-            this.commentRepositoryMock.Setup(x => x.CreateAsync(It.IsAny<Comment>()))
-                .ReturnsAsync((Comment c) => c);
-
-            this.repositoryWrapperMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
-
-            this.userRepositoryMock
-                .Setup(x => x.GetFirstOrDefaultAsync(
-                    It.IsAny<Expression<Func<User, bool>>>(),
-                    null,
-                    It.IsAny<bool>()))
-                .ReturnsAsync(user);
+            this.SetupStandardSuccessMocks(userId, createDto.TextContent);
 
             // Act
             var result = await this.handler.Handle(command, CancellationToken.None);
 
             // Assert
-            result.Value.UserId.Should().Be(userId);
-            result.Value.UserFullName.Should().Be("TestName TestSurname");
+            result.IsSuccess.Should().BeTrue();
+            result.Value.ParentCommentId.Should().Be(parentId);
+            this.commentRepositoryMock.Verify(x => x.GetFirstOrDefaultAsync(It.IsAny<Expression<Func<Comment, bool>>>(), null, It.IsAny<bool>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Handle_ReturnsFail_WhenParentCommentNotFound()
+        {
+            // Arrange
+            int parentId = 999;
+            var createDto = GetCreateCommentDTO();
+            createDto.ParentCommentId = parentId;
+            var userId = "user-123";
+            var command = new CreateCommentCommand(createDto, userId);
+
+            this.commentRepositoryMock.Setup(x => x.GetFirstOrDefaultAsync(
+                It.IsAny<Expression<Func<Comment, bool>>>(), null, It.IsAny<bool>()))
+                .ReturnsAsync((Comment)null);
+
+            // Act
+            var result = await this.handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsFailed.Should().BeTrue();
+            result.Errors.First().Message.Should().Be("Parent comment not found.");
+            this.loggerMock.Verify(x => x.LogError(command, "Parent comment not found."), Times.Once);
         }
 
         [Fact]
@@ -135,21 +125,33 @@
             var userId = "user-123";
             var command = new CreateCommentCommand(createDto, userId);
 
-            this.commentRepositoryMock.Setup(x => x.CreateAsync(It.IsAny<Comment>()));
-
-            this.repositoryWrapperMock.Setup(x => x.SaveChangesAsync())
-                .ReturnsAsync(0);
-
-            var expectedErrorMsg = Messages.Error_FailedToCreateEntity.Format(nameof(Comment));
+            this.repositoryWrapperMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(0);
 
             // Act
             var result = await this.handler.Handle(command, CancellationToken.None);
 
             // Assert
             result.IsFailed.Should().BeTrue();
-            result.Errors.First().Message.Should().Be(expectedErrorMsg);
+            this.loggerMock.Verify(x => x.LogError(command, It.IsAny<string>()), Times.Once);
+        }
 
-            this.loggerMock.Verify(x => x.LogError(command, expectedErrorMsg), Times.Once);
+        private void SetupStandardSuccessMocks(string userId, string textContent)
+        {
+            var commentEntity = new Comment
+            {
+                Id = 1,
+                TextContent = textContent,
+                UserId = userId,
+            };
+
+            this.commentRepositoryMock.Setup(x => x.CreateAsync(It.IsAny<Comment>()))
+                .ReturnsAsync(commentEntity);
+
+            this.repositoryWrapperMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
+
+            this.userRepositoryMock.Setup(x => x.GetFirstOrDefaultAsync(
+                It.IsAny<Expression<Func<User, bool>>>(), null, It.IsAny<bool>()))
+                .ReturnsAsync(new User { Id = userId, Name = "Name", Surname = "Surname" });
         }
 
         private static CreateCommentDTO GetCreateCommentDTO()

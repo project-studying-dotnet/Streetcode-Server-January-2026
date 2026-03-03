@@ -320,5 +320,21 @@ public class StreetcodeDbContext : DbContext
            .WithOne(t => t.User)
            .HasForeignKey(t => t.UserId)
            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Comment>(entity =>
+        {
+            entity.HasOne(c => c.ParentComment)
+                .WithMany(c => c.Replies)
+                .HasForeignKey(c => c.ParentCommentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(c => c.Streetcode)
+                .WithMany(s => s.Comments)
+                .HasForeignKey(c => c.StreetcodeId);
+
+            entity.HasOne(c => c.User)
+                .WithMany(u => u.Comments)
+                .HasForeignKey(c => c.UserId);
+        });
     }
 }

@@ -25,11 +25,16 @@ namespace Streetcode.BLL.MediatR.Streetcode.Comments.GetByStreetcodeId
         {
             var comments = await _repositoryWrapper.CommentRepository.GetAllAsync(
                 predicate: c => c.StreetcodeId == request.StreetcodeId,
-                include: x => x.Include(c => c.User));
+                include: x => x.Include(c => c.User).Include(c => c.Replies));
 
-            var sortedComments = comments.OrderByDescending(c => c.CreatedAt);
+            var allMappedComments = _mapper.Map<IEnumerable<CommentDTO>>(comments);
 
-            return Result.Ok(_mapper.Map<IEnumerable<CommentDTO>>(sortedComments));
+            var rootComments = allMappedComments
+                .Where(c => c.ParentCommentId == null)
+                .OrderByDescending(c => c.CreatedAt)
+                .AsEnumerable();
+
+            return Result.Ok(rootComments);
         }
     }
 }

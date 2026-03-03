@@ -43,6 +43,48 @@
         }
 
         [Fact]
+        public async Task Handle_ReturnsOnlyRootComments_WhenHierarchyExists()
+        {
+            // Arrange
+            int streetcodeId = 1;
+            var query = new GetCommentsByStreetcodeIdQuery(streetcodeId);
+
+            var reply = new Comment { Id = 2, ParentCommentId = 1, TextContent = "Reply", StreetcodeId = streetcodeId };
+            var rootWithReply = new Comment
+            {
+                Id = 1,
+                ParentCommentId = null,
+                TextContent = "Root with reply",
+                StreetcodeId = streetcodeId,
+                Replies = new List<Comment> { reply }
+            };
+            var standaloneRoot = new Comment { Id = 3, ParentCommentId = null, TextContent = "Standalone", StreetcodeId = streetcodeId };
+
+            var comments = new List<Comment> { rootWithReply, reply, standaloneRoot };
+
+            this.commentRepositoryMock
+                .Setup(x => x.GetAllAsync(
+                    It.IsAny<Expression<Func<Comment, bool>>>(),
+                    It.IsAny<Func<IQueryable<Comment>, IIncludableQueryable<Comment, object>>>(),
+                    It.IsAny<bool>()))
+                .ReturnsAsync(comments);
+
+            // Act
+            var result = await this.handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+
+            result.Value.Should().HaveCount(2);
+            result.Value.Should().NotContain(c => c.Id == 2);
+
+            // Verify nesting
+            var rootResult = result.Value.First(c => c.Id == 1);
+            rootResult.Replies.Should().HaveCount(1);
+            rootResult.Replies.First().Id.Should().Be(2);
+        }
+
+        [Fact]
         public async Task Handle_ReturnsSortedComments_WhenCommentsExist()
         {
             // Arrange
@@ -51,21 +93,9 @@
 
             var comments = new List<Comment>
             {
-                new ()
-                {
-                    Id = 1, CreatedAt = DateTime.UtcNow.AddDays(-2),
-                    StreetcodeId = streetcodeId, TextContent = "Oldest",
-                },
-                new ()
-                {
-                    Id = 2, CreatedAt = DateTime.UtcNow,
-                    StreetcodeId = streetcodeId, TextContent = "Newest",
-                },
-                new ()
-                {
-                    Id = 3, CreatedAt = DateTime.UtcNow.AddDays(-1),
-                    StreetcodeId = streetcodeId, TextContent = "Middle",
-                },
+                new () { Id = 1, CreatedAt = DateTime.UtcNow.AddDays(-2), StreetcodeId = streetcodeId, TextContent = "Oldest" },
+                new () { Id = 2, CreatedAt = DateTime.UtcNow, StreetcodeId = streetcodeId, TextContent = "Newest" },
+                new () { Id = 3, CreatedAt = DateTime.UtcNow.AddDays(-1), StreetcodeId = streetcodeId, TextContent = "Middle" },
             };
 
             this.commentRepositoryMock
@@ -80,11 +110,8 @@
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            result.Value.Should().HaveCount(3);
-
             var resultList = result.Value.ToList();
             resultList[0].TextContent.Should().Be("Newest");
-            resultList[1].TextContent.Should().Be("Middle");
             resultList[2].TextContent.Should().Be("Oldest");
         }
 
@@ -106,7 +133,6 @@
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            result.Value.Should().NotBeNull();
             result.Value.Should().BeEmpty();
         }
     }

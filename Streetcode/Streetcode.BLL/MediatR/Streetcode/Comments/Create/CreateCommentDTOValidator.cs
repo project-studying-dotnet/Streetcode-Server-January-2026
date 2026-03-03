@@ -17,6 +17,11 @@ namespace Streetcode.BLL.MediatR.Streetcode.Comments.Create
 
             RuleFor(x => x.StreetcodeId)
                 .GreaterThan(0).WithMessage(Messages.Error_PropertyMustBeGreaterThanZero.Format(nameof(CreateCommentDTO.StreetcodeId)));
+
+            RuleFor(x => x.ParentCommentId)
+                .GreaterThan(0)
+                .When(x => x.ParentCommentId.HasValue)
+                .WithMessage(Messages.Error_PropertyMustBeGreaterThanZero.Format(nameof(CreateCommentDTO.ParentCommentId)));
         }
     }
 }
