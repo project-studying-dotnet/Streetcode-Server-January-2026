@@ -53,6 +53,7 @@ namespace Streetcode.BLL.MediatR.Streetcode.Comments.GetByIdWithReplies
 
             var resultComment = dictionary[request.Id];
 
+            resultComment.Replies = resultComment.Replies.OrderBy(c => c.CreatedAt).ToList();
             SortReplies(resultComment.Replies);
 
             return Result.Ok(resultComment);

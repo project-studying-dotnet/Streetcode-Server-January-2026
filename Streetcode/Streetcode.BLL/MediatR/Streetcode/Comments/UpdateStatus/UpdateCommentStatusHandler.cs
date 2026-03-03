@@ -36,7 +36,6 @@ namespace Streetcode.BLL.MediatR.Streetcode.Comments.UpdateStatus
             }
 
             comment.Status = request.Comment.Status;
-            comment.UpdatedAt = DateTime.UtcNow;
 
             _repositoryWrapper.CommentRepository.Update(comment);
             var successSave = await _repositoryWrapper.SaveChangesAsync() > 0;

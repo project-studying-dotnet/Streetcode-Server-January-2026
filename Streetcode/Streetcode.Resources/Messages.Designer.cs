@@ -196,6 +196,15 @@ namespace Streetcode.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid enum value for {0}.
+        /// </summary>
+        public static string Error_InvalidEnumValue {
+            get {
+                return ResourceManager.GetString("Error_InvalidEnumValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid Image format: {0}. Only {1} are allowed.
         /// </summary>
         public static string Error_InvalidImageFormat {
