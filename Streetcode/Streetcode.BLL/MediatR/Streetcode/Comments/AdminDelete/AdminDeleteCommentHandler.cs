@@ -21,10 +21,10 @@ namespace Streetcode.BLL.MediatR.Streetcode.Comments.AdminDelete
 
         public async Task<Result<Unit>> Handle(AdminDeleteCommentCommand request, CancellationToken cancellationToken)
         {
-            var targetComment = await _repositoryWrapper.CommentRepository
+            var comment = await _repositoryWrapper.CommentRepository
                 .GetFirstOrDefaultAsync(t => t.Id == request.Id);
 
-            if (targetComment is null)
+            if (comment is null)
             {
                 var errorNotFoundMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(Comment), request.Id);
                 _logger.LogError(request, errorNotFoundMsg);
@@ -32,37 +32,37 @@ namespace Streetcode.BLL.MediatR.Streetcode.Comments.AdminDelete
             }
 
             var allComments = await _repositoryWrapper.CommentRepository
-                .GetAllAsync(c => c.StreetcodeId == targetComment.StreetcodeId);
+                .GetAllAsync(c => c.StreetcodeId == comment.StreetcodeId);
 
-            var childrenLookup = allComments
+            var commentLookup = allComments
                 .Where(c => c.ParentId.HasValue)
                 .GroupBy(c => c.ParentId.Value)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
             var commentsToDelete = new List<Comment>();
-            var stack = new Stack<Comment>();
+            var commentsStack = new Stack<Comment>();
 
-            stack.Push(targetComment);
+            commentsStack.Push(comment);
 
-            while (stack.Count > 0)
+            while (commentsStack.Count > 0)
             {
-                var current = stack.Pop();
+                var current = commentsStack.Pop();
                 commentsToDelete.Add(current);
 
-                if (childrenLookup.TryGetValue(current.Id, out var children))
+                if (commentLookup.TryGetValue(current.Id, out var children))
                 {
                     foreach (var child in children)
                     {
-                        stack.Push(child);
+                        commentsStack.Push(child);
                     }
                 }
             }
 
             _repositoryWrapper.CommentRepository.DeleteRange(commentsToDelete);
 
-            var successSave = await _repositoryWrapper.SaveChangesAsync() > 0;
+            var success = await _repositoryWrapper.SaveChangesAsync() > 0;
 
-            if (successSave)
+            if (success)
             {
                 return Result.Ok(Unit.Value);
             }
