@@ -98,10 +98,12 @@ namespace Streetcode.Auth.WebApi.Controllers
 
             if (result.IsSuccess)
             {
-                return Ok("Password changed successfully");
+                _cookieService.DeleteRefreshTokenCookie(Response);
+
+                return Ok(new { message = "Password changed successfully. You have been logged out of all devices." });
             }
 
-            return BadRequest(result.Errors[0].Message);
+            return BadRequest(result.Errors.Select(e => e.Message));
         }
     }
 }
