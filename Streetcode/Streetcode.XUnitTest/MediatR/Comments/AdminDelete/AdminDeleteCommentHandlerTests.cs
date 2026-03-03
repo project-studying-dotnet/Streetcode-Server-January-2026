@@ -1,11 +1,11 @@
-﻿namespace Streetcode.XUnitTest.MediatR.Comments.Delete
+﻿namespace Streetcode.XUnitTest.MediatR.Comments.AdminDelete
 {
     using System.Linq.Expressions;
     using FluentAssertions;
     using global::MediatR;
     using Moq;
     using Streetcode.BLL.Interfaces.Logging;
-    using Streetcode.BLL.MediatR.Streetcode.Comments.Delete;
+    using Streetcode.BLL.MediatR.Streetcode.Comments.AdminDelete;
     using Streetcode.DAL.Entities.Streetcode.Comments;
     using Streetcode.DAL.Repositories.Interfaces.Base;
     using Streetcode.DAL.Repositories.Interfaces.Streetcode.Comments;
@@ -13,14 +13,14 @@
     using Streetcode.Shared.Extensions;
     using Xunit;
 
-    public class DeleteCommentHandlerTests
+    public class AdminDeleteCommentHandlerTests
     {
         private readonly Mock<IRepositoryWrapper> repositoryWrapperMock;
         private readonly Mock<ICommentRepository> commentRepositoryMock;
         private readonly Mock<ILoggerService> loggerMock;
-        private readonly DeleteCommentHandler handler;
+        private readonly AdminDeleteCommentHandler handler;
 
-        public DeleteCommentHandlerTests()
+        public AdminDeleteCommentHandlerTests()
         {
             this.repositoryWrapperMock = new Mock<IRepositoryWrapper>();
             this.commentRepositoryMock = new Mock<ICommentRepository>();
@@ -29,20 +29,19 @@
             this.repositoryWrapperMock.Setup(r => r.CommentRepository)
                 .Returns(this.commentRepositoryMock.Object);
 
-            this.handler = new DeleteCommentHandler(
+            this.handler = new AdminDeleteCommentHandler(
                 this.repositoryWrapperMock.Object,
                 this.loggerMock.Object);
         }
 
         [Fact]
-        public async Task Handle_ReturnsSuccess_WhenUserIsOwnerAndCommentExists()
+        public async Task Handle_ReturnsSuccess_WhenCommentExists()
         {
             // Arrange
             int commentId = 1;
-            string userId = "user-123";
-            var command = new DeleteCommentCommand(commentId, userId);
+            var command = new AdminDeleteCommentCommand(commentId);
 
-            var comment = new Comment { Id = commentId, UserId = userId };
+            var comment = new Comment { Id = commentId, StreetcodeId = 10 };
 
             this.commentRepositoryMock
                 .Setup(x => x.GetFirstOrDefaultAsync(
@@ -74,7 +73,7 @@
         public async Task Handle_ReturnsFail_WhenCommentNotFound()
         {
             // Arrange
-            var command = new DeleteCommentCommand(1, "user-123");
+            var command = new AdminDeleteCommentCommand(1);
 
             this.commentRepositoryMock
                 .Setup(x => x.GetFirstOrDefaultAsync(
@@ -96,41 +95,11 @@
         }
 
         [Fact]
-        public async Task Handle_ReturnsFail_WhenUserIsNotOwner()
-        {
-            // Arrange
-            int commentId = 1;
-            string ownerId = "owner";
-            string hackerId = "hacker";
-
-            var command = new DeleteCommentCommand(commentId, hackerId);
-            var comment = new Comment { Id = commentId, UserId = ownerId };
-
-            this.commentRepositoryMock
-                .Setup(x => x.GetFirstOrDefaultAsync(
-                    It.IsAny<Expression<Func<Comment, bool>>>(),
-                    null,
-                    It.IsAny<bool>()))
-                .ReturnsAsync(comment);
-
-            var expectedError = Messages.Error_UserNotCommentOwner;
-
-            // Act
-            var result = await this.handler.Handle(command, CancellationToken.None);
-
-            // Assert
-            result.IsFailed.Should().BeTrue();
-            result.Errors.First().Message.Should().Be(expectedError);
-
-            this.commentRepositoryMock.Verify(x => x.DeleteRange(It.IsAny<IEnumerable<Comment>>()), Times.Never);
-        }
-
-        [Fact]
         public async Task Handle_ReturnsFail_WhenSaveChangesFails()
         {
             // Arrange
-            var command = new DeleteCommentCommand(1, "user-123");
-            var comment = new Comment { Id = 1, UserId = "user-123" };
+            var command = new AdminDeleteCommentCommand(1);
+            var comment = new Comment { Id = 1, StreetcodeId = 10 };
 
             this.commentRepositoryMock
                 .Setup(x => x.GetFirstOrDefaultAsync(
@@ -165,14 +134,13 @@
         {
             // Arrange
             int targetCommentId = 1;
-            string userId = "user-123";
             int streetcodeId = 10;
-            var command = new DeleteCommentCommand(targetCommentId, userId);
+            var command = new AdminDeleteCommentCommand(targetCommentId);
 
-            var targetComment = new Comment { Id = targetCommentId, UserId = userId, StreetcodeId = streetcodeId };
-            var child1 = new Comment { Id = 2, UserId = userId, StreetcodeId = streetcodeId, ParentId = targetCommentId };
-            var child2 = new Comment { Id = 3, UserId = userId, StreetcodeId = streetcodeId, ParentId = targetCommentId };
-            var grandChild = new Comment { Id = 4, UserId = userId, StreetcodeId = streetcodeId, ParentId = 2 };
+            var targetComment = new Comment { Id = targetCommentId, StreetcodeId = streetcodeId };
+            var child1 = new Comment { Id = 2, StreetcodeId = streetcodeId, ParentId = targetCommentId };
+            var child2 = new Comment { Id = 3, StreetcodeId = streetcodeId, ParentId = targetCommentId };
+            var grandChild = new Comment { Id = 4, StreetcodeId = streetcodeId, ParentId = 2 };
 
             var allComments = new List<Comment> { targetComment, child1, child2, grandChild };
 
