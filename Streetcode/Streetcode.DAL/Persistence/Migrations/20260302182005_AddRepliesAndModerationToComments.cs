@@ -38,7 +38,8 @@ namespace Streetcode.DAL.Persistence.Migrations
                 column: "ParentId",
                 principalSchema: "streetcode",
                 principalTable: "comments",
-                principalColumn: "Id");
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
         }
 
         /// <inheritdoc />

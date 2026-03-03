@@ -9,5 +9,7 @@
         public int StreetcodeId { get; set; }
         public string UserId { get; set; }
         public string UserFullName { get; set; }
+        public int? ParentId { get; set; }
+        public List<CommentDTO> Replies { get; set; } = new();
     }
 }

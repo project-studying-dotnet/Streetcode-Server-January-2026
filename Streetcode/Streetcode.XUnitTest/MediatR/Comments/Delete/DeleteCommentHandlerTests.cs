@@ -51,6 +51,13 @@
                     It.IsAny<bool>()))
                 .ReturnsAsync(comment);
 
+            this.commentRepositoryMock
+                .Setup(x => x.GetAllAsync(
+                    It.IsAny<Expression<Func<Comment, bool>>>(),
+                    null,
+                    It.IsAny<bool>()))
+                .ReturnsAsync(new List<Comment> { comment });
+
             this.repositoryWrapperMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
 
             // Act
@@ -60,7 +67,7 @@
             result.IsSuccess.Should().BeTrue();
             result.Value.Should().Be(Unit.Value);
 
-            this.commentRepositoryMock.Verify(x => x.Delete(comment), Times.Once);
+            this.commentRepositoryMock.Verify(x => x.DeleteRange(It.IsAny<IEnumerable<Comment>>()), Times.Once);
         }
 
         [Fact]
@@ -85,7 +92,7 @@
             result.IsFailed.Should().BeTrue();
             result.Errors.First().Message.Should().Be(expectedError);
 
-            this.commentRepositoryMock.Verify(x => x.Delete(It.IsAny<Comment>()), Times.Never);
+            this.commentRepositoryMock.Verify(x => x.DeleteRange(It.IsAny<IEnumerable<Comment>>()), Times.Never);
         }
 
         [Fact]
@@ -115,7 +122,7 @@
             result.IsFailed.Should().BeTrue();
             result.Errors.First().Message.Should().Be(expectedError);
 
-            this.commentRepositoryMock.Verify(x => x.Delete(It.IsAny<Comment>()), Times.Never);
+            this.commentRepositoryMock.Verify(x => x.DeleteRange(It.IsAny<IEnumerable<Comment>>()), Times.Never);
         }
 
         [Fact]
@@ -132,6 +139,13 @@
                     It.IsAny<bool>()))
                 .ReturnsAsync(comment);
 
+            this.commentRepositoryMock
+                .Setup(x => x.GetAllAsync(
+                    It.IsAny<Expression<Func<Comment, bool>>>(),
+                    null,
+                    It.IsAny<bool>()))
+                .ReturnsAsync(new List<Comment> { comment });
+
             this.repositoryWrapperMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(0);
 
             var expectedError = Messages.Error_FailedToDeleteEntity.Format(nameof(Comment));
@@ -142,6 +156,56 @@
             // Assert
             result.IsFailed.Should().BeTrue();
             result.Errors.First().Message.Should().Be(expectedError);
+
+            this.commentRepositoryMock.Verify(x => x.DeleteRange(It.IsAny<IEnumerable<Comment>>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Handle_ReturnsSuccess_AndDeletesAllDescendants_WhenCommentHasReplies()
+        {
+            // Arrange
+            int targetCommentId = 1;
+            string userId = "user-123";
+            int streetcodeId = 10;
+            var command = new DeleteCommentCommand(targetCommentId, userId);
+
+            var targetComment = new Comment { Id = targetCommentId, UserId = userId, StreetcodeId = streetcodeId };
+            var child1 = new Comment { Id = 2, UserId = userId, StreetcodeId = streetcodeId, ParentId = targetCommentId };
+            var child2 = new Comment { Id = 3, UserId = userId, StreetcodeId = streetcodeId, ParentId = targetCommentId };
+            var grandChild = new Comment { Id = 4, UserId = userId, StreetcodeId = streetcodeId, ParentId = 2 };
+
+            var allComments = new List<Comment> { targetComment, child1, child2, grandChild };
+
+            this.commentRepositoryMock
+                .Setup(x => x.GetFirstOrDefaultAsync(
+                    It.IsAny<Expression<Func<Comment, bool>>>(),
+                    null,
+                    It.IsAny<bool>()))
+                .ReturnsAsync(targetComment);
+
+            this.commentRepositoryMock
+                .Setup(x => x.GetAllAsync(
+                    It.IsAny<Expression<Func<Comment, bool>>>(),
+                    null,
+                    It.IsAny<bool>()))
+                .ReturnsAsync(allComments);
+
+            this.repositoryWrapperMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
+
+            // Act
+            var result = await this.handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+
+            this.commentRepositoryMock.Verify(
+                x => x.DeleteRange(It.Is<IEnumerable<Comment>>(
+                    commentsToDelete =>
+                        commentsToDelete.Count() == 4 &&
+                        commentsToDelete.Contains(targetComment) &&
+                        commentsToDelete.Contains(child1) &&
+                        commentsToDelete.Contains(child2) &&
+                        commentsToDelete.Contains(grandChild))), Times.Once);
         }
     }
 }

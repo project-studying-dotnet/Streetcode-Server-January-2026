@@ -128,6 +128,64 @@
         }
 
         [Fact]
+        public async Task Handle_ReturnsSuccess_WhenParentCommentExists()
+        {
+            // Arrange
+            var createDto = GetCreateCommentDTO();
+            createDto.ParentId = 5;
+            var userId = "user-123";
+            var command = new CreateCommentCommand(createDto, userId);
+
+            var parentComment = new Comment { Id = 5, StreetcodeId = createDto.StreetcodeId };
+
+            this.commentRepositoryMock
+                .Setup(x => x.GetFirstOrDefaultAsync(
+                    It.IsAny<Expression<Func<Comment, bool>>>(),
+                    null,
+                    It.IsAny<bool>()))
+                .ReturnsAsync(parentComment);
+
+            this.commentRepositoryMock.Setup(x => x.CreateAsync(It.IsAny<Comment>()))
+                .ReturnsAsync((Comment c) => c);
+
+            this.repositoryWrapperMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
+
+            // Act
+            var result = await this.handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            this.commentRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Comment>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Handle_ReturnsFail_WhenParentCommentDoesNotExist()
+        {
+            // Arrange
+            var createDto = GetCreateCommentDTO();
+            createDto.ParentId = 999;
+            var userId = "user-123";
+            var command = new CreateCommentCommand(createDto, userId);
+
+            this.commentRepositoryMock
+                .Setup(x => x.GetFirstOrDefaultAsync(
+                    It.IsAny<Expression<Func<Comment, bool>>>(),
+                    null,
+                    It.IsAny<bool>()))
+                .ReturnsAsync((Comment?)null);
+
+            var expectedErrorMsg = Messages.Error_EntityWithIdNotFound.Format(nameof(Comment), createDto.ParentId);
+
+            // Act
+            var result = await this.handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsFailed.Should().BeTrue();
+            result.Errors.First().Message.Should().Be(expectedErrorMsg);
+            this.commentRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Comment>()), Times.Never);
+        }
+
+        [Fact]
         public async Task Handle_ReturnsFail_WhenSaveChangesFails()
         {
             // Arrange

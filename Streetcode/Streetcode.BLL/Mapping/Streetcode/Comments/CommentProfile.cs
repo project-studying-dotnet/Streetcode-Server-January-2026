@@ -16,7 +16,10 @@ namespace Streetcode.BLL.Mapping.Streetcode.Comments
             CreateMap<UpdateCommentDTO, Comment>()
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
                 .ForMember(dest => dest.StreetcodeId, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore());
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.ParentId, opt => opt.Ignore())
+                .ForMember(dest => dest.Replies, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.Ignore());
         }
     }
 }

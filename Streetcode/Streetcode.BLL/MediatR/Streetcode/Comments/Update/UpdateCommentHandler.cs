@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Streetcode.BLL.DTO.Streetcode.Comments;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.DAL.Entities.Streetcode.Comments;
+using Streetcode.DAL.Enums;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.Resources;
 using Streetcode.Shared.Extensions;
@@ -49,6 +50,7 @@ namespace Streetcode.BLL.MediatR.Streetcode.Comments.Update
 
             comment = _mapper.Map(command.Comment, comment);
             comment.UpdatedAt = DateTime.UtcNow;
+            comment.Status = CommentStatus.Pending;
 
             _repositoryWrapper.CommentRepository.Update(comment);
             var successSave = await _repositoryWrapper.SaveChangesAsync() > 0;
