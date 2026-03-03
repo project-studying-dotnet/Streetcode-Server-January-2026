@@ -348,7 +348,13 @@ BlobStorageTestFolder/
 
 # Configuration files
 appsettings.*.json
-.env
+*.env
 
 # ReSharper/Rider files
 *.csproj.DotSettings
+
+# Toponyms data
+houses.csv
+houses.zip
+data.csv
+
