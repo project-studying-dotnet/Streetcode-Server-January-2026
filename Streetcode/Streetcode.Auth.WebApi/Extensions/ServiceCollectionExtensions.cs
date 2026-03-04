@@ -1,9 +1,9 @@
-﻿using System.Reflection;
-using System.Text;
-using FluentValidation;
+﻿using FluentValidation;
 using Hangfire;
+using Hangfire.SqlServer;
 using MassTransit;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +19,8 @@ using Streetcode.Auth.DAL.Repositories.Interfaces;
 using Streetcode.Auth.DAL.Repositories.Realizations;
 using Streetcode.Auth.WebApi.Services.Interfaces;
 using Streetcode.Auth.WebApi.Services.Realizations;
+using System.Reflection;
+using System.Text;
 
 namespace Streetcode.Auth.WebApi.Extensions;
 
@@ -65,7 +67,7 @@ public static class ServiceCollectionExtensions
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         })
-        .AddCookie()
+        .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
         {
             options.TokenValidationParameters = new TokenValidationParameters
@@ -81,8 +83,10 @@ public static class ServiceCollectionExtensions
         })
         .AddGoogle(options =>
         {
-                    options.ClientId = configuration["Authentication:Google:ClientId"];
-                    options.ClientSecret = configuration["Authentication:Google:ClientSecret"];
+            options.ClientId = configuration["Authentication:Google:ClientId"];
+            options.ClientSecret = configuration["Authentication:Google:ClientSecret"];
+
+            options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
         });
     }
 
@@ -186,7 +190,10 @@ public static class ServiceCollectionExtensions
 
         services.AddHangfire(config =>
         {
-            config.UseSqlServerStorage(connectionString);
+            config.UseSqlServerStorage(connectionString, new SqlServerStorageOptions
+            {
+                PrepareSchemaIfNecessary = true
+            });
         });
 
         services.AddHangfireServer();
