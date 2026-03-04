@@ -13,6 +13,12 @@ namespace Streetcode.Auth.BLL.Mapping
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
 
             CreateMap<ApplicationUser, UserDTO>();
+
+            CreateMap<LoginWithGoogleDTO, ApplicationUser>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.EmailConfirmed, opt => opt.MapFrom(_ => true));
         }
     }
 }
