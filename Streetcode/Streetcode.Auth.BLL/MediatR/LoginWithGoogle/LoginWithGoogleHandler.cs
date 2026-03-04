@@ -39,7 +39,25 @@ namespace Streetcode.Auth.BLL.MediatR.LoginWithGoogle
 
             if (user == null)
             {
-                return Result.Fail(new Error("UserNotFoundRegistrationRequired"));
+                user = _mapper.Map<ApplicationUser>(request.LoginGoogle);
+
+                var createResult = await _userManager.CreateAsync(user);
+
+                if (!createResult.Succeeded)
+                {
+                    return Result.Fail(createResult.Errors.Select(e => e.Description));
+                }
+
+                await _userManager.AddToRoleAsync(user, nameof(UserRole.User));
+
+                await _publishEndpoint.Publish(
+                    new UserRegisteredEvent
+                    {
+                        UserId = user.Id,
+                        Email = user.Email,
+                        Role = UserRole.User
+                    },
+                    cancellationToken);
             }
 
             var (accessToken, refreshToken) = await _tokenService.GenerateTokensAsync(user);
