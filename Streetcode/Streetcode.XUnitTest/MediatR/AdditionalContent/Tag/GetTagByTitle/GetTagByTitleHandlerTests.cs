@@ -5,8 +5,9 @@ using Moq;
 using Streetcode.BLL.DTO.AdditionalContent;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.Mapping.AdditionalContent;
+using Streetcode.BLL.MediatR.AdditionalContent.Tag;
 using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetByStreetcodeId;
-using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetTagByTitle; // Ensure this matches your BLL folder structure
+using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetTagByTitle; 
 using Streetcode.DAL.Entities.AdditionalContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.Resources;
