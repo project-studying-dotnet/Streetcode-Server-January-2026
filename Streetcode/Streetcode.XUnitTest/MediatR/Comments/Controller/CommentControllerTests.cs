@@ -8,10 +8,14 @@
     using Microsoft.AspNetCore.Mvc;
     using Moq;
     using Streetcode.BLL.DTO.Streetcode.Comments;
+    using Streetcode.BLL.MediatR.Streetcode.Comments.AdminDelete;
     using Streetcode.BLL.MediatR.Streetcode.Comments.Create;
     using Streetcode.BLL.MediatR.Streetcode.Comments.Delete;
+    using Streetcode.BLL.MediatR.Streetcode.Comments.GetByIdWithReplies;
     using Streetcode.BLL.MediatR.Streetcode.Comments.GetByStreetcodeId;
+    using Streetcode.BLL.MediatR.Streetcode.Comments.GetPending;
     using Streetcode.BLL.MediatR.Streetcode.Comments.Update;
+    using Streetcode.BLL.MediatR.Streetcode.Comments.UpdateStatus;
     using Streetcode.WebApi.Controllers.Streetcode.Comments;
     using Xunit;
 
@@ -173,6 +177,79 @@
             // Assert
             this.mediatorMock.Verify(
                 m => m.Send(It.Is<DeleteCommentCommand>(c => c.UserId == userId), default), Times.Once);
+            result.Should().BeAssignableTo<IActionResult>();
+        }
+
+        [Fact]
+        public async Task GetPendingComments_ShouldReturnOk_WhenSuccess()
+        {
+            // Arrange
+            var commentsList = new List<CommentDTO>
+            {
+                new () { Id = 1, TextContent = "Pending Test" },
+            };
+
+            this.mediatorMock.Setup(m => m.Send(It.IsAny<GetPendingCommentsQuery>(), default))
+                .ReturnsAsync(Result.Ok((IEnumerable<CommentDTO>)commentsList));
+
+            // Act
+            var result = await this.controller.GetPendingComments();
+
+            // Assert
+            this.mediatorMock.Verify(m => m.Send(It.IsAny<GetPendingCommentsQuery>(), default), Times.Once);
+            result.Should().BeAssignableTo<IActionResult>();
+        }
+
+        [Fact]
+        public async Task GetCommentWithReplies_ShouldReturnOk_WhenSuccess()
+        {
+            // Arrange
+            int commentId = 1;
+            var commentDto = new CommentDTO { Id = commentId, TextContent = "Tree Test" };
+
+            this.mediatorMock.Setup(m => m.Send(It.IsAny<GetCommentByIdWithRepliesQuery>(), default))
+                .ReturnsAsync(Result.Ok(commentDto));
+
+            // Act
+            var result = await this.controller.GetCommentWithReplies(commentId);
+
+            // Assert
+            this.mediatorMock.Verify(m => m.Send(It.Is<GetCommentByIdWithRepliesQuery>(q => q.Id == commentId), default), Times.Once);
+            result.Should().BeAssignableTo<IActionResult>();
+        }
+
+        [Fact]
+        public async Task UpdateStatus_ShouldReturnOk_WhenSuccess()
+        {
+            // Arrange
+            var dto = new UpdateCommentStatusDTO { Id = 1, Status = DAL.Enums.CommentStatus.Approved };
+            var returnedDto = new CommentDTO { Id = 1 };
+
+            this.mediatorMock.Setup(m => m.Send(It.IsAny<UpdateCommentStatusCommand>(), default))
+                .ReturnsAsync(Result.Ok(returnedDto));
+
+            // Act
+            var result = await this.controller.UpdateStatus(dto);
+
+            // Assert
+            this.mediatorMock.Verify(m => m.Send(It.Is<UpdateCommentStatusCommand>(c => c.Comment == dto), default), Times.Once);
+            result.Should().BeAssignableTo<IActionResult>();
+        }
+
+        [Fact]
+        public async Task AdminDeleteComment_ShouldReturnOk_WhenSuccess()
+        {
+            // Arrange
+            int commentId = 1;
+
+            this.mediatorMock.Setup(m => m.Send(It.IsAny<AdminDeleteCommentCommand>(), default))
+                .ReturnsAsync(Result.Ok(Unit.Value));
+
+            // Act
+            var result = await this.controller.AdminDeleteComment(commentId);
+
+            // Assert
+            this.mediatorMock.Verify(m => m.Send(It.Is<AdminDeleteCommentCommand>(c => c.Id == commentId), default), Times.Once);
             result.Should().BeAssignableTo<IActionResult>();
         }
     }

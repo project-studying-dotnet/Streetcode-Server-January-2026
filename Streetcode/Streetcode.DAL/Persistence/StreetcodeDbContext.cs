@@ -316,9 +316,15 @@ public class StreetcodeDbContext : DbContext
             .HasValue<ToponymCoordinate>("coordinate_toponym");
 
         modelBuilder.Entity<User>()
-           .HasMany(d => d.Comments)
-           .WithOne(t => t.User)
-           .HasForeignKey(t => t.UserId)
-           .OnDelete(DeleteBehavior.Cascade);
+            .HasMany(d => d.Comments)
+            .WithOne(t => t.User)
+            .HasForeignKey(t => t.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Comment>()
+            .HasOne(c => c.Parent)
+            .WithMany(c => c.Replies)
+            .HasForeignKey(c => c.ParentId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

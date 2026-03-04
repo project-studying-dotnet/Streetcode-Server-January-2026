@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Streetcode.DAL.Entities.Users;
+using Streetcode.DAL.Enums;
 
 namespace Streetcode.DAL.Entities.Streetcode.Comments
 {
@@ -29,5 +30,14 @@ namespace Streetcode.DAL.Entities.Streetcode.Comments
         public string UserId { get; set; }
 
         public User? User { get; set; }
+
+        public int? ParentId { get; set; }
+
+        public Comment? Parent { get; set; }
+
+        public List<Comment> Replies { get; set; } = new();
+
+        [Required]
+        public CommentStatus Status { get; set; } = CommentStatus.Pending;
     }
 }

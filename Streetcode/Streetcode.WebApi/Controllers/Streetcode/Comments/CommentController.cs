@@ -2,11 +2,16 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Streetcode.BLL.DTO.Streetcode.Comments;
+using Streetcode.BLL.MediatR.Streetcode.Comments.AdminDelete;
 using Streetcode.BLL.MediatR.Streetcode.Comments.Create;
 using Streetcode.BLL.MediatR.Streetcode.Comments.Delete;
+using Streetcode.BLL.MediatR.Streetcode.Comments.GetByIdWithReplies;
 using Streetcode.BLL.MediatR.Streetcode.Comments.GetByStreetcodeId;
+using Streetcode.BLL.MediatR.Streetcode.Comments.GetPending;
 using Streetcode.BLL.MediatR.Streetcode.Comments.Update;
+using Streetcode.BLL.MediatR.Streetcode.Comments.UpdateStatus;
 using Streetcode.Resources;
+using Streetcode.Shared.Enums;
 
 namespace Streetcode.WebApi.Controllers.Streetcode.Comments;
 
@@ -17,6 +22,20 @@ public class CommentController : BaseApiController
     public async Task<IActionResult> GetByStreetcodeId([FromRoute] int streetcodeId)
     {
         return HandleResult(await Mediator.Send(new GetCommentsByStreetcodeIdQuery(streetcodeId)));
+    }
+
+    [HttpGet("pending")]
+    [Authorize(Roles = nameof(UserRole.Administrator))]
+    public async Task<IActionResult> GetPendingComments()
+    {
+        return HandleResult(await Mediator.Send(new GetPendingCommentsQuery()));
+    }
+
+    [HttpGet("withReplies/{id}")]
+    [Authorize(Roles = nameof(UserRole.Administrator))]
+    public async Task<IActionResult> GetCommentWithReplies([FromRoute] int id)
+    {
+        return HandleResult(await Mediator.Send(new GetCommentByIdWithRepliesQuery(id)));
     }
 
     [HttpPost]
@@ -47,6 +66,13 @@ public class CommentController : BaseApiController
         return HandleResult(await Mediator.Send(new UpdateCommentCommand(updateCommentDTO, userId)));
     }
 
+    [HttpPut("updateStatus")]
+    [Authorize(Roles = nameof(UserRole.Administrator))]
+    public async Task<IActionResult> UpdateStatus([FromBody] UpdateCommentStatusDTO dto)
+    {
+        return HandleResult(await Mediator.Send(new UpdateCommentStatusCommand(dto)));
+    }
+
     [HttpDelete("{id:int}")]
     [Authorize]
     public async Task<IActionResult> Delete([FromRoute] int id)
@@ -59,6 +85,13 @@ public class CommentController : BaseApiController
         }
 
         return HandleResult(await Mediator.Send(new DeleteCommentCommand(id, userId)));
+    }
+
+    [HttpDelete("adminDelete/{id}")]
+    [Authorize(Roles = nameof(UserRole.Administrator))]
+    public async Task<IActionResult> AdminDeleteComment([FromRoute] int id)
+    {
+        return HandleResult(await Mediator.Send(new AdminDeleteCommentCommand(id)));
     }
 
     private string? GetCurrentUserId()
