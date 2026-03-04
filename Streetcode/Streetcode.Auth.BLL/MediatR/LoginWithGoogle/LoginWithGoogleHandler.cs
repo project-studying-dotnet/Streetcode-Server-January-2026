@@ -24,13 +24,14 @@ namespace Streetcode.Auth.BLL.MediatR.LoginWithGoogle
         private readonly IConfiguration _configuration;
         private readonly IPublishEndpoint _publishEndpoint;
 
-        public LoginWithGoogleHandler(ILogger<LoginWithGoogleHandler> logger, ITokenService tokenService, UserManager<ApplicationUser> userManager, IMapper mapper, IConfiguration configuration)
+        public LoginWithGoogleHandler(ILogger<LoginWithGoogleHandler> logger, ITokenService tokenService, UserManager<ApplicationUser> userManager, IMapper mapper, IConfiguration configuration, IPublishEndpoint publishEndpoint)
         {
             _logger = logger;
             _tokenService = tokenService;
             _userManager = userManager;
             _mapper = mapper;
             _configuration = configuration;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task<Result<(TokenResponseDTO, string)>> Handle(LoginWithGoogleCommand request, CancellationToken cancellationToken)
@@ -55,6 +56,8 @@ namespace Streetcode.Auth.BLL.MediatR.LoginWithGoogle
                     {
                         UserId = user.Id,
                         Email = user.Email,
+                        Name = user.Name,
+                        Surname = user.Surname,
                         Role = UserRole.User
                     },
                     cancellationToken);

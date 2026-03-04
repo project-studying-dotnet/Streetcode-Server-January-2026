@@ -102,11 +102,13 @@ namespace Streetcode.Auth.WebApi.Controllers
 
             var email = result.Principal.FindFirstValue(ClaimTypes.Email);
             var name = result.Principal.FindFirstValue(ClaimTypes.Name);
+            var surname = result.Principal.FindFirstValue(ClaimTypes.Surname);
 
             var command = new LoginWithGoogleCommand(new LoginWithGoogleDTO()
             {
                 Email = email,
-                Name = name
+                Name = name,
+                Surname = surname
             });
 
             var loginResult = await _mediator.Send(command);

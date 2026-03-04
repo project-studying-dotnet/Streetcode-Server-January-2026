@@ -19,13 +19,9 @@
         [InlineData(null)]
         public void ShouldHaveError_WhenEmailIsEmpty(string email)
         {
-            // Arrange
             var model = new LoginWithGoogleDTO { Email = email };
-
-            // Act
             var result = this.validator.TestValidate(model);
 
-            // Assert
             result.ShouldHaveValidationErrorFor(x => x.Email)
                   .WithErrorMessage("Email is required.");
         }
@@ -37,13 +33,9 @@
         [InlineData("email.example.com")]
         public void ShouldHaveError_WhenEmailIsInvalidFormat(string email)
         {
-            // Arrange
             var model = new LoginWithGoogleDTO { Email = email };
-
-            // Act
             var result = this.validator.TestValidate(model);
 
-            // Assert
             result.ShouldHaveValidationErrorFor(x => x.Email)
                   .WithErrorMessage("Invalid email format.");
         }
@@ -53,15 +45,32 @@
         [InlineData(null)]
         public void ShouldHaveError_WhenNameIsEmpty(string name)
         {
+            var model = new LoginWithGoogleDTO { Name = name, Email = "test@gmail.com", Surname = "Test" };
+            var result = this.validator.TestValidate(model);
+
+            result.ShouldHaveValidationErrorFor(x => x.Name)
+                  .WithErrorMessage("Name is required.");
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void ShouldHaveError_WhenSurnameIsEmpty(string surname)
+        {
             // Arrange
-            var model = new LoginWithGoogleDTO { Name = name, Email = "test@gmail.com" };
+            var model = new LoginWithGoogleDTO
+            {
+                Surname = surname,
+                Email = "test@gmail.com",
+                Name = "John"
+            };
 
             // Act
             var result = this.validator.TestValidate(model);
 
             // Assert
-            result.ShouldHaveValidationErrorFor(x => x.Name)
-                  .WithErrorMessage("Name is required.");
+            result.ShouldHaveValidationErrorFor(x => x.Surname)
+                  .WithErrorMessage("Surname is required.");
         }
 
         [Fact]
@@ -71,7 +80,8 @@
             var model = new LoginWithGoogleDTO
             {
                 Email = "google.user@gmail.com",
-                Name = "Ivan Ivanov",
+                Name = "John",
+                Surname = "Smith"
             };
 
             // Act
