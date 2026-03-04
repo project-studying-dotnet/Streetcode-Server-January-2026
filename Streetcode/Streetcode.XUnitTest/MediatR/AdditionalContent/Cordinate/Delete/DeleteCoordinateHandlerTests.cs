@@ -33,8 +33,8 @@ public class DeleteCoordinateHandlerTests
             Id = testId
         };
 
-        _mockRepo.Setup(r => r.StreetcodeCoordinateRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<StreetcodeCoordinate, bool>>>(),
+        _mockRepo.Setup(r => r.StreetcodeCoordinateRepository
+            .GetFirstOrDefaultAsync(It.IsAny<Expression<Func<StreetcodeCoordinate, bool>>>(), null))
             .ReturnsAsync(coordinate);
 
         _mockRepo.Setup(r => r.SaveChangesAsync())
