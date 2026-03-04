@@ -1,18 +1,17 @@
+using System.Linq.Expressions;
 using AutoMapper;
 using FluentAssertions;
-using FluentResults;
 using Moq;
 using Streetcode.BLL.DTO.AdditionalContent;
 using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetTagByTitle;
 using Streetcode.BLL.Mapping.AdditionalContent;
+using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetByStreetcodeId;
+using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetTagByTitle; // Ensure this matches your BLL folder structure
 using Streetcode.DAL.Entities.AdditionalContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.Resources;
 using Streetcode.Shared.Extensions;
-using System.Linq.Expressions;
 using Xunit;
-using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetByStreetcodeId;
 
 namespace Streetcode.XUnitTest.MediatR.AdditionalContent.Tag;
 
@@ -39,8 +38,7 @@ public class GetTagByTitleHandlerTests
     {
         // Arrange
         string testTitle = "History";
-        var query = new GetTagByTitleQuery(
-            testTitle);
+        var query = new GetTagByTitleQuery(testTitle);
         var tagEntity = new DAL.Entities.AdditionalContent.Tag
         {
             Id = 1,
@@ -58,9 +56,7 @@ public class GetTagByTitleHandlerTests
             _mockLogger.Object);
 
         // Act
-        var result = await handler.Handle(
-            query,
-            CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -73,8 +69,7 @@ public class GetTagByTitleHandlerTests
     {
         // Arrange
         string testTitle = "NonExistent";
-        var query = new GetTagByTitleQuery(
-            testTitle);
+        var query = new GetTagByTitleQuery(testTitle);
 
         _mockRepo.Setup(r => r.TagRepository.GetFirstOrDefaultAsync(
             It.IsAny<Expression<Func<DAL.Entities.AdditionalContent.Tag, bool>>>(),
@@ -91,26 +86,21 @@ public class GetTagByTitleHandlerTests
             testTitle);
 
         // Act
-        var result = await handler.Handle(
-            query,
-            CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainSingle()
             .Which.Message.Should().Be(expectedError);
 
-        _mockLogger.Verify(x => x.LogError(
-            query,
-            expectedError), Times.Once);
+        _mockLogger.Verify(x => x.LogError(query, expectedError), Times.Once);
     }
 
     [Fact]
     public async Task Handle_ValidRequest_ReturnsCorrectDtoType()
     {
         // Arrange
-        var query = new GetTagByTitleQuery(
-            "AnyTitle");
+        var query = new GetTagByTitleQuery("AnyTitle");
 
         _mockRepo.Setup(r => r.TagRepository.GetFirstOrDefaultAsync(
             It.IsAny<Expression<Func<DAL.Entities.AdditionalContent.Tag, bool>>>(),
@@ -123,9 +113,7 @@ public class GetTagByTitleHandlerTests
             _mockLogger.Object);
 
         // Act
-        var result = await handler.Handle(
-            query,
-            CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.Value.Should().BeOfType<TagDTO>();
