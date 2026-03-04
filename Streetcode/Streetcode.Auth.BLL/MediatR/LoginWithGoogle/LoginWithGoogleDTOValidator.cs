@@ -13,6 +13,9 @@ namespace Streetcode.Auth.BLL.MediatR.LoginWithGoogle
 
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Name is required.");
+
+            RuleFor(x => x.Surname)
+                .NotEmpty().WithMessage("Surname is required.");
         }
     }
 }
