@@ -92,7 +92,7 @@ namespace Streetcode.XUnitTest.MediatR.News
             .ReturnsAsync(allNews);
 
             _blobServiceMock.Setup(bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()))
-                .Returns(expectedBase64);
+                .ReturnsAsync(expectedBase64);
 
             var request = new SortedByDateTimeQuery();
 
@@ -141,6 +141,43 @@ namespace Streetcode.XUnitTest.MediatR.News
                 bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()),
                 Times.Never);
             res.Value.Should().BeInDescendingOrder(x => x.CreationDate);
+        }
+
+        [Fact]
+        public async Task Handle_ShouldReturnFail_WhenNewsFoundWithImageButBlobNotExists()
+        {
+            // Arrange
+            var newsWithImage = new NewsEntity
+            {
+                Id = 1,
+                URL = "url1",
+                CreationDate = DateTime.Now,
+                Image = new Image
+                {
+                    BlobName = "BlobName",
+                },
+            };
+
+            _repositoryWrapperMock.Setup(r => r.NewsRepository.GetAllAsync(
+                It.IsAny<Expression<Func<NewsEntity, bool>>>(),
+                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
+                false
+            ))
+            .ReturnsAsync(new List<NewsEntity> { newsWithImage });
+
+            _blobServiceMock.Setup(bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()))
+                .ReturnsAsync((string)null);
+
+            var request = new SortedByDateTimeQuery();
+
+            // Act
+            var res = await _handler.Handle(request, CancellationToken.None);
+
+            // Assert
+            res.IsFailed.Should().BeTrue();
+            res.Errors.Should().ContainSingle(Messages.Error_MediaBlobNotFound.Format(
+                nameof(Image),
+                newsWithImage.Image.BlobName));
         }
     }
 }

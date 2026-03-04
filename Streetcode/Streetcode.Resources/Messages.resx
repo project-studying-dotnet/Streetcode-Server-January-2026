@@ -216,4 +216,7 @@
   <data name="Error_RelatedTermsByTermIdNotFound" xml:space="preserve">
     <value>No RelatedTerm found by TermId: {0}</value>
   </data>
+  <data name="Error_MediaBlobNotFound" xml:space="preserve">
+    <value>{0} blob with BlobName: "{1}" not found</value>
+  </data>
 </root>

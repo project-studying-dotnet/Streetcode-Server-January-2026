@@ -20,6 +20,7 @@ public static class ConfigureHostBuilderExtensions
     public static void ConfigureBlob(this IServiceCollection services, WebApplicationBuilder builder)
     {
         services.Configure<BlobEnvironmentVariables>(builder.Configuration.GetSection("Blob"));
+        services.Configure<AzureBlobEnvironmentVariables>(builder.Configuration.GetSection("AzureBlobStorage"));
     }
 
     public static void ConfigurePayment(this IServiceCollection services, WebApplicationBuilder builder)

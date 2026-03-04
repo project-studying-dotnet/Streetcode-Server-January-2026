@@ -40,11 +40,23 @@ public class GetImageByIdHandler : IRequestHandler<GetImageByIdQuery, Result<Ima
         }
 
         var imageDto = _mapper.Map<ImageDTO>(image);
-        if (imageDto.BlobName != null)
+        if (imageDto.BlobName == null)
         {
-            imageDto.Base64 = _blobService.FindFileInStorageAsBase64(image.BlobName);
+            return Result.Ok(imageDto);
         }
 
-        return Result.Ok(imageDto);
+        var imageBase64 = await _blobService.FindFileInStorageAsBase64(imageDto.BlobName);
+        if (imageBase64 is not null)
+        {
+            imageDto.Base64 = imageBase64;
+            return Result.Ok(imageDto);
+        }
+
+        var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(
+            nameof(DAL.Entities.Media.Images.Image),
+            imageDto.BlobName);
+
+        _logger.LogError(request, errorNotFoundMsg);
+        return Result.Fail(new Error(errorNotFoundMsg));
     }
 }

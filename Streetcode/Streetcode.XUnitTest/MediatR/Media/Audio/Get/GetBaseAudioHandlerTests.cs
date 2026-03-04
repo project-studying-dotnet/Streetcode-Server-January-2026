@@ -49,7 +49,7 @@
 
             this.mockBlobService
                 .Setup(b => b.FindFileInStorageAsMemoryStream(audioEntity.BlobName))
-                .Returns(memoryStream);
+                .ReturnsAsync(memoryStream);
 
             // Act
             var result = await this.handler.Handle(query, CancellationToken.None);

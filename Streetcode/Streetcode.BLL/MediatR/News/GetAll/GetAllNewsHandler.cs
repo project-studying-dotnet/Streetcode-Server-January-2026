@@ -42,10 +42,24 @@ namespace Streetcode.BLL.MediatR.News.GetAll
 
             foreach (var dto in newsDTOs)
             {
-                if (dto.Image is not null)
+                if (dto.Image is null)
                 {
-                    dto.Image.Base64 = _blobService.FindFileInStorageAsBase64(dto.Image.BlobName);
+                    continue;
                 }
+
+                var imageBase64 = await _blobService.FindFileInStorageAsBase64(dto.Image.BlobName);
+                if (imageBase64 is not null)
+                {
+                    dto.Image.Base64 = imageBase64;
+                    continue;
+                }
+
+                var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(
+                    nameof(DAL.Entities.Media.Images.Image),
+                    dto.Image.BlobName);
+
+                _logger.LogError(request, errorNotFoundMsg);
+                return Result.Fail(new Error(errorNotFoundMsg));
             }
 
             return Result.Ok(newsDTOs);

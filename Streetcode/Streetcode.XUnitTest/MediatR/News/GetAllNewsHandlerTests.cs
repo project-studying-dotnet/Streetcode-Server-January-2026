@@ -51,11 +51,11 @@ namespace Streetcode.XUnitTest.MediatR.News
         {
             // Arrange
             _repositoryWrapperMock.Setup(r => r.NewsRepository.GetAllAsync(
-                It.IsAny<Expression<Func<NewsEntity, bool>>>(),
-                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
-                false
-            ))
-            .ReturnsAsync([]);
+                    It.IsAny<Expression<Func<NewsEntity, bool>>>(),
+                    It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
+                    false
+                ))
+                .ReturnsAsync([]);
 
             var request = new GetAllNewsQuery();
 
@@ -86,11 +86,11 @@ namespace Streetcode.XUnitTest.MediatR.News
             };
 
             _repositoryWrapperMock.Setup(r => r.NewsRepository.GetAllAsync(
-                It.IsAny<Expression<Func<NewsEntity, bool>>>(),
-                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
-                false
-            ))
-            .ReturnsAsync(news);
+                    It.IsAny<Expression<Func<NewsEntity, bool>>>(),
+                    It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
+                    false
+                ))
+                .ReturnsAsync(news);
 
             var request = new GetAllNewsQuery();
 
@@ -117,19 +117,18 @@ namespace Streetcode.XUnitTest.MediatR.News
                     URL = "https://github.com/",
                     CreationDate = now,
                     Image = new Image(),
-
                 },
             };
 
             _repositoryWrapperMock.Setup(r => r.NewsRepository.GetAllAsync(
-                It.IsAny<Expression<Func<NewsEntity, bool>>>(),
-                It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
-                false
-            ))
-            .ReturnsAsync(news);
+                    It.IsAny<Expression<Func<NewsEntity, bool>>>(),
+                    It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
+                    false
+                ))
+                .ReturnsAsync(news);
 
             _blobServiceMock.Setup(bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()))
-                .Returns(fakeBase);
+                .ReturnsAsync(fakeBase);
 
             var request = new GetAllNewsQuery();
 
@@ -139,6 +138,45 @@ namespace Streetcode.XUnitTest.MediatR.News
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Value.FirstOrDefault().Image.Base64.Should().Be(fakeBase);
+        }
+
+        [Fact]
+        public async Task Handle_ShouldReturnFail_WhenNewsFoundWithImageButBlobNotExists()
+        {
+            // Arrange
+            var now = DateTime.Now;
+
+            var news = new NewsEntity
+            {
+                Title = "Test Title",
+                Text = "Sample text",
+                URL = "https://github.com/",
+                CreationDate = now,
+                Image = new Image
+                {
+                    BlobName = "BlobName",
+                },
+            };
+
+            _repositoryWrapperMock.Setup(r => r.NewsRepository.GetAllAsync(
+                    It.IsAny<Expression<Func<NewsEntity, bool>>>(),
+                    It.IsAny<Func<IQueryable<NewsEntity>, IIncludableQueryable<NewsEntity, object>>>(),
+                    false
+                ))
+                .ReturnsAsync(new List<NewsEntity> { news });
+
+            _blobServiceMock.Setup(bs => bs.FindFileInStorageAsBase64(It.IsAny<string>()))
+                 .ReturnsAsync((string?)null);
+
+            var request = new GetAllNewsQuery();
+
+            // Act
+            var result = await _handler.Handle(request, CancellationToken.None);
+
+            // Assert
+            result.IsFailed.Should().BeTrue();
+            result.Errors.Should().ContainSingle(
+                Messages.Error_MediaBlobNotFound.Format(nameof(Image), news.Image.BlobName));
         }
     }
 }

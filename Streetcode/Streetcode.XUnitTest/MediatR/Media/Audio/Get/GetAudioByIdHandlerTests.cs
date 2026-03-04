@@ -62,7 +62,7 @@
 
             this.mockBlobService
                 .Setup(b => b.FindFileInStorageAsBase64(audioEntity.BlobName))
-                .Returns(expectedBase64);
+                .ReturnsAsync(expectedBase64);
 
             // Act
             var result = await this.handler.Handle(query, CancellationToken.None);

@@ -52,7 +52,19 @@ public class GetImageByStreetcodeIdHandler : IRequestHandler<GetImageByStreetcod
 
         foreach (var image in imageDtos)
         {
-            image.Base64 = _blobService.FindFileInStorageAsBase64(image.BlobName);
+            var imageBase64 = await _blobService.FindFileInStorageAsBase64(image.BlobName);
+            if (imageBase64 is not null)
+            {
+                image.Base64 = imageBase64;
+                continue;
+            }
+
+            var errorNotFoundMsg = Messages.Error_MediaBlobNotFound.Format(
+                nameof(DAL.Entities.Media.Images.Image),
+                image.BlobName);
+
+            _logger.LogError(request, errorNotFoundMsg);
+            return Result.Fail(new Error(errorNotFoundMsg));
         }
 
         return Result.Ok(imageDtos);

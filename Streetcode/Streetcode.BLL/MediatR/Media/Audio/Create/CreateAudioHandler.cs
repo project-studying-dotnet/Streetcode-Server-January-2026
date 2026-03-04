@@ -32,7 +32,7 @@ public class CreateAudioHandler : IRequestHandler<CreateAudioCommand, Result<Aud
 
     public async Task<Result<AudioDTO>> Handle(CreateAudioCommand request, CancellationToken cancellationToken)
     {
-        var hashBlobStorageName = _blobService.SaveFileInStorage(
+        var hashBlobStorageName = await _blobService.SaveFileInStorage(
             request.Audio.BaseFormat,
             request.Audio.Title,
             request.Audio.Extension);
