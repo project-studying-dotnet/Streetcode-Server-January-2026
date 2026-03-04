@@ -1,11 +1,12 @@
 using AutoMapper;
 using FluentAssertions;
 using FluentResults;
+using Microsoft.EntityFrameworkCore.Query;
 using Moq;
 using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.BLL.MediatR.AdditionalContent.Subtitle.GetByStreetcodeId;
 using Streetcode.BLL.Mapping.AdditionalContent;
+using Streetcode.BLL.MediatR.AdditionalContent.Subtitle.GetByStreetcodeId;
 using Streetcode.DAL.Entities.AdditionalContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using System.Linq.Expressions;
@@ -28,7 +29,7 @@ public class GetSubtitlesByStreetcodeIdHandlerTests
         {
             cfg.AddProfile(new SubtitleProfile());
         });
-        _mapper = new Mapper(config);
+        _mapper = config.CreateMapper();
     }
 
     [Fact]
@@ -36,18 +37,18 @@ public class GetSubtitlesByStreetcodeIdHandlerTests
     {
         // Arrange
         int streetcodeId = 10;
-        var subtitle = new Streetcode.DAL.Entities.AdditionalContent.Subtitle
+        var subtitle = new DAL.Entities.AdditionalContent.Subtitle
         {
             Id = 1,
             StreetcodeId = streetcodeId,
             SubtitleText = "Found it"
         };
-        var query = new GetSubtitlesByStreetcodeIdQuery(
-            streetcodeId);
+        var query = new GetSubtitlesByStreetcodeIdQuery(streetcodeId);
 
         _mockRepo.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<Streetcode.DAL.Entities.AdditionalContent.Subtitle, bool>>>(),
-            null))
+            It.IsAny<Expression<Func<DAL.Entities.AdditionalContent.Subtitle, bool>>>(),
+            It.IsAny<Func<IQueryable<DAL.Entities.AdditionalContent.Subtitle>, IIncludableQueryable<DAL.Entities.AdditionalContent.Subtitle, object>>>(),
+            It.IsAny<bool>()))
             .ReturnsAsync(subtitle);
 
         var handler = new GetSubtitlesByStreetcodeIdHandler(
@@ -56,9 +57,7 @@ public class GetSubtitlesByStreetcodeIdHandlerTests
             _mockLogger.Object);
 
         // Act
-        var result = await handler.Handle(
-            query,
-            CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -71,13 +70,13 @@ public class GetSubtitlesByStreetcodeIdHandlerTests
     {
         // Arrange
         int streetcodeId = 10;
-        var query = new GetSubtitlesByStreetcodeIdQuery(
-            streetcodeId);
+        var query = new GetSubtitlesByStreetcodeIdQuery(streetcodeId);
 
         _mockRepo.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<Streetcode.DAL.Entities.AdditionalContent.Subtitle, bool>>>(),
-            null))
-            .ReturnsAsync((Streetcode.DAL.Entities.AdditionalContent.Subtitle?)null);
+            It.IsAny<Expression<Func<DAL.Entities.AdditionalContent.Subtitle, bool>>>(),
+            It.IsAny<Func<IQueryable<DAL.Entities.AdditionalContent.Subtitle>, IIncludableQueryable<DAL.Entities.AdditionalContent.Subtitle, object>>>(),
+            It.IsAny<bool>()))
+            .ReturnsAsync((DAL.Entities.AdditionalContent.Subtitle?)null);
 
         var handler = new GetSubtitlesByStreetcodeIdHandler(
             _mockRepo.Object,
@@ -85,9 +84,7 @@ public class GetSubtitlesByStreetcodeIdHandlerTests
             _mockLogger.Object);
 
         // Act
-        var result = await handler.Handle(
-            query,
-            CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -98,13 +95,13 @@ public class GetSubtitlesByStreetcodeIdHandlerTests
     public async Task Handle_RepositoryReturnsData_CorrectDataTypeReturned()
     {
         // Arrange
-        var query = new GetSubtitlesByStreetcodeIdQuery(
-            1);
+        var query = new GetSubtitlesByStreetcodeIdQuery(1);
 
         _mockRepo.Setup(r => r.SubtitleRepository.GetFirstOrDefaultAsync(
-            It.IsAny<Expression<Func<Streetcode.DAL.Entities.AdditionalContent.Subtitle, bool>>>(),
-            null))
-            .ReturnsAsync(new Streetcode.DAL.Entities.AdditionalContent.Subtitle());
+            It.IsAny<Expression<Func<DAL.Entities.AdditionalContent.Subtitle, bool>>>(),
+            It.IsAny<Func<IQueryable<DAL.Entities.AdditionalContent.Subtitle>, IIncludableQueryable<DAL.Entities.AdditionalContent.Subtitle, object>>>(),
+            It.IsAny<bool>()))
+            .ReturnsAsync(new DAL.Entities.AdditionalContent.Subtitle());
 
         var handler = new GetSubtitlesByStreetcodeIdHandler(
             _mockRepo.Object,
@@ -112,11 +109,9 @@ public class GetSubtitlesByStreetcodeIdHandlerTests
             _mockLogger.Object);
 
         // Act
-        var result = await handler.Handle(
-            query,
-            CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.Value.Should().BeOfType<SubtitleDTO>();
     }
-}   
+}

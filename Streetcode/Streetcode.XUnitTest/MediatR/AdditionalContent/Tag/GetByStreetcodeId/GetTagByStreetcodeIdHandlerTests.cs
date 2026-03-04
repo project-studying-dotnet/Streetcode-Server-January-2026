@@ -5,8 +5,9 @@ using Microsoft.EntityFrameworkCore.Query;
 using Moq;
 using Streetcode.BLL.DTO.AdditionalContent.Tag;
 using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetByStreetcodeId;
 using Streetcode.BLL.Mapping.AdditionalContent;
+using Streetcode.BLL.Mapping.AdditionalContent.Tag;
+using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetByStreetcodeId;
 using Streetcode.DAL.Entities.AdditionalContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.Resources;
@@ -31,7 +32,7 @@ public class GetTagByStreetcodeIdHandlerTests
         {
             cfg.AddProfile(new TagProfile());
         });
-        _mapper = new Mapper(config);
+        _mapper = config.CreateMapper();
     }
 
     [Fact]
@@ -39,8 +40,7 @@ public class GetTagByStreetcodeIdHandlerTests
     {
         // Arrange
         int streetcodeId = 1;
-        var query = new GetTagByStreetcodeIdQuery(
-            streetcodeId);
+        var query = new GetTagByStreetcodeIdQuery(streetcodeId);
 
         var tagIndexed = new List<StreetcodeTagIndex>
         {
@@ -50,18 +50,17 @@ public class GetTagByStreetcodeIdHandlerTests
 
         _mockRepo.Setup(r => r.StreetcodeTagIndexRepository.GetAllAsync(
             It.IsAny<Expression<Func<StreetcodeTagIndex, bool>>>(),
-            It.IsAny<Func<IQueryable<StreetcodeTagIndex>, IIncludableQueryable<StreetcodeTagIndex, object>>>()))
+            It.IsAny<Func<IQueryable<StreetcodeTagIndex>, IIncludableQueryable<StreetcodeTagIndex, object>>>(),
+            It.IsAny<bool>()))
             .ReturnsAsync(tagIndexed);
 
-        var handler = new GetTagByStreetcodeIdHandler(
+        var handler = new GetTagsByStreetcodeIdHandler(
             _mockRepo.Object,
             _mapper,
             _mockLogger.Object);
 
         // Act
-        var result = await handler.Handle(
-            query,
-            CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -77,15 +76,15 @@ public class GetTagByStreetcodeIdHandlerTests
     {
         // Arrange
         int streetcodeId = 1;
-        var query = new GetTagByStreetcodeIdQuery(
-            streetcodeId);
+        var query = new GetTagByStreetcodeIdQuery(streetcodeId);
 
         _mockRepo.Setup(r => r.StreetcodeTagIndexRepository.GetAllAsync(
             It.IsAny<Expression<Func<StreetcodeTagIndex, bool>>>(),
-            It.IsAny<Func<IQueryable<StreetcodeTagIndex>, IIncludableQueryable<StreetcodeTagIndex, object>>>()))
+            It.IsAny<Func<IQueryable<StreetcodeTagIndex>, IIncludableQueryable<StreetcodeTagIndex, object>>>(),
+            It.IsAny<bool>()))
             .ReturnsAsync((IEnumerable<StreetcodeTagIndex>?)null);
 
-        var handler = new GetTagByStreetcodeIdHandler(
+        var handler = new GetTagsByStreetcodeIdHandler(
             _mockRepo.Object,
             _mapper,
             _mockLogger.Object);
@@ -95,41 +94,35 @@ public class GetTagByStreetcodeIdHandlerTests
             streetcodeId);
 
         // Act
-        var result = await handler.Handle(
-            query,
-            CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainSingle()
             .Which.Message.Should().Be(expectedError);
 
-        _mockLogger.Verify(x => x.LogError(
-            query,
-            expectedError), Times.Once);
+        _mockLogger.Verify(x => x.LogError(query, expectedError), Times.Once);
     }
 
     [Fact]
     public async Task Handle_ValidRequest_ReturnsCorrectDtoType()
     {
         // Arrange
-        var query = new GetTagByStreetcodeIdQuery(
-            1);
+        var query = new GetTagByStreetcodeIdQuery(1);
 
         _mockRepo.Setup(r => r.StreetcodeTagIndexRepository.GetAllAsync(
             It.IsAny<Expression<Func<StreetcodeTagIndex, bool>>>(),
-            null))
+            It.IsAny<Func<IQueryable<StreetcodeTagIndex>, IIncludableQueryable<StreetcodeTagIndex, object>>>(),
+            It.IsAny<bool>()))
             .ReturnsAsync(new List<StreetcodeTagIndex>());
 
-        var handler = new GetTagByStreetcodeIdHandler(
+        var handler = new GetTagsByStreetcodeIdHandler(
             _mockRepo.Object,
             _mapper,
             _mockLogger.Object);
 
         // Act
-        var result = await handler.Handle(
-            query,
-            CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.Value.Should().BeAssignableTo<IEnumerable<StreetcodeTagDTO>>();

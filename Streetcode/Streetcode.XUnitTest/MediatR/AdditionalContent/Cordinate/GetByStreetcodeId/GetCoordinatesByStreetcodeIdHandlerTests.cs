@@ -1,11 +1,12 @@
 ﻿using AutoMapper;
 using FluentAssertions;
 using FluentResults;
+using Microsoft.EntityFrameworkCore.Query;
 using Moq;
 using Streetcode.BLL.DTO.AdditionalContent.Coordinates.Types;
 using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.BLL.MediatR.AdditionalContent.Coordinate.GetByStreetcodeId;
 using Streetcode.BLL.Mapping.AdditionalContent.Coordinates;
+using Streetcode.BLL.MediatR.AdditionalContent.Coordinate.GetByStreetcodeId;
 using Streetcode.DAL.Entities.AdditionalContent.Coordinates.Types;
 using Streetcode.DAL.Entities.Streetcode;
 using Streetcode.DAL.Repositories.Interfaces.Base;
@@ -31,7 +32,7 @@ public class GetCoordinatesByStreetcodeIdHandlerTests
         {
             cfg.AddProfile(new StreetcodeCoordinateProfile());
         });
-        _mapper = new Mapper(config);
+        _mapper = config.CreateMapper();
     }
 
     [Fact]
@@ -39,8 +40,7 @@ public class GetCoordinatesByStreetcodeIdHandlerTests
     {
         // Arrange
         int streetcodeId = 1;
-        var query = new GetCoordinatesByStreetcodeIdQuery(
-            streetcodeId);
+        var query = new GetCoordinatesByStreetcodeIdQuery(streetcodeId);
 
         var coordinates = new List<StreetcodeCoordinate>
         {
@@ -49,11 +49,17 @@ public class GetCoordinatesByStreetcodeIdHandlerTests
         };
 
         _mockRepo.Setup(r => r.StreetcodeRepository
-            .GetFirstOrDefaultAsync(It.IsAny<Expression<Func<StreetcodeContent, bool>>>(), null))
+            .GetFirstOrDefaultAsync(
+                It.IsAny<Expression<Func<StreetcodeContent, bool>>>(),
+                It.IsAny<Func<IQueryable<StreetcodeContent>, IIncludableQueryable<StreetcodeContent, object>>>(),
+                It.IsAny<bool>()))
             .ReturnsAsync(new StreetcodeContent { Id = streetcodeId });
 
         _mockRepo.Setup(r => r.StreetcodeCoordinateRepository
-            .GetAllAsync(It.IsAny<Expression<Func<StreetcodeCoordinate, bool>>>(), null))
+            .GetAllAsync(
+                It.IsAny<Expression<Func<StreetcodeCoordinate, bool>>>(),
+                It.IsAny<Func<IQueryable<StreetcodeCoordinate>, IIncludableQueryable<StreetcodeCoordinate, object>>>(),
+                It.IsAny<bool>()))
             .ReturnsAsync(coordinates);
 
         var handler = new GetCoordinatesByStreetcodeIdHandler(
@@ -62,9 +68,7 @@ public class GetCoordinatesByStreetcodeIdHandlerTests
             _mockLogger.Object);
 
         // Act
-        var result = await handler.Handle(
-            query,
-            CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -78,11 +82,13 @@ public class GetCoordinatesByStreetcodeIdHandlerTests
     {
         // Arrange
         int streetcodeId = 99;
-        var query = new GetCoordinatesByStreetcodeIdQuery(
-            streetcodeId);
+        var query = new GetCoordinatesByStreetcodeIdQuery(streetcodeId);
 
         _mockRepo.Setup(r => r.StreetcodeRepository
-            .GetFirstOrDefaultAsync(It.IsAny<Expression<Func<StreetcodeContent, bool>>>(), null))
+            .GetFirstOrDefaultAsync(
+                It.IsAny<Expression<Func<StreetcodeContent, bool>>>(),
+                It.IsAny<Func<IQueryable<StreetcodeContent>, IIncludableQueryable<StreetcodeContent, object>>>(),
+                It.IsAny<bool>()))
             .ReturnsAsync((StreetcodeContent?)null);
 
         var handler = new GetCoordinatesByStreetcodeIdHandler(
@@ -95,13 +101,16 @@ public class GetCoordinatesByStreetcodeIdHandlerTests
             streetcodeId);
 
         // Act
-        var result = await handler.Handle(
-            query,
-            CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainSingle()
             .Which.Message.Should().Be(expectedError);
+
+        _mockRepo.Verify(r => r.StreetcodeCoordinateRepository.GetAllAsync(
+            It.IsAny<Expression<Func<StreetcodeCoordinate, bool>>>(),
+            null,
+            false), Times.Never);
     }
 }

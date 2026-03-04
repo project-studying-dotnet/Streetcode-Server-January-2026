@@ -1,11 +1,12 @@
 ﻿using AutoMapper;
 using FluentAssertions;
 using FluentResults;
+using Microsoft.EntityFrameworkCore.Query;
 using Moq;
 using Streetcode.BLL.DTO.AdditionalContent.Subtitles;
 using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.BLL.MediatR.AdditionalContent.Subtitle.GetAll;
 using Streetcode.BLL.Mapping.AdditionalContent;
+using Streetcode.BLL.MediatR.AdditionalContent.Subtitle.GetAll;
 using Streetcode.DAL.Entities.AdditionalContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.Resources;
@@ -30,22 +31,24 @@ public class GetAllSubtitlesHandlerTests
         {
             cfg.AddProfile(new SubtitleProfile());
         });
-        _mapper = new Mapper(config);
+
+        _mapper = config.CreateMapper();
     }
 
     [Fact]
     public async Task Handle_SubtitlesExist_ReturnsSuccessWithCorrectTypeAndCount()
     {
         // Arrange
-        var subtitles = new List<Streetcode.DAL.Entities.AdditionalContent.Subtitle>
+        var subtitles = new List<DAL.Entities.AdditionalContent.Subtitle>
         {
             new() { Id = 1, SubtitleText = "Subtitle 1" },
             new() { Id = 2, SubtitleText = "Subtitle 2" }
         };
 
         _mockRepo.Setup(r => r.SubtitleRepository.GetAllAsync(
-            It.IsAny<Expression<Func<Streetcode.DAL.Entities.AdditionalContent.Subtitle, bool>>>(),
-            null))
+            It.IsAny<Expression<Func<DAL.Entities.AdditionalContent.Subtitle, bool>>>(),
+            It.IsAny<Func<IQueryable<DAL.Entities.AdditionalContent.Subtitle>, IIncludableQueryable<DAL.Entities.AdditionalContent.Subtitle, object>>>(),
+            It.IsAny<bool>()))
             .ReturnsAsync(subtitles);
 
         var handler = new GetAllSubtitlesHandler(
@@ -70,9 +73,10 @@ public class GetAllSubtitlesHandlerTests
     {
         // Arrange
         _mockRepo.Setup(r => r.SubtitleRepository.GetAllAsync(
-            It.IsAny<Expression<Func<Streetcode.DAL.Entities.AdditionalContent.Subtitle, bool>>>(),
-            null))
-            .ReturnsAsync((IEnumerable<Streetcode.DAL.Entities.AdditionalContent.Subtitle>?)null);
+            It.IsAny<Expression<Func<DAL.Entities.AdditionalContent.Subtitle, bool>>>(),
+            It.IsAny<Func<IQueryable<DAL.Entities.AdditionalContent.Subtitle>, IIncludableQueryable<DAL.Entities.AdditionalContent.Subtitle, object>>>(),
+            It.IsAny<bool>()))
+            .ReturnsAsync((IEnumerable<DAL.Entities.AdditionalContent.Subtitle>?)null);
 
         var handler = new GetAllSubtitlesHandler(
             _mockRepo.Object,
@@ -80,9 +84,7 @@ public class GetAllSubtitlesHandlerTests
             _mockLogger.Object);
 
         var query = new GetAllSubtitlesQuery();
-
-        var expectedError = Messages.Error_EntitiesNotFound.Format(
-            nameof(Streetcode.DAL.Entities.AdditionalContent.Subtitle));
+        var expectedError = Messages.Error_EntitiesNotFound.Format(nameof(DAL.Entities.AdditionalContent.Subtitle));
 
         // Act
         var result = await handler.Handle(
