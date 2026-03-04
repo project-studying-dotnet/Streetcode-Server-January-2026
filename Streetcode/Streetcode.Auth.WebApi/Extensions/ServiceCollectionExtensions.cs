@@ -1,4 +1,6 @@
-﻿using FluentValidation;
+﻿using System.Reflection;
+using System.Text;
+using FluentValidation;
 using Hangfire;
 using Hangfire.SqlServer;
 using MassTransit;
@@ -19,9 +21,6 @@ using Streetcode.Auth.DAL.Repositories.Interfaces;
 using Streetcode.Auth.DAL.Repositories.Realizations;
 using Streetcode.Auth.WebApi.Services.Interfaces;
 using Streetcode.Auth.WebApi.Services.Realizations;
-using System.Reflection;
-using System.Security.Claims;
-using System.Text;
 
 namespace Streetcode.Auth.WebApi.Extensions;
 
