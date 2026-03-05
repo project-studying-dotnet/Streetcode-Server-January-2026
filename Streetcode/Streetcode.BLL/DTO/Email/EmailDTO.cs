@@ -1,9 +1,13 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Streetcode.BLL.DTO.Email
 {
     public class EmailDTO
     {
+        public EmailDTO()
+        {
+        }
+
         [MaxLength(80)]
         public string From { get; set; }
 

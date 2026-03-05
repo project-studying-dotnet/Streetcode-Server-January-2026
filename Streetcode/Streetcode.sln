@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36717.8 d17.14
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11512.155
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Streetcode.WebApi", "Streetcode.WebApi\Streetcode.WebApi.csproj", "{CAA32FB4-F481-4748-BFCE-33B0DBF433E8}"
 EndProject
@@ -20,6 +20,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{95E863CE-C3B4-4DBC-8C15-957E63BA45B6}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		.env = .env
+		docker-compose.yml = docker-compose.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
@@ -39,6 +41,16 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streetcode.Auth.XUnitTest", "Streetcode.Auth.XUnitTest\Streetcode.Auth.XUnitTest.csproj", "{DF36FE52-8788-4490-8406-62132A7E6756}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streetcode.Resources", "Streetcode.Resources\Streetcode.Resources.csproj", "{42EC9582-F9D7-9F18-42AB-C0D335E17C5C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Streetcode.Email", "Streetcode.Email", "{722B38C8-AA92-4391-8320-9CCBFCD6BBEF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streetcode.Email.WebAPI", "Streetcode.Email.WebAPI\Streetcode.Email.WebAPI.csproj", "{F3953CBD-E8CE-40AA-A219-DED4518B6334}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streetcode.Email.BLL", "Streetcode.Email.BLL\Streetcode.Email.BLL.csproj", "{CC733440-BA59-431D-B9CC-BB2B7EC0091B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streetcode.Email.DAL", "Streetcode.Email.DAL\Streetcode.Email.DAL.csproj", "{072870A2-8064-40E2-B5C5-BF90B33F36BC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streetcode.Email.XUnitTest", "Streetcode.Email.XUnitTest\Streetcode.Email.XUnitTest.csproj", "{360844AB-D2B0-49B1-A500-EAFC0F8A7659}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -96,6 +108,22 @@ Global
 		{42EC9582-F9D7-9F18-42AB-C0D335E17C5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42EC9582-F9D7-9F18-42AB-C0D335E17C5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{42EC9582-F9D7-9F18-42AB-C0D335E17C5C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3953CBD-E8CE-40AA-A219-DED4518B6334}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3953CBD-E8CE-40AA-A219-DED4518B6334}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3953CBD-E8CE-40AA-A219-DED4518B6334}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3953CBD-E8CE-40AA-A219-DED4518B6334}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC733440-BA59-431D-B9CC-BB2B7EC0091B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC733440-BA59-431D-B9CC-BB2B7EC0091B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC733440-BA59-431D-B9CC-BB2B7EC0091B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC733440-BA59-431D-B9CC-BB2B7EC0091B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{072870A2-8064-40E2-B5C5-BF90B33F36BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{072870A2-8064-40E2-B5C5-BF90B33F36BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{072870A2-8064-40E2-B5C5-BF90B33F36BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{072870A2-8064-40E2-B5C5-BF90B33F36BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{360844AB-D2B0-49B1-A500-EAFC0F8A7659}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{360844AB-D2B0-49B1-A500-EAFC0F8A7659}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{360844AB-D2B0-49B1-A500-EAFC0F8A7659}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{360844AB-D2B0-49B1-A500-EAFC0F8A7659}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -107,6 +135,11 @@ Global
 		{D89E738A-A455-4D17-9C9D-581AE177E5AC} = {F69E76E4-84F5-4D70-A52B-E588CCEE716B}
 		{00D85447-2B32-4B68-A4C2-1B467C42FD16} = {7F5CBCE1-AD14-4C06-8939-B595C1B25B47}
 		{DF36FE52-8788-4490-8406-62132A7E6756} = {F69E76E4-84F5-4D70-A52B-E588CCEE716B}
+		{722B38C8-AA92-4391-8320-9CCBFCD6BBEF} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{F3953CBD-E8CE-40AA-A219-DED4518B6334} = {722B38C8-AA92-4391-8320-9CCBFCD6BBEF}
+		{CC733440-BA59-431D-B9CC-BB2B7EC0091B} = {722B38C8-AA92-4391-8320-9CCBFCD6BBEF}
+		{072870A2-8064-40E2-B5C5-BF90B33F36BC} = {722B38C8-AA92-4391-8320-9CCBFCD6BBEF}
+		{360844AB-D2B0-49B1-A500-EAFC0F8A7659} = {722B38C8-AA92-4391-8320-9CCBFCD6BBEF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7D3D1FEF-DB8F-4A51-AD6E-0EE327AB534A}
