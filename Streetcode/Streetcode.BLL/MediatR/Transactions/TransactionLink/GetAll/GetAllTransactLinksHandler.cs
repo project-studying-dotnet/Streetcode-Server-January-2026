@@ -26,7 +26,7 @@ public class GetAllTransactLinksHandler : IRequestHandler<GetAllTransactLinksQue
     {
         var transactLinks = await _repositoryWrapper.TransactLinksRepository.GetAllAsync();
 
-        if (transactLinks.Any())
+        if (transactLinks?.Any() ?? false)
         {
             return Result.Ok(_mapper.Map<IEnumerable<TransactLinkDTO>>(transactLinks));
         }
