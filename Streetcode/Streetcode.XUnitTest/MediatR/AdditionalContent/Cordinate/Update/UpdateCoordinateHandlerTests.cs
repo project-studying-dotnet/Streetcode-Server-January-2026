@@ -25,9 +25,11 @@ public class UpdateCoordinateHandlerTests
         var configuration = new MapperConfiguration(cfg =>
         {
             cfg.AddProfile(new StreetcodeCoordinateProfile());
+            // Ensure mapping from DTO to Entity is registered
+            cfg.CreateMap<StreetcodeCoordinateDTO, StreetcodeCoordinate>();
         });
 
-        _mapper = new Mapper(configuration);
+        _mapper = configuration.CreateMapper();
     }
 
     [Fact]
@@ -40,9 +42,9 @@ public class UpdateCoordinateHandlerTests
             Latitude = 50.5m,
             Longtitude = 30.5m
         };
-        var command = new UpdateCoordinateCommand(
-            coordinateDto);
+        var command = new UpdateCoordinateCommand(coordinateDto);
 
+        // Setup the repository update
         _mockRepo.Setup(r => r.StreetcodeCoordinateRepository.Update(
             It.IsAny<StreetcodeCoordinate>()));
 
@@ -72,8 +74,7 @@ public class UpdateCoordinateHandlerTests
     public async Task Handle_MapperReturnsNull_ReturnsFailure()
     {
         // Arrange
-        var command = new UpdateCoordinateCommand(
-            null!);
+        var command = new UpdateCoordinateCommand(null!);
 
         var handler = new UpdateCoordinateHandler(
             _mockRepo.Object,
@@ -97,13 +98,10 @@ public class UpdateCoordinateHandlerTests
     public async Task Handle_SaveChangesFails_ReturnsFailureMessage()
     {
         // Arrange
-        var coordinateDto = new StreetcodeCoordinateDTO
-        {
-            Id = 1
-        };
+        var coordinateDto = new StreetcodeCoordinateDTO { Id = 1 };
+        var command = new UpdateCoordinateCommand(coordinateDto);
 
-        var command = new UpdateCoordinateCommand(
-            coordinateDto);
+        _mockRepo.Setup(r => r.StreetcodeCoordinateRepository.Update(It.IsAny<StreetcodeCoordinate>()));
 
         _mockRepo.Setup(r => r.SaveChangesAsync())
             .ReturnsAsync(0);

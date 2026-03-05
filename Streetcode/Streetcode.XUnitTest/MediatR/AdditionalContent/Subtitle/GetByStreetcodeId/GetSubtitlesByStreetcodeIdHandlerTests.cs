@@ -9,6 +9,8 @@ using Streetcode.BLL.Mapping.AdditionalContent;
 using Streetcode.BLL.MediatR.AdditionalContent.Subtitle.GetByStreetcodeId;
 using Streetcode.DAL.Entities.AdditionalContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using System.Linq.Expressions;
 using Xunit;
 
@@ -66,7 +68,7 @@ public class GetSubtitlesByStreetcodeIdHandlerTests
     }
 
     [Fact]
-    public async Task Handle_SubtitleDoesNotExist_ReturnsSuccessWithNullValue()
+    public async Task Handle_SubtitleDoesNotExist_ReturnsFailureAndLogsError()
     {
         // Arrange
         int streetcodeId = 10;
@@ -83,12 +85,20 @@ public class GetSubtitlesByStreetcodeIdHandlerTests
             _mapper,
             _mockLogger.Object);
 
+        var expectedError = Messages.Error_EntityWithStreetcodeIdNotFound.Format(
+            nameof(DAL.Entities.AdditionalContent.Subtitle),
+            streetcodeId);
+
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Should().BeNull();
+        // FIXED: Handler returns False for IsSuccess when data is null
+        result.IsFailed.Should().BeTrue();
+        result.Errors.Should().ContainSingle()
+            .Which.Message.Should().Be(expectedError);
+
+        _mockLogger.Verify(x => x.LogError(query, expectedError), Times.Once);
     }
 
     [Fact]

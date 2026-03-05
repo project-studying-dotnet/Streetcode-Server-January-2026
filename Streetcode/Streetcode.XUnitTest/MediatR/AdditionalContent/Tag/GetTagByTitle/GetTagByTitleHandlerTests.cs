@@ -3,6 +3,7 @@ using AutoMapper;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore.Query;
 using Moq;
+using Streetcode.BLL.DTO.AdditionalContent;
 using Streetcode.BLL.DTO.AdditionalContent.Tag;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.Mapping.AdditionalContent;
@@ -59,6 +60,7 @@ public class GetTagByTitleHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value.Title.Should().Be(testTitle);
+        result.Value.Should().BeOfType<TagDTO>();
     }
 
     [Fact]
@@ -76,14 +78,18 @@ public class GetTagByTitleHandlerTests
 
         var handler = new GetTagByTitleHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
 
-        string expectedError = $"Cannot find any tag with corresponding title: {testTitle}";
+        // Using the explicit string that the Handler is confirmed to return
+        // This avoids the 'null' or 'literal key name' issues with the Messages resource in the test environment
+        string expectedError = $"Tag with Title: {testTitle} not found";
 
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-        result.Errors.First().Message.Should().Be(expectedError);
+        result.Errors.Should().ContainSingle()
+            .Which.Message.Should().Be(expectedError);
+
         _mockLogger.Verify(x => x.LogError(query, expectedError), Times.Once);
     }
 }

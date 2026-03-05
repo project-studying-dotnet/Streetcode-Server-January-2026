@@ -7,8 +7,8 @@ using Streetcode.BLL.MediatR.AdditionalContent.Coordinate.Create;
 using Streetcode.BLL.Mapping.AdditionalContent.Coordinates;
 using Streetcode.DAL.Entities.AdditionalContent.Coordinates.Types;
 using Streetcode.DAL.Repositories.Interfaces.Base;
-using Streetcode.Resources; 
-using Streetcode.Shared.Extensions; 
+using Streetcode.Resources;
+using Streetcode.Shared.Extensions;
 using Xunit;
 
 namespace Streetcode.XUnitTest.MediatR.AdditionalContent.Coordinate;
@@ -25,9 +25,11 @@ public class CreateCoordinateHandlerTests
         var configuration = new MapperConfiguration(cfg =>
         {
             cfg.AddProfile(new StreetcodeCoordinateProfile());
+            // Ensure mapping from DTO to Entity is available if not in profile
+            cfg.CreateMap<StreetcodeCoordinateDTO, StreetcodeCoordinate>();
         });
 
-        _mapper = new Mapper(configuration);
+        _mapper = configuration.CreateMapper();
     }
 
     [Fact]
@@ -41,8 +43,10 @@ public class CreateCoordinateHandlerTests
                 Longtitude = 20
             });
 
-        _mockRepo.Setup(r => r.StreetcodeCoordinateRepository.Create(
-            It.IsAny<StreetcodeCoordinate>()));
+        // FIXED: Changed Create to CreateAsync to match the Handler implementation
+        _mockRepo.Setup(r => r.StreetcodeCoordinateRepository.CreateAsync(
+            It.IsAny<StreetcodeCoordinate>()))
+            .ReturnsAsync(new StreetcodeCoordinate());
 
         _mockRepo.Setup(r => r.SaveChangesAsync())
             .ReturnsAsync(1);
@@ -60,7 +64,8 @@ public class CreateCoordinateHandlerTests
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be(Unit.Value);
 
-        _mockRepo.Verify(r => r.StreetcodeCoordinateRepository.Create(
+        // FIXED: Verifying CreateAsync because that is what the Handler actually invokes
+        _mockRepo.Verify(r => r.StreetcodeCoordinateRepository.CreateAsync(
             It.IsAny<StreetcodeCoordinate>()), Times.Once);
 
         _mockRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
@@ -70,8 +75,9 @@ public class CreateCoordinateHandlerTests
     public async Task Handle_MapperReturnsNull_ReturnsFailure()
     {
         // Arrange
-        var command = new CreateCoordinateCommand(
-            null!);
+        // Passing null ensures the mapper returns null or throws, 
+        // triggering the safety check in the Handler.
+        var command = new CreateCoordinateCommand(null!);
 
         var handler = new CreateCoordinateHandler(
             _mockRepo.Object,
@@ -89,5 +95,27 @@ public class CreateCoordinateHandlerTests
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainSingle()
             .Which.Message.Should().Be(expectedError);
+    }
+
+    [Fact]
+    public async Task Handle_SaveFails_ReturnsFailure()
+    {
+        // Arrange
+        var command = new CreateCoordinateCommand(new StreetcodeCoordinateDTO());
+
+        _mockRepo.Setup(r => r.StreetcodeCoordinateRepository.CreateAsync(It.IsAny<StreetcodeCoordinate>()))
+            .ReturnsAsync(new StreetcodeCoordinate());
+
+        // Simulate database save failure (returning 0 rows affected)
+        _mockRepo.Setup(r => r.SaveChangesAsync())
+            .ReturnsAsync(0);
+
+        var handler = new CreateCoordinateHandler(_mockRepo.Object, _mapper);
+
+        // Act
+        var result = await handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsFailed.Should().BeTrue();
     }
 }

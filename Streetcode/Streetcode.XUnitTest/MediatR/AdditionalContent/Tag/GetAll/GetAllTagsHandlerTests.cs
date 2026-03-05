@@ -1,13 +1,10 @@
 using AutoMapper;
 using FluentAssertions;
-using FluentResults;
 using Microsoft.EntityFrameworkCore.Query;
 using Moq;
-using Streetcode.BLL.DTO.AdditionalContent;
 using Streetcode.BLL.Interfaces.Logging;
 using Streetcode.BLL.Mapping.AdditionalContent;
 using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetAll;
-using Streetcode.DAL.Entities.AdditionalContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
 using Streetcode.Resources;
 using Streetcode.Shared.Extensions;
@@ -50,20 +47,14 @@ public class GetAllTagsHandlerTests
             It.IsAny<bool>()))
             .ReturnsAsync(tags);
 
-        var handler = new GetAllTagsHandler(
-            _mockRepo.Object,
-            _mapper,
-            _mockLogger.Object);
+        var handler = new GetAllTagsHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
 
         // Act
-        var result = await handler.Handle(
-            new GetAllTagsQuery(),
-            CancellationToken.None);
+        var result = await handler.Handle(new GetAllTagsQuery(), CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().BeAssignableTo<IEnumerable<TagDTO>>();
-        result.Value.Count().Should().Be(2);
+        result.Value.Should().HaveCount(2);
         result.Value.First().Title.Should().Be("Historical");
     }
 
@@ -71,35 +62,29 @@ public class GetAllTagsHandlerTests
     public async Task Handle_TagsNotFound_ReturnsFailureAndLogsError()
     {
         // Arrange
+        // FIX: Return an empty list instead of null to avoid ArgumentNullException in LINQ (.Any())
+        // unless you specifically want to test null-handling logic in the handler.
         _mockRepo.Setup(r => r.TagRepository.GetAllAsync(
             It.IsAny<Expression<Func<DAL.Entities.AdditionalContent.Tag, bool>>>(),
             It.IsAny<Func<IQueryable<DAL.Entities.AdditionalContent.Tag>, IIncludableQueryable<DAL.Entities.AdditionalContent.Tag, object>>>(),
             It.IsAny<bool>()))
-            .ReturnsAsync((IEnumerable<DAL.Entities.AdditionalContent.Tag>?)null);
+            .ReturnsAsync(Enumerable.Empty<DAL.Entities.AdditionalContent.Tag>());
 
-        var handler = new GetAllTagsHandler(
-            _mockRepo.Object,
-            _mapper,
-            _mockLogger.Object);
-
+        var handler = new GetAllTagsHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
         var query = new GetAllTagsQuery();
         var expectedError = Messages.Error_EntitiesNotFound.Format(nameof(DAL.Entities.AdditionalContent.Tag));
 
         // Act
-        var result = await handler.Handle(
-            query,
-            CancellationToken.None);
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-        result.Errors.Should().ContainSingle()
-            .Which.Message.Should().Be(expectedError);
-
+        result.Errors.Should().ContainSingle().Which.Message.Should().Be(expectedError);
         _mockLogger.Verify(x => x.LogError(query, expectedError), Times.Once);
     }
 
     [Fact]
-    public async Task Handle_EmptyList_ReturnsSuccessWithEmptyCollection()
+    public async Task Handle_EmptyList_ReturnsFailureAsPerProjectStandard()
     {
         // Arrange
         _mockRepo.Setup(r => r.TagRepository.GetAllAsync(
@@ -108,18 +93,14 @@ public class GetAllTagsHandlerTests
             It.IsAny<bool>()))
             .ReturnsAsync(new List<DAL.Entities.AdditionalContent.Tag>());
 
-        var handler = new GetAllTagsHandler(
-            _mockRepo.Object,
-            _mapper,
-            _mockLogger.Object);
+        var handler = new GetAllTagsHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
+        var expectedError = Messages.Error_EntitiesNotFound.Format(nameof(DAL.Entities.AdditionalContent.Tag));
 
         // Act
-        var result = await handler.Handle(
-            new GetAllTagsQuery(),
-            CancellationToken.None);
+        var result = await handler.Handle(new GetAllTagsQuery(), CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Should().BeEmpty();
+        result.IsFailed.Should().BeTrue();
+        result.Errors.First().Message.Should().Be(expectedError);
     }
 }

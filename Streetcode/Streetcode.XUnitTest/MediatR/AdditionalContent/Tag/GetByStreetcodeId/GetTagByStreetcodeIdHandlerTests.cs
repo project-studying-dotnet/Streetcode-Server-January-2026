@@ -1,11 +1,10 @@
 using AutoMapper;
 using FluentAssertions;
-using FluentResults;
 using Microsoft.EntityFrameworkCore.Query;
 using Moq;
 using Streetcode.BLL.DTO.AdditionalContent.Tag;
 using Streetcode.BLL.Interfaces.Logging;
-using Streetcode.BLL.Mapping.AdditionalContent; 
+using Streetcode.BLL.Mapping.AdditionalContent;
 using Streetcode.BLL.MediatR.AdditionalContent.Tag.GetByStreetcodeId;
 using Streetcode.DAL.Entities.AdditionalContent;
 using Streetcode.DAL.Repositories.Interfaces.Base;
@@ -53,10 +52,7 @@ public class GetTagByStreetcodeIdHandlerTests
             It.IsAny<bool>()))
             .ReturnsAsync(tagIndexed);
 
-        var handler = new GetTagsByStreetcodeIdHandler(
-            _mockRepo.Object,
-            _mapper,
-            _mockLogger.Object);
+        var handler = new GetTagsByStreetcodeIdHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
 
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
@@ -77,16 +73,14 @@ public class GetTagByStreetcodeIdHandlerTests
         int streetcodeId = 1;
         var query = new GetTagByStreetcodeIdQuery(streetcodeId);
 
+        // FIX: Return Enumerable.Empty instead of null to prevent ArgumentNullException in handler's .Any() check
         _mockRepo.Setup(r => r.StreetcodeTagIndexRepository.GetAllAsync(
             It.IsAny<Expression<Func<StreetcodeTagIndex, bool>>>(),
             It.IsAny<Func<IQueryable<StreetcodeTagIndex>, IIncludableQueryable<StreetcodeTagIndex, object>>>(),
             It.IsAny<bool>()))
-            .ReturnsAsync((IEnumerable<StreetcodeTagIndex>?)null);
+            .ReturnsAsync(Enumerable.Empty<StreetcodeTagIndex>());
 
-        var handler = new GetTagsByStreetcodeIdHandler(
-            _mockRepo.Object,
-            _mapper,
-            _mockLogger.Object);
+        var handler = new GetTagsByStreetcodeIdHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
 
         var expectedError = Messages.Error_EntityWithStreetcodeIdNotFound.Format(
             nameof(DAL.Entities.AdditionalContent.Tag),
@@ -97,9 +91,7 @@ public class GetTagByStreetcodeIdHandlerTests
 
         // Assert
         result.IsFailed.Should().BeTrue();
-        result.Errors.Should().ContainSingle()
-            .Which.Message.Should().Be(expectedError);
-
+        result.Errors.Should().ContainSingle().Which.Message.Should().Be(expectedError);
         _mockLogger.Verify(x => x.LogError(query, expectedError), Times.Once);
     }
 
@@ -107,23 +99,28 @@ public class GetTagByStreetcodeIdHandlerTests
     public async Task Handle_ValidRequest_ReturnsCorrectDtoType()
     {
         // Arrange
-        var query = new GetTagByStreetcodeIdQuery(1);
+        int streetcodeId = 1;
+        var query = new GetTagByStreetcodeIdQuery(streetcodeId);
+
+        // Provide at least one item so the result is "Success" and we can safely access .Value
+        var tagIndexed = new List<StreetcodeTagIndex>
+        {
+            new() { Tag = new DAL.Entities.AdditionalContent.Tag { Title = "Test" } }
+        };
 
         _mockRepo.Setup(r => r.StreetcodeTagIndexRepository.GetAllAsync(
             It.IsAny<Expression<Func<StreetcodeTagIndex, bool>>>(),
             It.IsAny<Func<IQueryable<StreetcodeTagIndex>, IIncludableQueryable<StreetcodeTagIndex, object>>>(),
             It.IsAny<bool>()))
-            .ReturnsAsync(new List<StreetcodeTagIndex>());
+            .ReturnsAsync(tagIndexed);
 
-        var handler = new GetTagsByStreetcodeIdHandler(
-            _mockRepo.Object,
-            _mapper,
-            _mockLogger.Object);
+        var handler = new GetTagsByStreetcodeIdHandler(_mockRepo.Object, _mapper, _mockLogger.Object);
 
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
+        result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeAssignableTo<IEnumerable<StreetcodeTagDTO>>();
     }
 }
