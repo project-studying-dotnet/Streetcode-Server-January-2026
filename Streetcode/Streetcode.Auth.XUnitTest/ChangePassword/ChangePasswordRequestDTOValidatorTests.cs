@@ -17,28 +17,6 @@
         [Theory]
         [InlineData("")]
         [InlineData(null)]
-        public void ShouldHaveError_WhenEmailIsEmpty(string email)
-        {
-            var model = new ChangePasswordRequestDTO { Email = email };
-            var result = this.validator.TestValidate(model);
-            result.ShouldHaveValidationErrorFor(x => x.Email)
-                  .WithErrorMessage("Email is required.");
-        }
-
-        [Theory]
-        [InlineData("invalid-email")]
-        [InlineData("@domain.com")]
-        public void ShouldHaveError_WhenEmailIsInvalid(string email)
-        {
-            var model = new ChangePasswordRequestDTO { Email = email };
-            var result = this.validator.TestValidate(model);
-            result.ShouldHaveValidationErrorFor(x => x.Email)
-                  .WithErrorMessage("Invalid email address format.");
-        }
-
-        [Theory]
-        [InlineData("")]
-        [InlineData(null)]
         public void ShouldHaveError_WhenCurrentPasswordIsEmpty(string password)
         {
             var model = new ChangePasswordRequestDTO { CurrentPassword = password };
@@ -110,7 +88,6 @@
         {
             var model = new ChangePasswordRequestDTO
             {
-                Email = "user@example.com",
                 CurrentPassword = "OldPassword1!",
                 NewPassword = "NewPassword2?"
             };

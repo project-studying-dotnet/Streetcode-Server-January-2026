@@ -7,10 +7,6 @@ namespace Streetcode.Auth.BLL.MediatR.ChangePassword
     {
         public ChangePasswordRequestDTOValidator()
         {
-            RuleFor(x => x.Email)
-                .NotEmpty().WithMessage("Email is required.")
-                .EmailAddress().WithMessage("Invalid email address format.");
-
             RuleFor(x => x.CurrentPassword)
                 .NotEmpty().WithMessage("Password is required.");
 

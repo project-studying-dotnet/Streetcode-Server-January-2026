@@ -42,10 +42,9 @@ namespace Streetcode.Auth.XUnitTest.ChangePassword
 
             var command = new ChangePasswordCommand(new ChangePasswordRequestDTO
             {
-                Email = Email,
                 CurrentPassword = CurrentPassword,
                 NewPassword = NewPassword
-            });
+            }, Email);
 
             // Act
             var result = await this.handler.Handle(command, CancellationToken.None);
@@ -63,7 +62,11 @@ namespace Streetcode.Auth.XUnitTest.ChangePassword
             // Arrange
             this.userManagerMock.Setup(m => m.FindByEmailAsync(Email)).ReturnsAsync((ApplicationUser?)null);
 
-            var command = new ChangePasswordCommand(new ChangePasswordRequestDTO { Email = Email });
+            var command = new ChangePasswordCommand(new ChangePasswordRequestDTO
+            {
+                CurrentPassword = CurrentPassword,
+                NewPassword = NewPassword
+            }, Email);
 
             // Act
             var result = await this.handler.Handle(command, CancellationToken.None);
@@ -88,10 +91,9 @@ namespace Streetcode.Auth.XUnitTest.ChangePassword
 
             var command = new ChangePasswordCommand(new ChangePasswordRequestDTO
             {
-                Email = Email,
                 CurrentPassword = CurrentPassword,
                 NewPassword = NewPassword
-            });
+            }, Email);
 
             // Act
             var result = await this.handler.Handle(command, CancellationToken.None);

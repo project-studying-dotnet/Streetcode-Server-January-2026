@@ -8,6 +8,10 @@ namespace Streetcode.Auth.BLL.MediatR.ChangePassword
         {
             RuleFor(x => x.Request)
                 .SetValidator(new ChangePasswordRequestDTOValidator());
+
+            RuleFor(x => x.Email)
+                .NotEmpty().WithMessage("User email is missing from the identity claim.")
+                .EmailAddress();
         }
     }
 }
