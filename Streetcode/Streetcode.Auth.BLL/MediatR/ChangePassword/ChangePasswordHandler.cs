@@ -1,4 +1,5 @@
-﻿using FluentResults;
+﻿using System.Linq;
+using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Streetcode.Auth.BLL.Interfaces;
@@ -19,7 +20,7 @@ namespace Streetcode.Auth.BLL.MediatR.ChangePassword
 
         public async Task<Result<Unit>> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
         {
-            var user = await _userManager.FindByEmailAsync(request.Request.Email);
+            var user = await _userManager.FindByEmailAsync(request.Email);
 
             if (user == null)
             {

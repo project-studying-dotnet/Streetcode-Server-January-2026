@@ -1,4 +1,6 @@
-﻿using MediatR;
+﻿using System.Security.Claims;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Streetcode.Auth.BLL.DTO.Auth;
 using Streetcode.Auth.BLL.MediatR.ChangePassword;
@@ -91,16 +93,23 @@ namespace Streetcode.Auth.WebApi.Controllers
             return Ok(new { message = "Logged out" });
         }
 
+        [Authorize]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDTO request)
         {
-            var result = await _mediator.Send(new ChangePasswordCommand(request));
+            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                return Unauthorized("User email not found in token.");
+            }
+
+            var result = await _mediator.Send(new ChangePasswordCommand(request, userEmail));
 
             if (result.IsSuccess)
             {
                 _cookieService.DeleteRefreshTokenCookie(Response);
-
-                return Ok(new { message = "Password changed successfully. You have been logged out of all devices." });
+                return Ok(new { message = "Password changed successfully." });
             }
 
             return BadRequest(result.Errors.Select(e => e.Message));
