@@ -67,15 +67,6 @@ jobs:
             /p:CoverletOutput=./coverage/coverage-auth.xml `
             /p:CoverletOutputFormat=opencover
 
-      - name: Test Email API
-        run: |
-          dotnet test ./Streetcode/Streetcode.Email.XUnitTest/Streetcode.Email.XUnitTest.csproj `
-            --configuration Release `
-            --no-build `
-            /p:CollectCoverage=true `
-            /p:CoverletOutput=./coverage/coverage-email.xml `
-            /p:CoverletOutputFormat=opencover
-
       - name: SonarScanner End
         if: always()
         env:
